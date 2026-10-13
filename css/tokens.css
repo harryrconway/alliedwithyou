@@ -1,0 +1,115 @@
+/*
+  Design tokens for Allied With You.
+  Every colour, size and timing used across the website and the dashboard
+  comes from here, so the look can be adjusted in one place.
+*/
+
+@font-face {
+  font-family: "Nunito Sans";
+  src: url("../fonts/nunitosans.woff2") format("woff2");
+  font-weight: 200 1000;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Brand palette, matched to the logo */
+  --color-deep: #0c5661;
+  --color-deep-dark: #08434c;
+  --color-sage: #9db595;
+  --color-sage-soft: #e4ece0;
+  --color-green-light: #eef5ec;
+  --color-blue: #2f6690;
+  --color-blue-dark: #24557a;
+  --color-blue-pale: #e8f0f7;
+  --color-cream: #faf8f4;
+  --color-white: #ffffff;
+  --color-charcoal: #2a302f;
+  --color-grey: #5e6664;
+  --color-line: #e2dfd8;
+  --color-line-strong: #cfcbc2;
+
+  /* Status colours, always shown with a text label */
+  --color-success: #2f6b3a;
+  --color-success-bg: #e6f2e4;
+  --color-warning: #8a5a00;
+  --color-warning-bg: #fbf1dc;
+  --color-danger: #a33a2e;
+  --color-danger-bg: #f9e6e3;
+  --color-info: #2f6690;
+  --color-info-bg: #e8f0f7;
+  --color-neutral: #545b59;
+  --color-neutral-bg: #eeece7;
+
+  /* Roles */
+  --color-bg: var(--color-cream);
+  --color-surface: var(--color-white);
+  --color-text: var(--color-charcoal);
+  --color-text-muted: var(--color-grey);
+  --color-heading: var(--color-deep);
+  --color-link: var(--color-blue);
+  --color-focus: #2f6690;
+
+  /* Typography: one font everywhere */
+  --font: "Nunito Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --weight-regular: 400;
+  --weight-medium: 560;
+  --weight-semibold: 680;
+  --weight-bold: 780;
+
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.0625rem;
+  --text-lg: 1.1875rem;
+  --text-xl: clamp(1.375rem, 1.2rem + 0.6vw, 1.625rem);
+  --text-2xl: clamp(1.75rem, 1.4rem + 1.4vw, 2.375rem);
+  --text-3xl: clamp(2.25rem, 1.6rem + 2.8vw, 3.75rem);
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading: 1.65;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
+  --space-9: 7rem;
+
+  /* Layout */
+  --width-text: 40rem;
+  --width-page: 72rem;
+  --gutter: clamp(1rem, 4vw, 2.5rem);
+  --header-height: 4.75rem;
+  --notice-height: 2.25rem;
+
+  /* Shape */
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+  --border: 1px solid var(--color-line);
+
+  --shadow-sm: 0 1px 2px rgb(20 45 45 / 0.06), 0 1px 3px rgb(20 45 45 / 0.04);
+  --shadow: 0 10px 30px rgb(20 50 50 / 0.09), 0 2px 6px rgb(20 50 50 / 0.05);
+
+  /* Motion */
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --speed: 150ms;
+
+  /* Layers */
+  --z-header: 50;
+  --z-drawer: 70;
+  --z-modal: 90;
+  --z-toast: 100;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --speed: 0ms;
+  }
+}

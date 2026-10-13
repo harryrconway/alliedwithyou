@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Make a referral | Allied With You</title>
+  <meta name="description" content="Referral information and an online referral form for GPs, support coordinators, allied health professionals and families.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0c5661">
+  <link rel="icon" href="images/logomark.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="images/touchicon.png">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/site.css">
+  <script src="js/core/icons.js" defer></script>
+  <script src="js/core/dom.js" defer></script>
+  <script src="js/data/business.js" defer></script>
+  <script src="js/site/layout.js" defer></script>
+  <script src="js/core/format.js" defer></script>
+  <script src="js/core/validate.js" defer></script>
+  <script src="js/core/ui.js" defer></script>
+  <script src="js/data/schema.js" defer></script>
+  <script src="js/data/seed.js" defer></script>
+  <script src="js/data/store.js" defer></script>
+  <script src="js/data/rules.js" defer></script>
+  <script src="js/data/automations.js" defer></script>
+  <script src="js/site/forms.js" defer></script>
+</head>
+<body data-page="referrals">
+  <a class="skip" href="#main">Skip to main content</a>
+  <div class="notice-bar" data-site-notice></div>
+  <header class="site-header" data-site-header></header>
+
+  <main id="main">
+    <div class="page-intro">
+      <div class="wrap">
+        <h1>Make a referral</h1>
+        <p class="lead">For GPs, support coordinators, allied health professionals and anyone referring on behalf of someone else.</p>
+      </div>
+    </div>
+
+    <section class="section-tight" style="padding-top:0">
+      <div class="wrap split">
+        <div class="prose">
+          <h2>What happens next</h2>
+          <p>We'll contact the person, or their representative, within <span class="placeholder">two business days</span> to talk about their needs, how sessions will be funded and when we can start. We'll let you know once we've made contact.</p>
+          <p>If we can't help, for example because of where they live or how their plan is managed, we'll tell you and suggest other options.</p>
+
+          <h2>What to include</h2>
+          <p>Only what we need to get in touch and understand the request: contact details, a sentence or two about why you're referring, and how therapy will be funded.</p>
+          <div class="notice">
+            <span data-icon="lock"></span>
+            <div><strong>Please leave out detailed medical history</strong>If you have reports, plans or letters to share, we'll send you a secure way to provide them once we've made contact. Please don't attach them to an ordinary email.</div>
+          </div>
+
+          <h2>Before you refer</h2>
+          <p>Please make sure the person knows about the referral and is happy for us to contact them. For NDIS participants, let us know how their plan is managed. We can see participants who are self managed or plan managed.</p>
+
+          <h2>Other ways to refer</h2>
+          <ul class="contact-list">
+            <li><span data-icon="phone"></span><div><strong>Phone</strong><span class="placeholder">07 5550 0142</span></div></li>
+            <li><span data-icon="mail"></span><div><strong>Email</strong><span class="placeholder">referrals@alliedwithyou.example</span></div></li>
+          </ul>
+        </div>
+
+        <div class="form-panel">
+          <h2>Referral form</h2>
+          <p>Fields marked optional can be left blank.</p>
+          <div class="notice notice-warning" style="margin-top:1rem">
+            <span data-icon="alert"></span>
+            <div>This is a testing version. Please use made up details. Nothing is sent anywhere.</div>
+          </div>
+          <form class="form" data-demo-form="referral" novalidate>
+            <div class="form-summary"></div>
+            <fieldset>
+              <legend>About you</legend>
+              <div class="form-grid">
+                <div class="field"><label for="referrerName">Your name</label><input class="input" id="referrerName" name="referrerName" autocomplete="name" required></div>
+                <div class="field">
+                  <label for="referrerRole">You are a</label>
+                  <select class="select" id="referrerRole" name="referrerRole" required>
+                    <option value="">Choose one</option>
+                    <option value="gp">GP</option>
+                    <option value="coordinator">Support coordinator</option>
+                    <option value="planmanager">Plan manager</option>
+                    <option value="alliedhealth">Allied health professional</option>
+                    <option value="hospital">Hospital or health service</option>
+                    <option value="family">Family member or carer</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div class="field span-all"><label for="referrerOrg">Organisation <span class="optional">(optional)</span></label><input class="input" id="referrerOrg" name="referrerOrg" autocomplete="organization"></div>
+                <div class="field"><label for="referrerPhone">Your phone</label><input class="input" id="referrerPhone" name="referrerPhone" type="tel" autocomplete="tel" data-rule="phone" required></div>
+                <div class="field"><label for="referrerEmail">Your email</label><input class="input" id="referrerEmail" name="referrerEmail" type="email" autocomplete="email" required></div>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>About the person you're referring</legend>
+              <div class="form-grid">
+                <div class="field"><label for="firstName">First name</label><input class="input" id="firstName" name="firstName" required></div>
+                <div class="field"><label for="lastName">Last name</label><input class="input" id="lastName" name="lastName" required></div>
+                <div class="field">
+                  <label for="phone">Best phone number to reach them</label>
+                  <input class="input" id="phone" name="phone" type="tel" data-rule="phone" required aria-describedby="phoneHint">
+                  <p class="hint" id="phoneHint">Their own number, or a family member's if that's better.</p>
+                </div>
+                <div class="field"><label for="suburb">Suburb or town</label><input class="input" id="suburb" name="suburb" required></div>
+                <div class="field">
+                  <label for="state">State</label>
+                  <select class="select" id="state" name="state" required>
+                    <option value="">Choose one</option>
+                    <option value="NSW">New South Wales</option>
+                    <option value="QLD">Queensland</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="fundingType">How will therapy be funded?</label>
+                  <select class="select" id="fundingType" name="fundingType" required>
+                    <option value="">Choose one</option>
+                    <option value="private">Paying privately</option>
+                    <option value="healthfund">Private health insurance</option>
+                    <option value="medicare">Medicare GP plan</option>
+                    <option value="sah">Support at Home</option>
+                    <option value="ndis_self">NDIS self managed</option>
+                    <option value="ndis_plan">NDIS plan managed</option>
+                    <option value="ndis_agency">NDIS agency managed</option>
+                    <option value="unsure">Not sure</option>
+                  </select>
+                </div>
+                <div class="field" data-show-for-ndis hidden>
+                  <label for="ndisNumber">NDIS number <span class="optional">(optional)</span></label>
+                  <input class="input" id="ndisNumber" name="ndisNumber" inputmode="numeric" data-rule="ndis">
+                </div>
+                <div class="field span-all">
+                  <label for="service">Service needed</label>
+                  <select class="select" id="service" name="service" required>
+                    <option value="">Choose one</option>
+                    <option value="assessments">Functional capacity assessment</option>
+                    <option value="independence">Daily living and independence</option>
+                    <option value="home">Home safety and access</option>
+                    <option value="technology">Assistive technology and equipment</option>
+                    <option value="therapy">Goal focused therapy</option>
+                    <option value="reports">Report or recommendations</option>
+                    <option value="unsure">Not sure yet</option>
+                  </select>
+                </div>
+                <div class="field span-all">
+                  <label for="reason">Reason for referral</label>
+                  <textarea class="textarea" id="reason" name="reason" maxlength="600" required aria-describedby="reasonHint"></textarea>
+                  <p class="hint" id="reasonHint">A sentence or two is enough. Please leave out detailed medical history.</p>
+                </div>
+              </div>
+            </fieldset>
+
+            <div class="field">
+              <label class="choice"><input type="checkbox" name="consent" value="yes" required data-error="Please confirm the person knows about this referral"> The person knows about this referral and is happy for Allied With You to contact them.</label>
+            </div>
+
+            <div class="btn-row">
+              <button class="btn" type="submit">Submit referral</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer" data-site-footer></footer>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact us | Allied With You</title>
+  <meta name="description" content="Contact Allied With You about occupational therapy in the Northern Rivers and Gold Coast.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0c5661">
+  <link rel="icon" href="images/logomark.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="images/touchicon.png">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/site.css">
+  <script src="js/core/icons.js" defer></script>
+  <script src="js/core/dom.js" defer></script>
+  <script src="js/data/business.js" defer></script>
+  <script src="js/site/layout.js" defer></script>
+  <script src="js/core/format.js" defer></script>
+  <script src="js/core/validate.js" defer></script>
+  <script src="js/core/ui.js" defer></script>
+  <script src="js/data/schema.js" defer></script>
+  <script src="js/data/seed.js" defer></script>
+  <script src="js/data/store.js" defer></script>
+  <script src="js/data/rules.js" defer></script>
+  <script src="js/data/automations.js" defer></script>
+  <script src="js/site/forms.js" defer></script>
+</head>
+<body data-page="contact">
+  <a class="skip" href="#main">Skip to main content</a>
+  <div class="notice-bar" data-site-notice></div>
+  <header class="site-header" data-site-header></header>
+
+  <main id="main">
+    <div class="page-intro">
+      <div class="wrap">
+        <h1>Contact us</h1>
+        <p class="lead">Questions about therapy, fees or whether we can help? Get in touch and we'll get back to you.</p>
+      </div>
+    </div>
+
+    <section class="section-tight" style="padding-top:0">
+      <div class="wrap split">
+        <div class="stack-lg">
+          <ul class="contact-list">
+            <li><span data-icon="phone"></span><div><strong>Phone</strong><span class="placeholder">07 5550 0142</span></div></li>
+            <li><span data-icon="mail"></span><div><strong>Email</strong><span class="placeholder">hello@alliedwithyou.example</span></div></li>
+            <li><span data-icon="clock"></span><div><strong>Hours</strong><span class="placeholder">Monday to Friday, 8:30 am to 5 pm</span></div></li>
+            <li><span data-icon="message"></span><div><strong>Reply time</strong>We aim to reply <span class="placeholder">within two business days</span></div></li>
+            <li><span data-icon="pin"></span><div><strong>Where we work</strong>Tweed, Byron, Ballina, Lismore and Richmond Valley in New South Wales, and the southern and central Gold Coast in Queensland. <span class="placeholder">Exact service area</span></div></li>
+          </ul>
+          <div class="notice notice-danger">
+            <span data-icon="alertCircle"></span>
+            <div><strong>Need help urgently?</strong>We aren't an emergency service. If someone is in danger, call 000. For urgent health advice, call your GP or healthdirect on 1800 022 222.</div>
+          </div>
+        </div>
+
+        <div class="form-panel">
+          <h2>Send us a message</h2>
+          <p>We'll reply by your preferred method.</p>
+          <div class="notice notice-warning" style="margin-top:1rem">
+            <span data-icon="alert"></span>
+            <div>This is a testing version. Please use made up details. Nothing is sent anywhere.</div>
+          </div>
+          <form class="form" data-demo-form="contact" novalidate>
+            <div class="form-summary"></div>
+            <div class="form-grid">
+              <div class="field"><label for="cFirst">First name</label><input class="input" id="cFirst" name="firstName" autocomplete="given-name" required></div>
+              <div class="field"><label for="cLast">Last name</label><input class="input" id="cLast" name="lastName" autocomplete="family-name" required></div>
+              <div class="field"><label for="cEmail">Email</label><input class="input" id="cEmail" name="email" type="email" autocomplete="email" required></div>
+              <div class="field"><label for="cPhone">Phone <span class="optional">(optional)</span></label><input class="input" id="cPhone" name="phone" type="tel" autocomplete="tel" data-rule="phone"></div>
+              <div class="field">
+                <label for="cAbout">I'm asking</label>
+                <select class="select" id="cAbout" name="about" required>
+                  <option value="">Choose one</option>
+                  <option value="myself">For myself</option>
+                  <option value="family">For a family member or friend</option>
+                  <option value="professional">As a health professional</option>
+                  <option value="coordinator">As a support coordinator</option>
+                  <option value="other">Something else</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="cSuburb">Suburb or town</label>
+                <input class="input" id="cSuburb" name="suburb" required aria-describedby="cSuburbHint">
+                <p class="hint" id="cSuburbHint">So we know whether you're in our area.</p>
+              </div>
+              <div class="field span-all">
+                <label for="cMessage">Message</label>
+                <textarea class="textarea" id="cMessage" name="message" maxlength="1200" required aria-describedby="cMessageHint"></textarea>
+                <p class="hint" id="cMessageHint">Please don't include detailed health information. We can talk about that once we're in touch.</p>
+              </div>
+              <fieldset class="field span-all">
+                <legend>Best way to reply</legend>
+                <div class="choices inline">
+                  <label class="choice"><input type="radio" name="preferredContact" value="email" checked> Email</label>
+                  <label class="choice"><input type="radio" name="preferredContact" value="phone"> Phone</label>
+                </div>
+              </fieldset>
+            </div>
+            <div class="btn-row">
+              <button class="btn" type="submit">Submit enquiry</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer" data-site-footer></footer>
+</body>
+</html>
