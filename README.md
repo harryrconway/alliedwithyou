@@ -18,6 +18,25 @@ This is the testing version. Everything in the dashboard is fictional, nothing i
 * Choose who to sign in as on the entry screen, or switch person from the top bar, to see the different access levels.
 * Phone numbers come from the ranges the ACMA reserves for fiction, and email addresses use example domains.
 
+## Tests
+
+The automated checks live in `tests/`. The first time, run `npm install` and `npm run setup` inside `tests/`. After that, `npm test` runs everything:
+
+* every script parses, and every link points at a real file
+* the writing rules hold everywhere, including on screen: no hyphens, en dashes or em dashes
+* the demo data stays consistent, and finalised notes stay locked
+* the full journey works, from website referral through to a paid invoice
+* every dashboard screen works for every role, and every record dialog opens
+* pages fit 360, 768 and 1366 pixel widths
+* the keyboard checks pass
+
+Run a single check with `npm test -- journey`.
+
+## Project documents
+
+* `docs/audit.md` is the audit of what exists and what the master plan still needs.
+* `docs/register.md` is the implementation register, updated at the end of every stage.
+
 ## Folder map
 
 ```
@@ -33,6 +52,8 @@ js/site/                                 website header, footer and forms
 js/admin/                                dashboard frame, routing and shared actions
 js/admin/views/                          one file per dashboard screen
 fonts/                                   Nunito Sans, the only font used
+docs/                                    audit and implementation register
+tests/                                   automated checks (npm test)
 images/                                  logo, logomark, hero photo
 ```
 
