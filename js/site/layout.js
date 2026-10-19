@@ -11,6 +11,7 @@
     { key: 'about', href: 'about.html', label: 'About' },
     { key: 'services', href: 'services.html', label: 'Services' },
     { key: 'ndis', href: 'ndis.html', label: 'NDIS' },
+    { key: 'myagedcare', href: 'myagedcare.html', label: 'My Aged Care' },
     { key: 'process', href: 'process.html', label: 'How it works' },
     { key: 'fees', href: 'fees.html', label: 'Fees' },
     { key: 'faq', href: 'faq.html', label: 'FAQs' },
@@ -57,6 +58,7 @@
             <li><a href="${root}about.html">About us</a></li>
             <li><a href="${root}services.html">Services</a></li>
             <li><a href="${root}ndis.html">NDIS participants</a></li>
+            <li><a href="${root}myagedcare.html">My Aged Care</a></li>
             <li><a href="${root}process.html">How it works</a></li>
             <li><a href="${root}fees.html">Fees and cancellations</a></li>
             <li><a href="${root}faq.html">Questions people ask</a></li>
