@@ -41,16 +41,17 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | 19 Oct 2026 | Hosting | Site moved to the custom domain alliedwithyou.com.au | `80da9d9` |
 | 19 Oct 2026 | Part A | Live website made ready for the public: testing notices, demo links and all 42 placeholders removed, fees published, NDIS registration wording removed, forms replaced by email panels, `/admin/` replaced by a holding page | `607e269` |
 | 19 Oct 2026 | Part B | Supabase foundations on the test project: migrations, sign in settings and email templates through noreply@, the enquiry Edge Function, `auth` and `enquiry` checks, `docs/operations.md` | `a2184d6` |
-| 19 Oct 2026 | Parts C and D | The real staff dashboard on Supabase: sign in, create account, invitations and password reset, approvals, locked sections, dashboard, tasks, staff calendar, settings and fees, feedback and error reports, shared error handling. Website forms back, sending by email. Approvals migration. Demo data layer and locked screens removed. New `crm`, `site` and `env` test files, `data` check retired | branch `crm` |
+| 19 Oct 2026 | Parts C and D | The real staff dashboard on Supabase: sign in, create account, invitations and password reset, approvals, locked sections, dashboard, tasks, staff calendar, settings and fees, feedback and error reports, shared error handling. Website forms back, sending by email. Approvals migration. Demo data layer and locked screens removed. New `crm`, `site` and `env` test files, `data` check retired | `477926c` |
+| 19 Oct 2026 | Release | Production: the four migrations applied (each in one transaction, matching the test project table for table), sign in settings and email templates pushed, enquiry function deployed with its own secrets and no local access. `crm` merged into `main` | this change |
 
 ## Database migrations
 
 | Migration | What it does | Test project | Production |
 |---|---|---|---|
-| `20261019000000_foundation.sql` | Staff accounts, approvals, settings, fees, tasks, staff calendar, feedback, error events, audit trail, form rate limits, all with Row Level Security | 19 Oct 2026 | Not yet |
-| `20261019010000_staffrefs.sql` | Lets links to a removed staff account clear instead of blocking the removal | 19 Oct 2026 | Not yet |
-| `20261019020000_invites.sql` | Reserved addresses activate only after an accepted invitation | 19 Oct 2026 | Not yet |
-| `20261019030000_approvals.sql` | Copies the email confirmation time onto the profile. Approval needs it, and reserved addresses can't be approved by hand | 19 Oct 2026 | Not yet |
+| `20261019000000_foundation.sql` | Staff accounts, approvals, settings, fees, tasks, staff calendar, feedback, error events, audit trail, form rate limits, all with Row Level Security | 19 Oct 2026 | 19 Oct 2026 |
+| `20261019010000_staffrefs.sql` | Lets links to a removed staff account clear instead of blocking the removal | 19 Oct 2026 | 19 Oct 2026 |
+| `20261019020000_invites.sql` | Reserved addresses activate only after an accepted invitation | 19 Oct 2026 | 19 Oct 2026 |
+| `20261019030000_approvals.sql` | Copies the email confirmation time onto the profile. Approval needs it, and reserved addresses can't be approved by hand | 19 Oct 2026 | 19 Oct 2026 |
 
 ## Security findings
 
@@ -76,5 +77,5 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 
 ## Outstanding work
 
-* Release: apply the four migrations, sign in settings and the enquiry function to production, merge `crm` into `main`, send a test enquiry from the live site, then send the three invitations when the practice is ready.
+* Release checks: a test enquiry from the live site reaching admin@, then the three invitations when the practice is ready, and a live sign in confirming the locked sections.
 * Later stages, as in `docs/audit.md`: backups, multi factor screens, the developer dashboard, documents and storage, notifications, privacy requests, and each locked section in turn.
