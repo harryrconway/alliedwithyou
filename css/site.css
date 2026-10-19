@@ -240,22 +240,336 @@
   }
 }
 
-/* A plain hero with no photo, previewed in soft green and soft blue */
+/* A hero without the photo: the brand mark on a medallion, soft drifting colour and a curved edge.
+   Previewed in a deep teal and a light version. */
 
-.hero-plain {
-  min-height: clamp(28rem, calc(70svh - var(--header-height)), 40rem);
+.hero-vivid {
+  place-items: stretch;
+  align-content: center;
+  min-height: clamp(34rem, calc(86svh - var(--header-height)), 46rem);
+  padding-block: var(--space-7) 5.5rem;
 }
 
-.hero-plain .hero-content::before {
+.hero-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  align-items: center;
+  gap: clamp(2rem, 5vw, 5rem);
+}
+
+.hero-vivid .hero-content {
+  max-width: 38rem;
+  padding: 0;
+  text-align: left;
+}
+
+.hero-vivid .hero-content::before {
   display: none;
 }
 
-.hero-green {
-  background: var(--color-sage-soft);
+.hero-vivid p {
+  margin: var(--space-4) 0 0;
 }
 
-.hero-blue {
-  background: var(--color-blue-pale);
+.hero-vivid .btn-row {
+  justify-content: flex-start;
+}
+
+.hero-place {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: var(--space-4);
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.hero-place .icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.hero-accent {
+  display: block;
+}
+
+.hero-ways {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: var(--space-6) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.hero-ways li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.hero-ways .icon {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+
+/* The medallion with the brand mark, rings and two small dots */
+
+.hero-art {
+  position: relative;
+  justify-self: center;
+  width: min(26rem, 100%);
+  aspect-ratio: 1;
+}
+
+.hero-badge {
+  position: absolute;
+  inset: 14%;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-cream);
+  box-shadow: 0 30px 60px rgb(4 40 46 / 0.28), inset 0 0 0 10px rgb(255 255 255 / 0.65);
+  animation: hero-float 7s ease-in-out infinite alternate;
+}
+
+.hero-badge img {
+  width: 62%;
+  height: auto;
+}
+
+.hero-ring {
+  position: absolute;
+  inset: 4%;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  opacity: 0.35;
+  animation: hero-pulse 6s ease-in-out infinite alternate;
+}
+
+.hero-ring + .hero-ring {
+  inset: -6%;
+  opacity: 0.18;
+  animation-delay: -2s;
+}
+
+.hero-ring + .hero-ring + .hero-ring {
+  inset: -16%;
+  border-style: dashed;
+  opacity: 0.14;
+  animation-delay: -4s;
+}
+
+.hero-dot {
+  position: absolute;
+  border-radius: 50%;
+  animation: hero-float 5s ease-in-out infinite alternate;
+}
+
+.hero-dot-sage {
+  top: 6%;
+  right: 8%;
+  width: 2.4rem;
+  height: 2.4rem;
+  background: var(--color-sage);
+}
+
+.hero-dot-blue {
+  bottom: 9%;
+  left: 2%;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: #7fa8c9;
+  animation-delay: -2.5s;
+}
+
+/* Soft colour that drifts slowly behind everything */
+
+.hero-glow {
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--glow), transparent);
+  animation: hero-drift 18s ease-in-out infinite alternate;
+}
+
+.hero-glow-one {
+  top: -30%;
+  right: -14%;
+  width: 56rem;
+  height: 56rem;
+}
+
+.hero-glow-two {
+  bottom: -40%;
+  left: -16%;
+  width: 48rem;
+  height: 48rem;
+  animation-delay: -9s;
+}
+
+.hero-wave {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  width: 100%;
+  height: clamp(2.5rem, 6vw, 5rem);
+  fill: var(--color-bg);
+}
+
+@keyframes hero-float {
+  to {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes hero-pulse {
+  to {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes hero-drift {
+  to {
+    transform: translate(3rem, 2rem) scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-badge,
+  .hero-ring,
+  .hero-dot,
+  .hero-glow {
+    animation: none;
+  }
+}
+
+/* Deep teal */
+
+.hero-deep {
+  background: linear-gradient(155deg, var(--color-deep) 0%, var(--color-deep-dark) 70%);
+  color: var(--color-white);
+}
+
+.hero-deep .hero-glow-one {
+  --glow: rgb(47 102 144 / 0.85);
+}
+
+.hero-deep .hero-glow-two {
+  --glow: rgb(157 181 149 / 0.38);
+}
+
+.hero-deep h1 {
+  color: var(--color-white);
+}
+
+.hero-deep .hero-accent {
+  color: #c3dab8;
+}
+
+.hero-deep p {
+  color: rgb(255 255 255 / 0.9);
+}
+
+.hero-deep .hero-place {
+  border: 1px solid rgb(255 255 255 / 0.25);
+  background: rgb(255 255 255 / 0.1);
+  color: var(--color-white);
+}
+
+.hero-deep .hero-ways {
+  color: #dbe8d5;
+}
+
+.hero-deep .hero-art {
+  color: #c3dab8;
+}
+
+.hero-deep .btn {
+  background: var(--color-sage-soft);
+  color: var(--color-deep-dark);
+}
+
+.hero-deep .btn:hover {
+  background: var(--color-white);
+}
+
+.hero-deep .btn-secondary {
+  border-color: rgb(255 255 255 / 0.6);
+  background: transparent;
+  color: var(--color-white);
+}
+
+.hero-deep .btn-secondary:hover {
+  background: rgb(255 255 255 / 0.12);
+}
+
+/* Light */
+
+.hero-light {
+  background: linear-gradient(140deg, var(--color-green-light) 0%, var(--color-sage-soft) 45%, var(--color-blue-pale) 100%);
+}
+
+.hero-light .hero-glow-one {
+  --glow: rgb(127 168 201 / 0.6);
+}
+
+.hero-light .hero-glow-two {
+  --glow: rgb(157 181 149 / 0.6);
+}
+
+.hero-light .hero-accent {
+  color: #4e7a46;
+}
+
+.hero-light .hero-place {
+  border: 1px solid rgb(12 86 97 / 0.15);
+  background: rgb(255 255 255 / 0.7);
+  color: var(--color-deep);
+}
+
+.hero-light .hero-ways {
+  color: var(--color-deep);
+}
+
+.hero-light .hero-art {
+  color: var(--color-deep);
+}
+
+.hero-light .hero-badge {
+  background: var(--color-white);
+  box-shadow: 0 30px 60px rgb(12 86 97 / 0.18), inset 0 0 0 10px var(--color-green-light);
+}
+
+@media (max-width: 860px) {
+  .hero-vivid {
+    min-height: 0;
+    padding-block: var(--space-6) 4.5rem;
+  }
+
+  .hero-split {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-6);
+  }
+
+  .hero-art {
+    width: min(15rem, 70%);
+  }
+
+  .hero-glow-one {
+    width: 34rem;
+    height: 34rem;
+  }
+
+  .hero-glow-two {
+    width: 30rem;
+    height: 30rem;
+  }
 }
 
 /* The bar on the preview pages. Remove it with them once a hero is chosen. */
