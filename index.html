@@ -23,23 +23,28 @@
 
   <main id="main">
     <section class="hero" aria-labelledby="heroTitle">
-      <div class="hero-media">
-        <img
-          src="images/hero/medium.webp"
-          srcset="images/hero/small.webp 800w, images/hero/medium.webp 1600w, images/hero/large.webp 2448w"
-          sizes="(max-width: 700px) 210vw, 100vw"
-          width="1600" height="2133"
-          alt="Two hands reaching towards each other against a soft blue sky"
-          fetchpriority="high">
-      </div>
-      <div class="hero-content">
-        <h1 id="heroTitle">Occupational Therapy for everyday life</h1>
-        <p>We help people manage daily tasks, stay safe at home and keep doing the things that matter to them. Working across the Northern Rivers and Gold Coast.</p>
-        <div class="btn-row">
-          <a class="btn" href="contact.html">Make an enquiry</a>
-          <a class="btn btn-secondary" href="referrals.html">Refer someone</a>
+      <span class="hero-glow hero-glow-one" aria-hidden="true"></span>
+      <span class="hero-glow hero-glow-two" aria-hidden="true"></span>
+      <div class="wrap hero-split">
+        <div class="hero-content">
+          <div class="hero-place"><span data-icon="pin"></span>Northern Rivers and Gold Coast</div>
+          <h1 id="heroTitle">Occupational Therapy <span class="hero-accent">for everyday life</span></h1>
+          <p>We help people manage daily tasks, stay safe at home and keep doing the things that matter to them.</p>
+          <div class="btn-row">
+            <a class="btn" href="contact.html">Make an enquiry</a>
+            <a class="btn btn-secondary" href="referrals.html">Refer someone</a>
+          </div>
+          <ul class="hero-ways" aria-label="Where we see people">
+            <li><span data-icon="home"></span>Home visits</li>
+            <li><span data-icon="users"></span>In the community</li>
+            <li><span data-icon="video"></span>Telehealth</li>
+          </ul>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="hero-badge"><img src="images/logomark.svg" alt="" width="240" height="240"></div>
         </div>
       </div>
+      <svg class="hero-wave" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M0 80V44C200 10 420 0 700 26C980 52 1220 62 1440 28V80Z"/></svg>
     </section>
 
     <section class="section">

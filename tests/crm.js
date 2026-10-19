@@ -57,7 +57,9 @@ module.exports = async function crm(ctx) {
     await p.waitForSelector('#identifier');
   }
 
-  const expected = /ERR_FAILED|Failed to load resource|Reference [A-Z0-9]{6}|status of 400|status of 401|400 for .*token\?grant_type=password/;
+  /* Expected noise: dropped connections, a wrong password, and the database refusing the double booking
+     when it gets there before the screen's own check does */
+  const expected = /ERR_FAILED|Failed to load resource|Reference [A-Z0-9]{6}|status of 400|status of 401|status of 409|400 for .*token\?grant_type=password|(400|409) for .*calendar_blocks/;
   const pages = [];
 
   try {

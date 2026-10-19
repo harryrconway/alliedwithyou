@@ -66,7 +66,7 @@ supabase/                                migrations, sign in settings, email tem
 fonts/                                   Nunito Sans, the only font used
 docs/                                    audit, register and operations notes
 tests/                                   automated checks (npm test)
-images/                                  logo, logomark, hero photo
+images/                                  logo, logomark, touch icon
 ```
 
 ## Where to change things

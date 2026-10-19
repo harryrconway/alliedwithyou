@@ -160,94 +160,18 @@
   }
 }
 
-/* Hero: the two hands frame the heading */
+/* Home page hero: the brand mark on a floating medallion, soft drifting colour and a curved edge.
+   The text sits on cream, like the logo in the header, so the logo's teal and sage read true. */
 
 .hero {
   position: relative;
   display: grid;
-  place-items: center;
-  min-height: clamp(36rem, calc(100svh - var(--header-height)), 60rem);
-  overflow: hidden;
-  background: #b9cad9;
-  isolation: isolate;
-}
-
-.hero-media {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-}
-
-.hero-media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: 50% 50%;
-  transform: scale(var(--hero-zoom, 1));
-}
-
-.hero-content {
-  position: relative;
-  max-width: 44rem;
-  padding: var(--space-6) var(--gutter);
-  text-align: center;
-}
-
-.hero-content::before {
-  content: "";
-  position: absolute;
-  inset: -2rem -4rem;
-  z-index: -1;
-  background: radial-gradient(closest-side, rgb(244 247 249 / 0.62), rgb(244 247 249 / 0));
-}
-
-.hero h1 {
-  color: var(--color-deep-dark);
-  font-size: clamp(2.25rem, 1.4rem + 3.4vw, 4rem);
-}
-
-.hero p {
-  max-width: 34rem;
-  margin: var(--space-4) auto 0;
-  color: #1f2726;
-  font-size: clamp(1.05rem, 1rem + 0.3vw, 1.25rem);
-  line-height: 1.55;
-}
-
-.hero .btn-row {
-  justify-content: center;
-  margin-top: var(--space-6);
-}
-
-.hero .btn-secondary {
-  background: rgb(255 255 255 / 0.88);
-}
-
-@media (max-width: 700px) {
-  .hero {
-    --hero-zoom: 1.9;
-    min-height: 40rem;
-  }
-
-  .hero-content {
-    padding-block: var(--space-4);
-  }
-}
-
-@media (max-width: 420px) {
-  .hero {
-    --hero-zoom: 2.05;
-  }
-}
-
-/* A hero without the photo: the brand mark on a floating medallion, soft drifting colour and a curved edge.
-   Previewed in a deep teal and a light version. */
-
-.hero-vivid {
-  place-items: stretch;
   align-content: center;
   min-height: clamp(34rem, calc(86svh - var(--header-height)), 46rem);
   padding-block: var(--space-7) 5.5rem;
+  overflow: hidden;
+  background: linear-gradient(100deg, var(--color-cream) 0%, var(--color-cream) 42%, var(--color-green-light) 62%, var(--color-blue-pale) 100%);
+  isolation: isolate;
 }
 
 .hero-split {
@@ -257,22 +181,51 @@
   gap: clamp(2rem, 5vw, 5rem);
 }
 
-.hero-vivid .hero-content {
+.hero-content {
+  position: relative;
   max-width: 38rem;
-  padding: 0;
-  text-align: left;
 }
 
-.hero-vivid .hero-content::before {
-  display: none;
+.hero h1 {
+  color: var(--color-deep);
+  font-size: clamp(2.25rem, 1.4rem + 3.4vw, 4rem);
 }
 
-.hero-vivid p {
+.hero-accent {
+  display: block;
+  color: var(--color-sage);
+}
+
+.hero p {
+  max-width: 34rem;
   margin: var(--space-4) 0 0;
+  color: var(--color-deep);
+  font-size: clamp(1.05rem, 1rem + 0.3vw, 1.25rem);
+  line-height: 1.55;
 }
 
-.hero-vivid .btn-row {
+.hero .btn-row {
   justify-content: flex-start;
+  margin-top: var(--space-6);
+}
+
+.hero .btn {
+  background: var(--color-deep);
+  color: var(--color-white);
+}
+
+.hero .btn:hover {
+  background: var(--color-deep-dark);
+}
+
+.hero .btn-secondary {
+  border-color: var(--color-sage);
+  background: var(--color-white);
+  color: var(--color-deep);
+}
+
+.hero .btn-secondary:hover {
+  background: var(--color-green-light);
 }
 
 .hero-place {
@@ -281,7 +234,10 @@
   gap: 0.45rem;
   margin-bottom: var(--space-4);
   padding: 0.35rem 0.85rem;
+  border: 1px solid rgb(12 86 97 / 0.15);
   border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 0.7);
+  color: var(--color-deep);
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
 }
@@ -291,10 +247,6 @@
   height: 1rem;
 }
 
-.hero-accent {
-  display: block;
-}
-
 .hero-ways {
   display: flex;
   flex-wrap: wrap;
@@ -302,6 +254,7 @@
   margin: var(--space-6) 0 0;
   padding: 0;
   list-style: none;
+  color: var(--color-deep);
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
 }
@@ -332,8 +285,8 @@
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: var(--color-cream);
-  box-shadow: 0 30px 60px rgb(4 40 46 / 0.28), inset 0 0 0 10px rgb(255 255 255 / 0.65);
+  background: var(--color-white);
+  box-shadow: 0 30px 60px rgb(12 86 97 / 0.18), inset 0 0 0 10px var(--color-green-light);
   animation: hero-float 7s ease-in-out infinite alternate;
 }
 
@@ -342,7 +295,7 @@
   height: auto;
 }
 
-/* Soft colour that drifts slowly behind everything */
+/* Soft blue and green that drift slowly behind the medallion */
 
 .hero-glow {
   position: absolute;
@@ -353,6 +306,7 @@
 }
 
 .hero-glow-one {
+  --glow: rgb(127 168 201 / 0.6);
   top: -30%;
   right: -14%;
   width: 56rem;
@@ -360,8 +314,9 @@
 }
 
 .hero-glow-two {
-  bottom: -40%;
-  left: -16%;
+  --glow: rgb(157 181 149 / 0.6);
+  right: -10%;
+  bottom: -45%;
   width: 48rem;
   height: 48rem;
   animation-delay: -9s;
@@ -396,128 +351,8 @@
   }
 }
 
-/* Deep teal */
-
-.hero-deep {
-  background: linear-gradient(155deg, var(--color-deep) 0%, var(--color-deep-dark) 70%);
-  color: var(--color-white);
-}
-
-.hero-deep .hero-glow-one {
-  --glow: rgb(47 102 144 / 0.85);
-}
-
-.hero-deep .hero-glow-two {
-  --glow: rgb(157 181 149 / 0.38);
-}
-
-.hero-deep h1 {
-  color: var(--color-white);
-}
-
-.hero-deep .hero-accent {
-  color: var(--color-sage);
-}
-
-.hero-deep p {
-  color: rgb(255 255 255 / 0.9);
-}
-
-.hero-deep .hero-place {
-  border: 1px solid rgb(255 255 255 / 0.25);
-  background: rgb(255 255 255 / 0.1);
-  color: var(--color-white);
-}
-
-.hero-deep .hero-ways {
-  color: #dbe8d5;
-}
-
-.hero-deep .btn {
-  background: var(--color-sage);
-  color: var(--color-deep-dark);
-}
-
-.hero-deep .btn:hover {
-  background: var(--color-sage-soft);
-}
-
-.hero-deep .btn-secondary {
-  border-color: rgb(255 255 255 / 0.6);
-  background: transparent;
-  color: var(--color-white);
-}
-
-.hero-deep .btn-secondary:hover {
-  background: rgb(255 255 255 / 0.12);
-}
-
-/* Light */
-
-.hero-light {
-  background: linear-gradient(100deg, var(--color-cream) 0%, var(--color-cream) 42%, var(--color-green-light) 62%, var(--color-blue-pale) 100%);
-}
-
-/* Keeps the green glow behind the medallion, so the text sits on cream like the logo in the header */
-.hero-light .hero-glow-two {
-  right: -10%;
-  bottom: -45%;
-  left: auto;
-}
-
-.hero-light .hero-glow-one {
-  --glow: rgb(127 168 201 / 0.6);
-}
-
-.hero-light .hero-glow-two {
-  --glow: rgb(157 181 149 / 0.6);
-}
-
-.hero-light h1,
-.hero-light p {
-  color: var(--color-deep);
-}
-
-.hero-light .hero-accent {
-  color: var(--color-sage);
-}
-
-.hero-light .btn {
-  background: var(--color-deep);
-  color: var(--color-white);
-}
-
-.hero-light .btn:hover {
-  background: var(--color-deep-dark);
-}
-
-.hero-light .btn-secondary {
-  border-color: var(--color-sage);
-  background: var(--color-white);
-  color: var(--color-deep);
-}
-
-.hero-light .btn-secondary:hover {
-  background: var(--color-green-light);
-}
-
-.hero-light .hero-place {
-  border: 1px solid rgb(12 86 97 / 0.15);
-  background: rgb(255 255 255 / 0.7);
-  color: var(--color-deep);
-}
-
-.hero-light .hero-ways {
-  color: var(--color-deep);
-}
-
-.hero-light .hero-badge {
-  background: var(--color-white);
-  box-shadow: 0 30px 60px rgb(12 86 97 / 0.18), inset 0 0 0 10px var(--color-green-light);
-}
-
 @media (max-width: 860px) {
-  .hero-vivid {
+  .hero {
     min-height: 0;
     padding-block: var(--space-6) 4.5rem;
   }
@@ -540,25 +375,6 @@
     width: 30rem;
     height: 30rem;
   }
-}
-
-/* The bar on the preview pages. Remove it with them once a hero is chosen. */
-
-.preview-bar {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.25rem 1rem;
-  padding: 0.5rem var(--gutter);
-  background: var(--color-deep-dark);
-  color: var(--color-white);
-  font-size: var(--text-sm);
-  text-align: center;
-}
-
-.preview-bar a {
-  color: var(--color-white);
-  font-weight: var(--weight-semibold);
 }
 
 /* Sections */
