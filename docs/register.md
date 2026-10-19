@@ -48,7 +48,8 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | Date | Stage | Change | Commit |
 |---|---|---|---|
 | 13 Oct 2026 | Build | Website and browser demo dashboard built and published on GitHub Pages | `4e137ac` |
-| 14 Oct 2026 | 0 | Audit (`docs/audit.md`), this register, automated tests moved into `tests/`, `.env` and `node_modules` ignored | this stage |
+| 14 Oct 2026 | 0 | Audit (`docs/audit.md`), this register, automated tests moved into `tests/`, `.env` and `node_modules` ignored | `44ffb26` |
+| 19 Oct 2026 | Hosting | Site moved to the custom domain alliedwithyou.com.au (`CNAME` file, 404 page paths from the domain root) | this change |
 
 ## Database migrations
 

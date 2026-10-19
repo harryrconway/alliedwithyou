@@ -8,8 +8,8 @@ This is the testing version. Everything in the dashboard is fictional, nothing i
 
 * Double click `index.html` to open the website. The dashboard is `admin/index.html`, or use **Practice login** in the website footer.
 * To see a test enquiry travel from the website into the dashboard, serve the folder instead of double clicking. Use the Live Server extension in VS Code, or run `python3 -m http.server` in this folder and open http://localhost:8000.
-* The live testing site is published with GitHub Pages at https://harryrconway.github.io/alliedwithyou/ and updates whenever changes are pushed to `main`. Every page has `noindex` set while it's in testing.
-* `404.html` uses paths starting with `/alliedwithyou/` because of where GitHub Pages serves the site. If the site moves to its own domain, change those paths to start with `/`.
+* The live testing site is published with GitHub Pages at https://alliedwithyou.com.au and updates whenever changes are pushed to `main`. Every page has `noindex` set while it's in testing.
+* The `CNAME` file tells GitHub Pages which domain to serve. The domain's DNS (A, AAAA and `www` records) points at GitHub, while email stays with the existing host.
 
 ## Demo data
 
