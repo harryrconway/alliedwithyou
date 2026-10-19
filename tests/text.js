@@ -7,7 +7,7 @@ const path = require('path');
 const acorn = require('acorn');
 const walk = require('acorn-walk');
 const files = require('./files');
-const { open, signIn, route, PUBLIC_PAGES, ADMIN_ROUTES } = require('./page');
+const { open, PUBLIC_PAGES } = require('./page');
 
 const DASH = /[‐-―−]/;
 const WORD_HYPHEN = /[A-Za-z]-[A-Za-z]/;
@@ -76,14 +76,13 @@ module.exports = async function text(ctx) {
   const page = await open(ctx);
   const visible = () => page.evaluate(() => document.body.innerText + '\n' + document.title + '\n' +
     Array.from(document.querySelectorAll('[aria-label],[title],[placeholder],img[alt]')).map((e) => [e.getAttribute('aria-label'), e.getAttribute('title'), e.getAttribute('placeholder'), e.getAttribute('alt')].filter(Boolean).join('\n')).join('\n'));
+  /* The live website must not show placeholder, testing or demo wording */
+  const LEFTOVERS = /to confirm|testing version|placeholder|demo|sample|made up|\.example\b|0491 57|5550 /i;
   for (const u of PUBLIC_PAGES) {
     await page.goto(ctx.base + u, { waitUntil: 'networkidle' });
-    (await visible()).split('\n').forEach((l) => flag('rendered ' + u, l));
-  }
-  await signIn(page, ctx, 'st_hannah');
-  for (const r of ADMIN_ROUTES) {
-    await route(page, r);
-    (await visible()).split('\n').forEach((l) => flag('rendered #/' + r, l));
+    const shown = await visible();
+    shown.split('\n').forEach((l) => flag('rendered ' + u, l));
+    shown.split('\n').filter((l) => LEFTOVERS.test(l)).forEach((l) => failures.push('Leftover wording on ' + u + ': ' + l.trim().slice(0, 100)));
   }
   await page.close();
   return failures;

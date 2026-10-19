@@ -1,4 +1,4 @@
-/* Shared header, testing notice and footer for every public page. */
+/* Shared header and footer for every public page. */
 (function () {
   const AWY = (window.AWY = window.AWY || {});
   const html = AWY.html;
@@ -17,16 +17,7 @@
     { key: 'contact', href: 'contact.html', label: 'Contact' }
   ];
 
-  const ph = (text) => html`<span class="placeholder">${text}</span>`;
   const icon = (name) => AWY.raw(AWY.icon(name));
-
-  function notice() {
-    return html`<div class="wrap">
-      <span class="notice-long">This is a testing version. Business details, prices and some wording are placeholders, and nothing you enter is sent anywhere.</span>
-      <span class="notice-short">Testing version. Details are placeholders and nothing is sent.</span>
-      <a href="${root}admin/index.html">Open the demo dashboard</a>
-    </div>`;
-  }
 
   function header() {
     const links = NAV.map(
@@ -56,9 +47,8 @@
         <div>
           <h2>Get in touch</h2>
           <ul>
-            <li><a href="tel:${biz.phoneLink}">${ph(biz.phone)}</a></li>
-            <li><a href="mailto:${biz.email}">${ph(biz.email)}</a></li>
-            <li>${ph(biz.hours)}</li>
+            <li><a href="mailto:${biz.email}">${biz.email}</a></li>
+            <li><a href="${root}contact.html">Contact us</a></li>
           </ul>
         </div>
         <div>
@@ -76,17 +66,15 @@
           <h2>For referrers</h2>
           <ul>
             <li><a href="${root}referrals.html">Make a referral</a></li>
-            <li><a href="${root}contact.html">Contact us</a></li>
             <li><a href="${root}privacy.html">Privacy</a></li>
             <li><a href="${root}complaints.html">Complaints and feedback</a></li>
             <li><a href="${root}accessibility.html">Accessibility</a></li>
           </ul>
         </div>
       </div>
-      <p class="acknowledgement">We acknowledge the Bundjalung and Yugambeh peoples, the Traditional Custodians of the land where we live and work, and pay our respects to Elders past and present. ${ph('Wording to be confirmed with the business')}</p>
+      <p class="acknowledgement">We acknowledge the Bundjalung and Yugambeh peoples, the Traditional Custodians of the land where we live and work, and pay our respects to Elders past and present.</p>
       <div class="footer-base">
-        <span>Copyright ${year} Allied With You. ABN ${ph(biz.abn)}</span>
-        <a href="${root}admin/index.html">Practice login</a>
+        <span>Copyright ${year} Allied With You</span>
       </div>
     </div>`;
   }
@@ -97,7 +85,6 @@
     return el;
   }
 
-  mount('[data-site-notice]', notice);
   const head = mount('[data-site-header]', header);
   mount('[data-site-footer]', footer);
   AWY.hydrateIcons();

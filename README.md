@@ -2,21 +2,18 @@
 
 Website and practice dashboard for Allied With You, an occupational therapy practice working across the Northern Rivers and the Gold Coast.
 
-This is the testing version. Everything in the dashboard is fictional, nothing is sent anywhere, and there is no backend yet.
+The website is live at https://alliedwithyou.com.au. The practice dashboard (CRM) is being connected to its Supabase database, and `admin/index.html` shows a "staff sign in coming soon" page until that release is ready.
 
 ## Opening it
 
-* Double click `index.html` to open the website. The dashboard is `admin/index.html`, or use **Practice login** in the website footer.
-* To see a test enquiry travel from the website into the dashboard, serve the folder instead of double clicking. Use the Live Server extension in VS Code, or run `python3 -m http.server` in this folder and open http://localhost:8000.
-* The live testing site is published with GitHub Pages at https://alliedwithyou.com.au and updates whenever changes are pushed to `main`. Every page has `noindex` set while it's in testing.
-* The `CNAME` file tells GitHub Pages which domain to serve. The domain's DNS (A, AAAA and `www` records) points at GitHub, while email stays with the existing host.
+* Double click `index.html` to open the website locally, or run `python3 -m http.server` in this folder and open http://localhost:8000.
+* The live site is published with GitHub Pages and updates whenever changes are pushed to `main`.
+* The `CNAME` file tells GitHub Pages which domain to serve. The domain's DNS (A, AAAA and `www` records) points at GitHub, while email stays with the existing cPanel host.
+* The enquiry and referral pages ask people to email admin@alliedwithyou.com.au. The online forms return once the CRM release adds a secure way to send them.
 
-## Demo data
+## The earlier demo
 
-* The dashboard starts with fictional clients, appointments, notes, invoices and so on. Dates are worked out from the day the data is first loaded, so the calendar always has recent and upcoming sessions.
-* Changes are saved in the browser only. **Reset demo data** (top of the dashboard, or in Settings) puts everything back.
-* Choose who to sign in as on the entry screen, or switch person from the top bar, to see the different access levels.
-* Phone numbers come from the ranges the ACMA reserves for fiction, and email addresses use example domains.
+The interactive demo with fictional clients was taken off the live site on 19 October 2026. Its files (`js/data/store.js`, `js/data/seed.js`, `js/data/automations.js` and the demo version of `admin/index.html`) remain in the repository history at commit `80da9d9` if they're ever needed. The demo data layer files are removed when the CRM release replaces them.
 
 ## Tests
 
@@ -24,13 +21,12 @@ The automated checks live in `tests/`. The first time, run `npm install` and `np
 
 * every script parses, and every link points at a real file
 * the writing rules hold everywhere, including on screen: no hyphens, en dashes or em dashes
-* the demo data stays consistent, and finalised notes stay locked
-* the full journey works, from website referral through to a paid invoice
-* every dashboard screen works for every role, and every record dialog opens
+* no placeholder, testing or demo wording appears on the public website
+* the remaining demo data layer stays consistent until it's replaced
 * pages fit 360, 768 and 1366 pixel widths
 * the keyboard checks pass
 
-Run a single check with `npm test -- journey`.
+Run a single check with `npm test -- text`.
 
 ## Project documents
 
@@ -42,7 +38,7 @@ Run a single check with `npm test -- journey`.
 ```
 index.html and the other public pages    the website
 services/                                individual service pages
-admin/index.html                         the practice dashboard
+admin/index.html                         staff sign in (holding page for now)
 css/tokens.css                           colours, font, spacing and other design settings
 css/base.css, components.css             shared styles
 css/site.css, admin.css                  website and dashboard layouts

@@ -1,45 +1,5 @@
 /* Public website layout. */
 
-/* Testing notice */
-
-.notice-bar {
-  min-height: var(--notice-height);
-  background: var(--color-deep-dark);
-  color: #e7efe9;
-  font-size: var(--text-xs);
-  line-height: 1.4;
-}
-
-.notice-bar .wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.25rem 1rem;
-  min-height: var(--notice-height);
-  padding-block: 0.45rem;
-  text-align: center;
-}
-
-.notice-bar a {
-  color: var(--color-white);
-  font-weight: var(--weight-semibold);
-}
-
-.notice-short {
-  display: none;
-}
-
-@media (max-width: 700px) {
-  .notice-long {
-    display: none;
-  }
-
-  .notice-short {
-    display: inline;
-  }
-}
-
 /* Header */
 
 .site-header {
@@ -206,7 +166,7 @@
   position: relative;
   display: grid;
   place-items: center;
-  min-height: clamp(36rem, calc(100svh - var(--header-height) - var(--notice-height)), 60rem);
+  min-height: clamp(36rem, calc(100svh - var(--header-height)), 60rem);
   overflow: hidden;
   background: #b9cad9;
   isolation: isolate;
@@ -926,15 +886,4 @@
   border-top: 1px solid rgb(255 255 255 / 0.14);
   color: #b9cfc6;
   font-size: var(--text-xs);
-}
-
-.site-footer .placeholder {
-  background: rgb(251 241 220 / 0.16);
-  color: #fff4dc;
-  border-bottom-color: #f0d9a8;
-}
-
-.site-footer .placeholder::after {
-  background: #f0d9a8;
-  color: var(--color-deep-dark);
 }

@@ -10,9 +10,9 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 
 | Feature | Status | Main files | Tables (planned) | Tests | Notes |
 |---|---|---|---|---|---|
-| Public website | Complete and verified | root pages, `services/`, `css/site.css`, `js/site/layout.js` | none | links, text, layout | Contact details still placeholders |
-| Website enquiry and referral forms | Partially implemented | `js/site/forms.js` | `referrals` via `submit_enquiry` | journey | Saves only to the browser demo |
-| Sign in | Partially implemented | `js/admin/app.js` | Supabase Auth, `staff` | none yet | Passwordless person picker, no expiry |
+| Public website | Complete and verified | root pages, `services/`, `css/site.css`, `js/site/layout.js` | none | links, text, layout | Live at alliedwithyou.com.au. No placeholders. About page awaiting the therapist's details |
+| Website enquiry and referral forms | Partially implemented | `contact.html`, `referrals.html` | none (emailed only) | text | Email panels for now. Forms return through the `enquiry` Edge Function |
+| Sign in | Missing | `admin/index.html` | Supabase Auth, `profiles`, `signup_allowlist` | none yet | Holding page on the live site. Demo picker removed |
 | Roles and permissions | Requires security review | `js/admin/access.js` | all, through Row Level Security | screens (interface only) | Interface only. No database enforcement |
 | Client records | Implemented but defective | `clients.js`, `client.js` | `clients`, `client_health`, `contacts`, `client_access` | journey, screens | Hard delete, no duplicate check |
 | Referrals and intake | Complete and verified (demo) | `referrals.js` | `referrals` | journey | |
@@ -49,7 +49,8 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 |---|---|---|---|
 | 13 Oct 2026 | Build | Website and browser demo dashboard built and published on GitHub Pages | `4e137ac` |
 | 14 Oct 2026 | 0 | Audit (`docs/audit.md`), this register, automated tests moved into `tests/`, `.env` and `node_modules` ignored | `44ffb26` |
-| 19 Oct 2026 | Hosting | Site moved to the custom domain alliedwithyou.com.au (`CNAME` file, 404 page paths from the domain root) | this change |
+| 19 Oct 2026 | Hosting | Site moved to the custom domain alliedwithyou.com.au (`CNAME` file, 404 page paths from the domain root) | `80da9d9` |
+| 19 Oct 2026 | Part A | Live website made ready for the public: testing notices, demo links and all 42 placeholders removed, contact shown as admin@ only, fees published, NDIS registration wording removed, `noindex` removed from public pages, forms replaced by email panels, `/admin/` replaced by a holding page, demo browser tests retired | this change |
 
 ## Database migrations
 
@@ -68,7 +69,7 @@ None yet. Migrations will live in `supabase/migrations/` and be listed here with
 
 ## Known limitations
 
-* All data is fictional and held per browser until Stage 2.
+* The live dashboard is a holding page until the CRM release. The demo data layer remains in the repository only, unused by any live page.
 * Browser tests run in Chromium only, not Safari or Firefox.
 * Seeded dates are set relative to the day the demo data was first loaded, so they drift until the data is reset.
 

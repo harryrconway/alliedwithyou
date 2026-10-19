@@ -8,8 +8,8 @@ const path = require('path');
 const serve = require('./serve');
 
 const ROOT = path.resolve(__dirname, '..');
-const ALL = ['syntax', 'links', 'text', 'data', 'journey', 'screens', 'layout'];
-const BROWSER = ['text', 'journey', 'screens', 'layout'];
+const ALL = ['syntax', 'links', 'text', 'data', 'layout'];
+const BROWSER = ['text', 'layout'];
 
 (async () => {
   const names = process.argv.slice(2).length ? process.argv.slice(2) : ALL;
