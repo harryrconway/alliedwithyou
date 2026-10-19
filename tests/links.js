@@ -6,7 +6,7 @@ const files = require('./files');
 module.exports = async function links(ctx) {
   const failures = [];
   const check = (from, url) => {
-    if (!url || /^(https?:|mailto:|tel:|#|data:|\$\{)/.test(url)) return;
+    if (!url || /^(https?:|mailto:|tel:|#|data:|\$\{|\{\{)/.test(url)) return;
     const target = url.split('#')[0].split('?')[0];
     if (!target) return;
     const full = target.startsWith('/alliedwithyou/')
