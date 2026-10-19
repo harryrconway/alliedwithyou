@@ -317,7 +317,7 @@
   height: 1.05rem;
 }
 
-/* The medallion with the brand mark and two small dots */
+/* The medallion with the brand mark */
 
 .hero-art {
   position: relative;
@@ -340,29 +340,6 @@
 .hero-badge img {
   width: 62%;
   height: auto;
-}
-
-.hero-dot {
-  position: absolute;
-  border-radius: 50%;
-  animation: hero-float 5s ease-in-out infinite alternate;
-}
-
-.hero-dot-sage {
-  top: 6%;
-  right: 8%;
-  width: 2.4rem;
-  height: 2.4rem;
-  background: var(--color-sage);
-}
-
-.hero-dot-blue {
-  bottom: 9%;
-  left: 2%;
-  width: 1.5rem;
-  height: 1.5rem;
-  background: #7fa8c9;
-  animation-delay: -2.5s;
 }
 
 /* Soft colour that drifts slowly behind everything */
@@ -414,7 +391,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .hero-badge,
-  .hero-dot,
   .hero-glow {
     animation: none;
   }
@@ -479,7 +455,14 @@
 /* Light */
 
 .hero-light {
-  background: linear-gradient(140deg, var(--color-green-light) 0%, var(--color-sage-soft) 45%, var(--color-blue-pale) 100%);
+  background: linear-gradient(100deg, var(--color-cream) 0%, var(--color-cream) 42%, var(--color-green-light) 62%, var(--color-blue-pale) 100%);
+}
+
+/* Keeps the green glow behind the medallion, so the text sits on cream like the logo in the header */
+.hero-light .hero-glow-two {
+  right: -10%;
+  bottom: -45%;
+  left: auto;
 }
 
 .hero-light .hero-glow-one {
