@@ -11,7 +11,7 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | Feature | Status | Main files | Tables | Tests | Notes |
 |---|---|---|---|---|---|
 | Public website | Complete and verified | root pages, `services/`, `css/site.css`, `js/site/layout.js` | none | links, text, layout | Live at alliedwithyou.com.au. About page awaiting the therapist's details |
-| Website enquiry and referral forms | Complete and verified on the test project | `contact.html`, `referrals.html`, `js/site/forms.js`, `supabase/functions/enquiry` | `form_limits` (rate limits only) | enquiry, site | Emailed to the practice, nothing stored. Goes live at the release |
+| Website enquiry and referral forms | Complete and verified | `contact.html`, `referrals.html`, `js/site/forms.js`, `supabase/functions/enquiry` | `form_limits` (rate limits only) | enquiry, site | Emailed to the practice, nothing stored. Live since 19 Oct 2026, with a test enquiry received in admin@ |
 | Sign in, create account, password reset, invitations | Complete and verified on the test project | `js/admin/app.js`, `js/data/remote.js`, `supabase/config.toml`, `supabase/templates` | Supabase Auth, `profiles`, `signup_allowlist` | auth, crm | Email or username, 12 character minimum, signed out after 30 minutes without activity. Multi factor sign in is switched on in Supabase but not offered on screen yet |
 | Account approvals and team | Complete and verified on the test project | `js/admin/views/staff.js` | `profiles` | auth, crm | Approval needs a confirmed email. Reserved addresses only through an invitation. Staff are switched off, not deleted |
 | Roles and permissions | Complete and verified on the test project | `supabase/migrations`, `js/admin/access.js` | all, through Row Level Security | auth, crm | Administrator, therapist, reception, support and developer. The database enforces the same rules as the screens |
@@ -43,7 +43,7 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | 19 Oct 2026 | Part B | Supabase foundations on the test project: migrations, sign in settings and email templates through noreply@, the enquiry Edge Function, `auth` and `enquiry` checks, `docs/operations.md` | `a2184d6` |
 | 19 Oct 2026 | Parts C and D | The real staff dashboard on Supabase: sign in, create account, invitations and password reset, approvals, locked sections, dashboard, tasks, staff calendar, settings and fees, feedback and error reports, shared error handling. Website forms back, sending by email. Approvals migration. Demo data layer and locked screens removed. New `crm`, `site` and `env` test files, `data` check retired | `477926c` |
 | 19 Oct 2026 | Release | Production: the four migrations applied (each in one transaction, matching the test project table for table), sign in settings and email templates pushed, enquiry function deployed with its own secrets and no local access. `crm` merged into `main` | `782e749` |
-| 19 Oct 2026 | Release checks | Live site checked: both forms and the staff sign in link show, `/admin/` shows sign in and stays out of search engines, production sign in answers, reserved addresses are sent to their invitation. The first live test enquiry failed because the mail password was changed when uploaded. Uploaded again with quotes, checked by fingerprint, and the second test enquiry was sent to admin@ | this change |
+| 19 Oct 2026 | Release checks | Live site checked: both forms and the staff sign in link show, `/admin/` shows sign in and stays out of search engines, production sign in answers, reserved addresses are sent to their invitation. The first live test enquiry failed because the mail password was changed when uploaded. Uploaded again with quotes, checked by fingerprint, and the second test enquiry arrived in admin@, confirmed by Harry in Outlook | this change |
 
 ## Database migrations
 
@@ -78,5 +78,5 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 
 ## Outstanding work
 
-* Release checks still to do: confirm the test enquiry arrived in admin@, send the three invitations when the practice is ready, and confirm the locked sections on a live sign in.
+* Release checks still to do: send the three invitations when the practice is ready, and confirm the locked sections on a live sign in.
 * Later stages, as in `docs/audit.md`: backups, multi factor screens, the developer dashboard, documents and storage, notifications, privacy requests, and each locked section in turn.
