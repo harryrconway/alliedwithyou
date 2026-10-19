@@ -240,7 +240,7 @@
   }
 }
 
-/* A hero without the photo: the brand mark on a medallion, soft drifting colour and a curved edge.
+/* A hero without the photo: the brand mark on a floating medallion, soft drifting colour and a curved edge.
    Previewed in a deep teal and a light version. */
 
 .hero-vivid {
@@ -317,7 +317,7 @@
   height: 1.05rem;
 }
 
-/* The medallion with the brand mark, rings and two small dots */
+/* The medallion with the brand mark and two small dots */
 
 .hero-art {
   position: relative;
@@ -340,28 +340,6 @@
 .hero-badge img {
   width: 62%;
   height: auto;
-}
-
-.hero-ring {
-  position: absolute;
-  inset: 4%;
-  border: 2px solid currentColor;
-  border-radius: 50%;
-  opacity: 0.35;
-  animation: hero-pulse 6s ease-in-out infinite alternate;
-}
-
-.hero-ring + .hero-ring {
-  inset: -6%;
-  opacity: 0.18;
-  animation-delay: -2s;
-}
-
-.hero-ring + .hero-ring + .hero-ring {
-  inset: -16%;
-  border-style: dashed;
-  opacity: 0.14;
-  animation-delay: -4s;
 }
 
 .hero-dot {
@@ -428,12 +406,6 @@
   }
 }
 
-@keyframes hero-pulse {
-  to {
-    transform: scale(1.04);
-  }
-}
-
 @keyframes hero-drift {
   to {
     transform: translate(3rem, 2rem) scale(1.08);
@@ -442,7 +414,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .hero-badge,
-  .hero-ring,
   .hero-dot,
   .hero-glow {
     animation: none;
@@ -469,7 +440,7 @@
 }
 
 .hero-deep .hero-accent {
-  color: #c3dab8;
+  color: var(--color-sage);
 }
 
 .hero-deep p {
@@ -486,17 +457,13 @@
   color: #dbe8d5;
 }
 
-.hero-deep .hero-art {
-  color: #c3dab8;
-}
-
 .hero-deep .btn {
-  background: var(--color-sage-soft);
+  background: var(--color-sage);
   color: var(--color-deep-dark);
 }
 
 .hero-deep .btn:hover {
-  background: var(--color-white);
+  background: var(--color-sage-soft);
 }
 
 .hero-deep .btn-secondary {
@@ -523,8 +490,32 @@
   --glow: rgb(157 181 149 / 0.6);
 }
 
+.hero-light h1,
+.hero-light p {
+  color: var(--color-deep);
+}
+
 .hero-light .hero-accent {
-  color: #4e7a46;
+  color: var(--color-sage);
+}
+
+.hero-light .btn {
+  background: var(--color-deep);
+  color: var(--color-white);
+}
+
+.hero-light .btn:hover {
+  background: var(--color-deep-dark);
+}
+
+.hero-light .btn-secondary {
+  border-color: var(--color-sage);
+  background: var(--color-white);
+  color: var(--color-deep);
+}
+
+.hero-light .btn-secondary:hover {
+  background: var(--color-green-light);
 }
 
 .hero-light .hero-place {
@@ -534,10 +525,6 @@
 }
 
 .hero-light .hero-ways {
-  color: var(--color-deep);
-}
-
-.hero-light .hero-art {
   color: var(--color-deep);
 }
 
