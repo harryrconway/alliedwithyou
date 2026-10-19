@@ -42,7 +42,8 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | 19 Oct 2026 | Part A | Live website made ready for the public: testing notices, demo links and all 42 placeholders removed, fees published, NDIS registration wording removed, forms replaced by email panels, `/admin/` replaced by a holding page | `607e269` |
 | 19 Oct 2026 | Part B | Supabase foundations on the test project: migrations, sign in settings and email templates through noreply@, the enquiry Edge Function, `auth` and `enquiry` checks, `docs/operations.md` | `a2184d6` |
 | 19 Oct 2026 | Parts C and D | The real staff dashboard on Supabase: sign in, create account, invitations and password reset, approvals, locked sections, dashboard, tasks, staff calendar, settings and fees, feedback and error reports, shared error handling. Website forms back, sending by email. Approvals migration. Demo data layer and locked screens removed. New `crm`, `site` and `env` test files, `data` check retired | `477926c` |
-| 19 Oct 2026 | Release | Production: the four migrations applied (each in one transaction, matching the test project table for table), sign in settings and email templates pushed, enquiry function deployed with its own secrets and no local access. `crm` merged into `main` | this change |
+| 19 Oct 2026 | Release | Production: the four migrations applied (each in one transaction, matching the test project table for table), sign in settings and email templates pushed, enquiry function deployed with its own secrets and no local access. `crm` merged into `main` | `782e749` |
+| 19 Oct 2026 | Release checks | Live site checked: both forms and the staff sign in link show, `/admin/` shows sign in and stays out of search engines, production sign in answers, reserved addresses are sent to their invitation. The first live test enquiry failed because the mail password was changed when uploaded. Uploaded again with quotes, checked by fingerprint, and the second test enquiry was sent to admin@ | this change |
 
 ## Database migrations
 
@@ -77,5 +78,5 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 
 ## Outstanding work
 
-* Release checks: a test enquiry from the live site reaching admin@, then the three invitations when the practice is ready, and a live sign in confirming the locked sections.
+* Release checks still to do: confirm the test enquiry arrived in admin@, send the three invitations when the practice is ready, and confirm the locked sections on a live sign in.
 * Later stages, as in `docs/audit.md`: backups, multi factor screens, the developer dashboard, documents and storage, notifications, privacy requests, and each locked section in turn.

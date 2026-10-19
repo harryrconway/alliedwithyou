@@ -18,7 +18,7 @@ The test database only ever holds fictional records and throwaway test accounts.
 Secrets live in two places only, and never in the repository:
 
 * `.env` in the project folder on Harry's Mac. It's ignored by git and readable only by Harry's account. It holds the test database password, both projects' publishable and secret keys, and the noreply@ mailbox details.
-* Supabase function secrets on each project, set with `supabase secrets set`. These are `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `ENQUIRY_TO`, `FORM_SALT` and, on the test project only, `ALLOW_LOCAL`.
+* Supabase function secrets on each project, set with `supabase secrets set`. These are `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `ENQUIRY_TO`, `FORM_SALT` and, on the test project only, `ALLOW_LOCAL`. When setting them from a file with `--env-file`, put each value in single quotes. Unquoted values with special characters are changed on the way in, which broke the production mail password on release day. `supabase secrets list` shows a fingerprint of each value, so a stored value can be checked against `.env` without revealing it.
 
 The publishable keys are safe to include in the website, because Row Level Security decides what each signed in person can see. The secret keys bypass those rules, so they must never appear in website code.
 
