@@ -240,6 +240,43 @@
   }
 }
 
+/* A plain hero with no photo, previewed in soft green and soft blue */
+
+.hero-plain {
+  min-height: clamp(28rem, calc(70svh - var(--header-height)), 40rem);
+}
+
+.hero-plain .hero-content::before {
+  display: none;
+}
+
+.hero-green {
+  background: var(--color-sage-soft);
+}
+
+.hero-blue {
+  background: var(--color-blue-pale);
+}
+
+/* The bar on the preview pages. Remove it with them once a hero is chosen. */
+
+.preview-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 1rem;
+  padding: 0.5rem var(--gutter);
+  background: var(--color-deep-dark);
+  color: var(--color-white);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.preview-bar a {
+  color: var(--color-white);
+  font-weight: var(--weight-semibold);
+}
+
 /* Sections */
 
 .section {
