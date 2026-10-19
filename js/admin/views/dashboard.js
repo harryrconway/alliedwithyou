@@ -1,4 +1,4 @@
-/* Dashboard overview: key figures, today's appointments and what needs attention. */
+/* Dashboard overview: your tasks, the week ahead, accounts waiting for approval and recent feedback. */
 (function () {
   const AWY = (window.AWY = window.AWY || {});
   const html = AWY.html;
@@ -7,6 +7,7 @@
   const fmt = AWY.fmt;
   const rules = AWY.rules;
   const access = AWY.access;
+  const A = AWY.actions;
   const icon = (n) => raw(AWY.icon(n));
 
   function greeting() {
@@ -26,32 +27,12 @@
     </a>`;
   }
 
-  function attentionItem(tone, iconName, title, detail, href, linkLabel) {
+  function blockRow(db, b, showStaff) {
     return html`<li>
-      <span class="icon-wrap tone-${tone}" aria-hidden="true">${icon(iconName)}</span>
-      <div class="what"><a href="${href}">${title}</a>${detail ? html`<div class="meta">${detail}</div>` : ''}</div>
-      <div class="end"><a class="btn btn-quiet btn-sm" href="${href}" aria-label="${linkLabel || 'View'}: ${title}">View</a></div>
-    </li>`;
-  }
-
-  function apptRow(db, a, showStaff, canComplete) {
-    const note = rules.noteFor(db, a.id);
-    return html`<li>
-      <div class="when">${fmt.time(a.start)}<small>${fmt.duration(a.duration)}</small></div>
+      <div class="when">${fmt.time(b.start)}<small>${fmt.duration(b.duration)}</small></div>
       <div class="what">
-        ${C.clientLink(db, a.clientId)}
-        <div class="meta">
-          <span>${C.label('appointmentType', a.type)}</span>
-          <span>${icon(a.location === 'telehealth' ? 'video' : 'pin')}${a.location === 'home' ? 'Home visit' : C.label('location', a.location)}</span>
-          ${a.travelMins ? html`<span>${icon('car')}${a.travelMins} min travel</span>` : ''}
-          ${showStaff ? html`<span>${icon('user')}${rules.staffName(db, a.staffId)}</span>` : ''}
-        </div>
-      </div>
-      <div class="end">
-        ${C.badge('appointment', a.status)}
-        ${a.status === 'completed' && note && note.status === 'final' ? html`<span class="tag">${icon('lock')}Note done</span>` : ''}
-        ${canComplete && (a.status === 'scheduled' || a.status === 'rescheduled') ? html`<button type="button" class="btn btn-secondary btn-sm" data-complete="${a.id}">Mark completed</button>` : ''}
-        <button type="button" class="btn btn-quiet btn-sm" data-appt="${a.id}">Open</button>
+        <button type="button" class="link-button" data-block="${b.id}">${C.label('blockKind', b.kind)}</button>
+        <div class="meta">${A.zoneTag(b)}${showStaff ? html`<span>${icon('user')}${rules.staffName(db, b.staffId)}</span>` : ''}${b.note ? html`<span>${b.note}</span>` : ''}</div>
       </div>
     </li>`;
   }
@@ -60,103 +41,82 @@
     title: 'Dashboard',
     render(ctx) {
       const { db, today, user } = ctx;
-      const d = rules.dashboard(db, today);
-      const wide = user.role === 'owner' || user.role === 'admin';
-      const mineAppt = (list) => (wide ? list : list.filter((a) => a.staffId === user.id));
-      const clinical = access.can('clinical');
-      const billing = access.can('billing');
+      const tasksOn = access.canSee('tasks');
+      const calendarOn = access.canSee('calendar');
+      const approvals = access.can('manageStaff');
+      const review = access.can('reviewFeedback');
+      const weekEnd = rules.weekAhead(today);
 
-      const upcoming = mineAppt(d.upcoming);
-      const todays = mineAppt(d.today);
-      const notes = wide ? d.notesOutstanding : d.notesOutstanding.filter((x) => x.appointment.staffId === user.id);
-      const myOverdue = wide ? d.overdueTasks : d.overdueTasks.filter((t) => t.assignedTo === user.id);
-      const overdueReports = d.reportsOutstanding.filter((r) => rules.reportOverdue(r, today));
+      const myOpen = tasksOn ? rules.openTasks(db, user.id).sort((a, b) => a.dueDate.localeCompare(b.dueDate)) : [];
+      const myOverdue = myOpen.filter((t) => t.dueDate < today);
+      const myWeek = calendarOn ? rules.blocksBetween(db, today, weekEnd, user.id) : [];
+      const pending = approvals ? rules.pendingStaff(db).filter((s) => s.emailConfirmedAt) : [];
+      const newFeedback = review ? db.feedback.filter((f) => f.status === 'submitted') : [];
+      const myFeedback = db.feedback.filter((f) => f.createdBy === user.id);
 
       const figureList = [
-        figure({ value: upcoming.length, label: 'Upcoming appointments', detail: 'Next 7 days' + (wide ? '' : ', yours'), href: '#/calendar' }),
-        figure({ value: d.newReferrals.length, label: 'New referrals', detail: 'Waiting for first contact', href: '#/referrals?stage=new', hidden: !access.canSee('referrals') }),
-        figure({ value: d.activeClients.length, label: 'Active clients', detail: db.clients.filter((c) => c.status === 'waitlist').length + ' on the waitlist', href: '#/clients' }),
-        figure({ value: notes.length, label: 'Notes to finish', detail: 'Completed sessions without a final note', href: '#/notes?show=outstanding', tone: notes.length ? 'warning' : '', hidden: !clinical }),
-        figure({ value: d.reportsOutstanding.length, label: 'Outstanding reports', detail: overdueReports.length ? overdueReports.length + ' past due' : d.reportsDueSoon.length + ' due this week', href: '#/reports', tone: overdueReports.length ? 'alert' : '', hidden: !access.canSee('reports') }),
-        figure({ value: d.unsignedAgreements.length, label: 'Unsigned agreements', detail: d.staleAgreements.length ? d.staleAgreements.length + ' waiting over a week' : 'Draft or awaiting signature', href: '#/agreements?status=unsigned', tone: d.staleAgreements.length ? 'warning' : '', hidden: !access.canSee('agreements') }),
-        figure({ value: myOverdue.length, label: 'Overdue tasks', detail: wide ? 'Across the practice' : 'Assigned to you', href: '#/tasks', tone: myOverdue.length ? 'alert' : '' }),
-        figure({ value: fmt.money(d.unpaidTotal), label: 'Unpaid invoices', detail: fmt.plural(d.unpaid.length, 'invoice') + ', ' + d.overdueInvoices.length + ' overdue', href: '#/invoices?status=unpaid', tone: d.overdueInvoices.length ? 'alert' : '', hidden: !billing })
+        figure({ value: myOpen.length, label: 'Your open tasks', detail: myOpen.filter((t) => t.dueDate <= weekEnd).length + ' due this week', href: '#/tasks', hidden: !tasksOn }),
+        figure({ value: myOverdue.length, label: 'Overdue tasks', detail: 'Assigned to you', href: '#/tasks', tone: myOverdue.length ? 'alert' : '', hidden: !tasksOn }),
+        figure({ value: myWeek.length, label: 'Calendar entries', detail: 'Yours, in the next 7 days', href: '#/calendar', hidden: !calendarOn }),
+        figure({ value: pending.length, label: 'Waiting for approval', detail: 'New accounts', href: '#/staff', tone: pending.length ? 'warning' : '', hidden: !approvals }),
+        figure({ value: newFeedback.length, label: 'New feedback', detail: 'Not looked at yet', href: '#/feedback', tone: newFeedback.length ? 'warning' : '', hidden: !review })
       ].filter(Boolean);
-      /* Two even rows, with the last figure stretched when the count is odd */
       const n = figureList.length;
-      const cols = n > 4 ? Math.ceil(n / 2) : n;
-      if (n % 2 === 1 && n > 1) figureList[n - 1] = AWY.raw(String(figureList[n - 1]).replace('class="figure', 'class="figure span-2'));
-      const figures = html`<div class="figures" style="--cols:${cols}" aria-label="Key figures">${figureList}</div>`;
+      const figures = n ? html`<div class="figures" style="--cols:${n}" aria-label="Key figures">${figureList}</div>` : '';
 
-      /* What needs attention, worked out from the records */
-      const items = [];
-      if (clinical && notes.length) items.push(attentionItem('warning', 'note', fmt.plural(notes.length, 'session note') + ' to finish', notes.slice(0, 3).map((x) => rules.clientNameById(db, x.appointment.clientId) + ', ' + fmt.date(x.appointment.date)).join('; '), '#/notes?show=outstanding'));
-      overdueReports.slice(0, 3).forEach((r) => items.push(attentionItem('danger', 'report', 'Report past due: ' + r.title, rules.clientNameById(db, r.clientId) + ', was due ' + fmt.date(r.dueDate), '#/reports/' + r.id)));
-      d.reportsDueSoon.filter((r) => !rules.reportOverdue(r, today)).slice(0, 2).forEach((r) => items.push(attentionItem('info', 'report', 'Report due soon: ' + r.title, rules.clientNameById(db, r.clientId) + ', due ' + fmt.date(r.dueDate), '#/reports/' + r.id)));
-      if (access.canSee('agreements')) d.staleAgreements.forEach((a) => items.push(attentionItem('warning', 'signature', 'Agreement not signed after a week', rules.clientNameById(db, a.clientId) + ', sent ' + fmt.date(a.sentDate), '#/agreements/' + a.id)));
-      if (myOverdue.length) items.push(attentionItem('danger', 'tasks', fmt.plural(myOverdue.length, 'overdue task'), myOverdue.slice(0, 3).map((t) => t.title).join('; '), '#/tasks'));
-      if (billing && d.overdueInvoices.length) items.push(attentionItem('danger', 'receipt', fmt.plural(d.overdueInvoices.length, 'overdue invoice'), d.overdueInvoices.map((i) => 'Invoice ' + i.number + ', ' + fmt.money(i.total)).join('; '), '#/invoices?status=overdue'));
-      if (access.canSee('funding') && d.logsToCheck.length) items.push(attentionItem('warning', 'wallet', fmt.plural(d.logsToCheck.length, 'delivered service') + ' to check', 'Recorded from completed appointments. Check them before invoicing.', '#/funding/services?status=recorded'));
-      if (billing && d.readyToInvoice.length) {
-        const clients = new Set(d.readyToInvoice.map((l) => l.clientId));
-        items.push(attentionItem('info', 'receipt', 'Verified services ready to invoice', fmt.plural(clients.size, 'client') + ', ' + fmt.plural(d.readyToInvoice.length, 'service'), '#/invoices?ready=1'));
-      }
-      if (clinical && d.goalsDueReview.length) items.push(attentionItem('info', 'target', fmt.plural(d.goalsDueReview.length, 'goal') + ' due for review', d.goalsDueReview.slice(0, 3).map((g) => rules.clientNameById(db, g.clientId)).join(', '), '#/goals?due=1'));
-      d.consentGaps.forEach((c) => items.push(attentionItem('danger', 'shield', 'No current consent recorded', rules.clientName(c) + ' is an active client without consent for assessment and therapy.', '#/clients/' + c.id + '/records')));
-      if (access.canSee('referrals') && d.newReferrals.length) items.push(attentionItem('info', 'inbox', fmt.plural(d.newReferrals.length, 'new referral') + ' to follow up', d.newReferrals.map((r) => r.firstName + ' ' + r.lastName).join(', '), '#/referrals?stage=new'));
-
-      const attention = html`<section class="panel" aria-labelledby="attTitle">
-        <div class="panel-head"><h2 id="attTitle">Needs attention</h2><p>Worked out from the current records</p></div>
-        ${items.length ? html`<ul class="rows attention">${items}</ul>` : html`<div class="panel-body">${C.empty({ icon: 'checkCircle', title: 'All clear', text: 'Nothing needs attention right now.' })}</div>`}
-      </section>`;
-
-      const canComplete = clinical;
-      const todayPanel = html`<section class="panel" aria-labelledby="todayTitle">
-        <div class="panel-head">
-          <h2 id="todayTitle">Today, ${fmt.dateFull(today)}</h2>
-          <a class="btn btn-quiet btn-sm" href="#/calendar">Open calendar</a>
-        </div>
-        ${todays.length
-          ? html`<ul class="rows">${todays.map((a) => apptRow(db, a, wide, canComplete))}</ul>`
-          : html`<div class="panel-body">${C.empty({ icon: 'calendar', title: 'No appointments today', text: wide ? 'Nobody has appointments booked for today.' : 'You have nothing booked for today.' })}</div>`}
-      </section>`;
-
-      /* The rest of the week, grouped by day */
-      const later = upcoming.filter((a) => a.date > today);
+      /* The week ahead, grouped by day */
       const byDay = {};
-      later.forEach((a) => (byDay[a.date] = byDay[a.date] || []).push(a));
-      const weekPanel = html`<section class="panel" aria-labelledby="weekTitle">
-        <div class="panel-head"><h2 id="weekTitle">Coming up this week</h2></div>
-        ${later.length
-          ? Object.keys(byDay).sort().map((day) => html`<div class="day-label">${fmt.dateLong(day)}</div><ul class="rows">${byDay[day].map((a) => apptRow(db, a, wide, false))}</ul>`)
-          : html`<div class="panel-body">${C.empty({ icon: 'calendar', title: 'Nothing else booked this week' })}</div>`}
-      </section>`;
+      myWeek.forEach((b) => (byDay[b.date] = byDay[b.date] || []).push(b));
+      const weekPanel = calendarOn ? html`<section class="panel" aria-labelledby="weekTitle">
+        <div class="panel-head"><h2 id="weekTitle">Your week</h2><a class="btn btn-quiet btn-sm" href="#/calendar">Open calendar</a></div>
+        ${myWeek.length
+          ? Object.keys(byDay).sort().map((day) => html`<div class="day-label">${day === today ? 'Today, ' + fmt.dateFull(day) : fmt.dateLong(day)}</div><ul class="rows">${byDay[day].map((b) => blockRow(db, b, false))}</ul>`)
+          : html`<div class="panel-body">${C.empty({ icon: 'calendar', title: 'Nothing in your calendar this week', action: html`<button type="button" class="btn btn-secondary btn-sm" data-new-block>${icon('plus')}New entry</button>` })}</div>`}
+      </section>` : '';
 
-      const myTasks = db.tasks.filter((t) => t.status === 'open' && t.assignedTo === user.id).sort((a, b) => a.dueDate.localeCompare(b.dueDate)).slice(0, 8);
-      const tasksPanel = html`<section class="panel" aria-labelledby="tasksTitle">
+      const tasksPanel = tasksOn ? html`<section class="panel" aria-labelledby="tasksTitle">
         <div class="panel-head"><h2 id="tasksTitle">Your tasks</h2><a class="btn btn-quiet btn-sm" href="#/tasks">All tasks</a></div>
-        ${myTasks.length
-          ? html`<ul class="rows">${myTasks.map((t) => AWY.actions.taskRow(db, t, today))}</ul>`
+        ${myOpen.length
+          ? html`<ul class="rows">${myOpen.slice(0, 8).map((t) => A.taskRow(db, t, today))}</ul>`
           : html`<div class="panel-body">${C.empty({ icon: 'checkCircle', title: 'No open tasks', text: 'Nothing is assigned to you.' })}</div>`}
+      </section>` : '';
+
+      const approvalPanel = approvals && pending.length ? html`<section class="panel" aria-labelledby="approveTitle">
+        <div class="panel-head"><h2 id="approveTitle">Waiting for approval</h2><a class="btn btn-quiet btn-sm" href="#/staff">Team and access</a></div>
+        <ul class="rows">${pending.slice(0, 5).map((s) => html`<li>
+          <span class="avatar" aria-hidden="true">${fmt.initials(s.name || s.email)}</span>
+          <div class="what"><a href="#/staff">${s.name || s.email}</a><div class="meta"><span>${s.email}</span><span>Signed up ${fmt.relative(s.createdAt.slice(0, 10)).toLowerCase()}</span></div></div>
+        </li>`)}</ul>
+      </section>` : '';
+
+      const feedbackList = review ? db.feedback.slice(0, 5) : myFeedback.slice(0, 5);
+      const feedbackPanel = html`<section class="panel" aria-labelledby="fbTitle">
+        <div class="panel-head"><h2 id="fbTitle">${review ? 'Recent feedback' : 'Your feedback'}</h2><a class="btn btn-quiet btn-sm" href="#/feedback">${review ? 'All feedback' : 'View'}</a></div>
+        ${feedbackList.length
+          ? html`<ul class="rows">${feedbackList.map((f) => html`<li>
+            <div class="what"><a href="#/feedback?open=${f.id}">${f.title}</a><div class="meta"><span>Reference ${f.ref}</span><span>${fmt.relative(f.createdAt.slice(0, 10))}</span>${review ? html`<span>${rules.staffName(db, f.createdBy)}</span>` : ''}</div></div>
+            <div class="end">${C.badge('feedback', f.status)}</div>
+          </li>`)}</ul>`
+          : html`<div class="panel-body">${C.empty({ icon: 'message', title: 'Nothing yet', text: 'Found a problem, or have an idea? Use Report an issue at the top of the page.' })}</div>`}
       </section>`;
 
       ctx.el.innerHTML = String(html`
         ${C.pageHead({
-          title: greeting() + ', ' + user.name.split(' ')[0],
-          subtitle: fmt.dateLong(today) + '. Here is how the practice is looking.',
+          title: greeting() + ', ' + (user.name || user.email).split(' ')[0],
+          subtitle: fmt.dateLong(today) + '.',
           actions: html`
-            ${access.can('editClients') ? html`<button type="button" class="btn btn-secondary" data-new-client>${icon('userPlus')}New client</button>` : ''}
-            <a class="btn" href="#/calendar?new=1">${icon('plus')}New appointment</a>`
+            ${calendarOn ? html`<button type="button" class="btn btn-secondary" data-new-block>${icon('calendar')}New calendar entry</button>` : ''}
+            ${tasksOn ? html`<button type="button" class="btn" data-new-task>${icon('plus')}New task</button>` : ''}`
         })}
         ${figures}
         <div class="columns">
-          <div class="stack-panels">${todayPanel}${weekPanel}</div>
-          <div class="stack-panels">${attention}${tasksPanel}</div>
+          <div class="stack-panels">${weekPanel}${tasksPanel}</div>
+          <div class="stack-panels">${approvalPanel}${feedbackPanel}</div>
         </div>
-        <p class="small muted" style="margin-top:1.5rem">${icon('zap')} Items marked Automatic were created by the practice's automation rules. They never finalise notes, confirm services or send anything. Rules can be switched off in Settings.</p>
+        <p class="small muted" style="margin-top:1.5rem">${icon('lock')} Client records, clinical notes and billing aren't switched on yet. They're greyed out in the menu, and will open once the practice is ready to keep that information here.</p>
       `);
 
-      AWY.actions.bindCommon(ctx);
+      A.bindCommon(ctx);
     }
   };
 })();

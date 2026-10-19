@@ -43,7 +43,7 @@ module.exports = async function text(ctx) {
     if (p) failures.push(where + ': ' + p);
   };
 
-  for (const file of files(ctx.root, '.js').filter((f) => !f.endsWith('icons.js'))) {
+  for (const file of files(ctx.root, '.js').filter((f) => !f.endsWith('icons.js') && !f.includes('/vendor/'))) {
     const rel = path.relative(ctx.root, file);
     const ast = acorn.parse(fs.readFileSync(file, 'utf8'), { ecmaVersion: 2022, locations: true });
     walk.full(ast, (node) => {
@@ -56,7 +56,7 @@ module.exports = async function text(ctx) {
     const rel = path.relative(ctx.root, file);
     let src = fs.readFileSync(file, 'utf8');
     for (const m of src.matchAll(/\s(?:alt|title|placeholder|aria-label|content)="([^"]*)"/g)) {
-      if (!/^width=|^#|^noindex/.test(m[1])) flag(rel, m[1]);
+      if (!/^width=|^#|^noindex|^default-src|^no-referrer/.test(m[1])) flag(rel, m[1]);
     }
     src = src.replace(/<script[\s\S]*?<\/script>/g, ' ').replace(/<style[\s\S]*?<\/style>/g, ' ').replace(/<[^>]*>/g, '\n');
     src.split('\n').forEach((line) => flag(rel, line.replace(/&[a-z]+;/g, ' ')));

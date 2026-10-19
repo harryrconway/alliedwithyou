@@ -3,21 +3,11 @@
   incomplete enquiries and quietly drops spam. These paths never send an email and
   don't count towards the hourly limit, so they're safe to run every time.
 */
-const fs = require('fs');
-const path = require('path');
-
-function readEnv(root) {
-  const env = {};
-  for (const line of fs.readFileSync(path.join(root, '.env'), 'utf8').split('\n')) {
-    const i = line.indexOf('=');
-    if (i > 0) env[line.slice(0, i)] = line.slice(i + 1);
-  }
-  return env;
-}
+const { readEnv } = require('./env');
 
 module.exports = async function enquiry(ctx) {
-  if (!fs.existsSync(path.join(ctx.root, '.env'))) return ['The .env file is missing, so the enquiry function could not be tested'];
   const env = readEnv(ctx.root);
+  if (!env.STAGING_URL) return ['The .env file has no staging project address, so the enquiry function could not be tested'];
   const url = env.STAGING_URL + '/functions/v1/enquiry';
   const failures = [];
   const post = (body, origin) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: origin || 'http://localhost:8765' }, body: JSON.stringify(body) });

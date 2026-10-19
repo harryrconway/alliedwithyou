@@ -800,3 +800,18 @@ fieldset > legend {
     animation-duration: 2.4s;
   }
 }
+
+.toast-action {
+  margin-top: var(--space-2);
+  padding: 0.2rem 0.7rem;
+  border: 1px solid rgb(255 255 255 / 0.5);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-white);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}
+
+.toast-action:hover {
+  background: rgb(255 255 255 / 0.12);
+}

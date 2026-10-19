@@ -12,10 +12,14 @@
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/site.css">
+  <script src="js/config.js" defer></script>
   <script src="js/core/icons.js" defer></script>
   <script src="js/core/dom.js" defer></script>
+  <script src="js/core/validate.js" defer></script>
+  <script src="js/core/ui.js" defer></script>
   <script src="js/data/business.js" defer></script>
   <script src="js/site/layout.js" defer></script>
+  <script src="js/site/forms.js" defer></script>
 </head>
 <body data-page="contact">
   <a class="skip" href="#main">Skip to main content</a>
@@ -43,20 +47,52 @@
         </div>
 
         <div class="form-panel">
-          <h2>Send us an email</h2>
-          <p>Email us at <a href="mailto:admin@alliedwithyou.com.au">admin@alliedwithyou.com.au</a> and we'll get back to you.</p>
-          <div class="prose" style="margin-top:1.25rem">
-            <p>It helps to include:</p>
-            <ul>
-              <li>your name and the best way to reach you</li>
-              <li>your suburb or town, so we know you're in our area</li>
-              <li>a little about what you'd like help with</li>
-            </ul>
-            <p class="small muted">Please don't include detailed health information. We can talk about that once we're in touch.</p>
-          </div>
-          <div class="btn-row" style="margin-top:1.5rem">
-            <a class="btn" href="mailto:admin@alliedwithyou.com.au?subject=Enquiry">Email us</a>
-          </div>
+          <h2>Send us a message</h2>
+          <p>We'll get back to you by your preferred method. You can also email <a href="mailto:admin@alliedwithyou.com.au">admin@alliedwithyou.com.au</a>.</p>
+          <form class="form" data-enquiry="contact" novalidate>
+            <div class="form-summary"></div>
+            <div class="trap" aria-hidden="true">
+              <label for="cWebsite">Leave this empty</label>
+              <input id="cWebsite" name="website" type="text" tabindex="-1" autocomplete="off">
+            </div>
+            <div class="form-grid">
+              <div class="field"><label for="cFirst">First name</label><input class="input" id="cFirst" name="firstName" autocomplete="given-name" maxlength="80" required></div>
+              <div class="field"><label for="cLast">Last name</label><input class="input" id="cLast" name="lastName" autocomplete="family-name" maxlength="80" required></div>
+              <div class="field"><label for="cEmail">Email</label><input class="input" id="cEmail" name="email" type="email" autocomplete="email" maxlength="160" required></div>
+              <div class="field"><label for="cPhone">Phone <span class="optional">(optional)</span></label><input class="input" id="cPhone" name="phone" type="tel" autocomplete="tel" data-rule="phone"></div>
+              <div class="field">
+                <label for="cAbout">I'm asking</label>
+                <select class="select" id="cAbout" name="about" required>
+                  <option value="">Choose one</option>
+                  <option value="myself">For myself</option>
+                  <option value="family">For a family member or friend</option>
+                  <option value="professional">As a health professional</option>
+                  <option value="coordinator">As a support coordinator</option>
+                  <option value="other">Something else</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="cSuburb">Suburb or town</label>
+                <input class="input" id="cSuburb" name="suburb" autocomplete="address-level2" maxlength="80" required aria-describedby="cSuburbHint">
+                <p class="hint" id="cSuburbHint">So we know whether you're in our area.</p>
+              </div>
+              <div class="field span-all">
+                <label for="cMessage">Message</label>
+                <textarea class="textarea" id="cMessage" name="message" maxlength="1200" required aria-describedby="cMessageHint"></textarea>
+                <p class="hint" id="cMessageHint">Please don't include detailed health information. We can talk about that once we're in touch.</p>
+              </div>
+              <fieldset class="field span-all">
+                <legend>Best way to reply</legend>
+                <div class="choices inline">
+                  <label class="choice"><input type="radio" name="preferredContact" value="email" checked> Email</label>
+                  <label class="choice"><input type="radio" name="preferredContact" value="phone"> Phone</label>
+                </div>
+              </fieldset>
+            </div>
+            <div class="btn-row">
+              <button class="btn" type="submit">Send message</button>
+            </div>
+          </form>
         </div>
       </div>
     </section>

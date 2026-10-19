@@ -7,7 +7,8 @@
 
   function toast(message, options) {
     const opts = options || {};
-    if (!toastHost) {
+    /* The page body is replaced when someone signs in or out, so the holder is made again if it's gone */
+    if (!toastHost || !document.body.contains(toastHost)) {
       toastHost = document.createElement('div');
       toastHost.className = 'toasts';
       toastHost.setAttribute('role', 'status');
@@ -16,7 +17,14 @@
     }
     const el = document.createElement('div');
     el.className = 'toast' + (opts.tone === 'error' ? ' toast-error' : '');
-    el.innerHTML = AWY.icon(opts.tone === 'error' ? 'alertCircle' : 'checkCircle') + '<div>' + AWY.esc(message) + '</div>';
+    el.innerHTML = AWY.icon(opts.tone === 'error' ? 'alertCircle' : 'checkCircle') + '<div>' + AWY.esc(message) +
+      (opts.action ? '<br><button type="button" class="toast-action">' + AWY.esc(opts.action.label) + '</button>' : '') + '</div>';
+    if (opts.action) {
+      el.querySelector('.toast-action').addEventListener('click', () => {
+        el.remove();
+        opts.action.onClick();
+      });
+    }
     toastHost.appendChild(el);
     setTimeout(function () {
       el.style.transition = 'opacity 200ms';
@@ -24,7 +32,7 @@
       setTimeout(function () {
         el.remove();
       }, 220);
-    }, opts.duration || 5200);
+    }, opts.duration || (opts.action ? 12000 : 5200));
   }
 
   /*

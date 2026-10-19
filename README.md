@@ -1,54 +1,70 @@
 # Allied With You
 
-Website and practice dashboard for Allied With You, an occupational therapy practice working across the Northern Rivers and the Gold Coast.
+Website and staff dashboard for Allied With You, an occupational therapy practice working across the Northern Rivers and the Gold Coast.
 
-The website is live at https://alliedwithyou.com.au. The practice dashboard (CRM) is being connected to its Supabase database, and `admin/index.html` shows a "staff sign in coming soon" page until that release is ready.
+The website is live at https://alliedwithyou.com.au. The staff dashboard lives at `/admin/` and runs on Supabase, with only the less sensitive sections switched on for now.
 
-## Opening it
+## How it fits together
 
-* Double click `index.html` to open the website locally, or run `python3 -m http.server` in this folder and open http://localhost:8000.
-* The live site is published with GitHub Pages and updates whenever changes are pushed to `main`.
-* The `CNAME` file tells GitHub Pages which domain to serve. The domain's DNS (A, AAAA and `www` records) points at GitHub, while email stays with the existing cPanel host.
-* The enquiry and referral pages ask people to email admin@alliedwithyou.com.au. The online forms return once the CRM release adds a secure way to send them.
+* **Website:** plain HTML, CSS and JavaScript on GitHub Pages, published whenever `main` changes. The `CNAME` file sets the domain. Email stays with the existing cPanel host.
+* **Enquiry and referral forms:** sent to a Supabase Edge Function, which emails them to admin@ through the noreply@ mailbox. Nothing from a form is stored.
+* **Staff dashboard:** signs in with Supabase Auth and reads and writes through `js/data/remote.js`. Every table has Row Level Security, so what each person can see or change is decided by the database, not the screens.
+* **Two Supabase projects, both in Sydney:** production for the live site, and a test project for development and the automated checks. `js/config.js` picks one by the address the page is opened from.
 
-## The earlier demo
+`docs/operations.md` covers the projects, secrets, database changes, invitations and approvals.
 
-The interactive demo with fictional clients was taken off the live site on 19 October 2026. Its files (`js/data/store.js`, `js/data/seed.js`, `js/data/automations.js` and the demo version of `admin/index.html`) remain in the repository history at commit `80da9d9` if they're ever needed. The demo data layer files are removed when the CRM release replaces them.
+## The dashboard
+
+Open sections: dashboard, calendar, tasks, team and access, settings and fees, and feedback and issues. Every other section is listed in the menu but greyed out until the practice is ready to keep that information in the dashboard.
+
+* Staff create an account and confirm their email, then an administrator approves them. admin@, jake@ and chelsie@ are set up by invitation instead.
+* The calendar shows when people are booked or away, never who with. Each entry keeps its NSW or QLD time.
+* Tasks and calendar notes must not include client details until client records are switched on.
+* Any failure shows a short reference, and **Report an issue** sends it to the administrators with that reference attached.
+
+## Running it locally
+
+Run `python3 -m http.server` in this folder and open http://localhost:8000. Pages opened this way use the test project, never production.
 
 ## Tests
 
-The automated checks live in `tests/`. The first time, run `npm install` and `npm run setup` inside `tests/`. After that, `npm test` runs everything:
+The checks live in `tests/`. The first time, run `npm install` and `npm run setup` there. After that, `npm test` runs everything:
 
 * every script parses, and every link points at a real file
-* the writing rules hold everywhere, including on screen: no hyphens, en dashes or em dashes
-* no placeholder, testing or demo wording appears on the public website
-* the remaining demo data layer stays consistent until it's replaced
-* pages fit 360, 768 and 1366 pixel widths
-* the keyboard checks pass
+* the writing rules hold everywhere, including on screen, and no placeholder or demo wording appears on the website
+* the database security rules hold for every role, using throwaway accounts on the test project
+* the enquiry function refuses other websites, incomplete forms and spam
+* the website forms send readable details and explain failures
+* the dashboard works end to end in a browser: sign in, invitations, password reset, locked sections, tasks, calendar, approvals, fees, feedback and dropped connections
+* pages fit 360, 768 and 1366 pixel widths, and the keyboard checks pass
 
-Run a single check with `npm test -- text`.
+Run a single check with `npm test -- crm`. The database checks need the test project's keys in `.env`.
 
 ## Project documents
 
-* `docs/audit.md` is the audit of what exists and what the master plan still needs.
-* `docs/register.md` is the implementation register, updated at the end of every stage.
+* `docs/audit.md`: the audit from 14 October 2026 of what existed and what the master plan needs.
+* `docs/register.md`: the implementation register, updated at the end of every stage.
+* `docs/operations.md`: how to run, change and recover the system.
 
 ## Folder map
 
 ```
 index.html and the other public pages    the website
 services/                                individual service pages
-admin/index.html                         staff sign in (holding page for now)
+admin/index.html                         the staff dashboard
 css/tokens.css                           colours, font, spacing and other design settings
 css/base.css, components.css             shared styles
 css/site.css, admin.css                  website and dashboard layouts
-js/core/                                 icons, formatting, form checking, dialogs
-js/data/                                 the demo data layer
+js/config.js                             which Supabase project to use, and public settings
+js/vendor/                               supabase-js, copied unchanged
+js/core/                                 icons, formatting, form checking, dialogs, error handling
+js/data/                                 field definitions, business rules and the Supabase data layer
 js/site/                                 website header, footer and forms
-js/admin/                                dashboard frame, routing and shared actions
+js/admin/                                dashboard sign in, frame, routing and shared actions
 js/admin/views/                          one file per dashboard screen
+supabase/                                migrations, sign in settings, email templates, Edge Function
 fonts/                                   Nunito Sans, the only font used
-docs/                                    audit and implementation register
+docs/                                    audit, register and operations notes
 tests/                                   automated checks (npm test)
 images/                                  logo, logomark, hero photo
 ```
@@ -58,37 +74,12 @@ images/                                  logo, logomark, hero photo
 * Colours and the font: `css/tokens.css`
 * Contact details shown on the website: `js/data/business.js`
 * Website navigation and footer: `js/site/layout.js`
-* Fields, statuses and labels for every record type: `js/data/schema.js`
-* Dashboard figures, totals and overdue rules: `js/data/rules.js`
-* Automations: `js/data/automations.js` (each one can also be switched off in Settings)
-* Sample records: `js/data/seed.js`
-* What each role can see: `js/admin/access.js`
+* Fields, options and statuses in the dashboard: `js/data/schema.js`
+* Which sections are switched on, and what each role can do: `js/admin/access.js`, plus the matching rules in a new migration
+* Practice details, services and fees: the dashboard's Settings screen
 
-## To confirm with the business
+## Still to come
 
-Anything shown with a **To confirm** tag on the website is a placeholder. Before launch, confirm:
-
-* Therapist name, photo, qualifications, experience, AHPRA registration, Occupational Therapy Australia membership and Medicare provider number
-* Phone, email, hours, ABN, postal address, exact service area and reply times
-* NDIS registration status, and the wording on the NDIS page, fees page and FAQs that depends on it
-* Which services are offered, and which age groups are seen
-* Fees, cancellation terms, payment methods, bank details and invoice timing
-* Whether there is a clinic space, and its access details
-* Acknowledgement of Country wording
-* Privacy policy, complaints process and contact details for the external bodies listed
-* Clinical note, assessment and report templates, reviewed and approved by the therapist
-* Service agreement templates
-* NDIS support item codes and price limits, checked against the current NDIS Pricing Arrangements and Price Limits
-
-## Before going live
-
-The dashboard is built so its data layer can be swapped for a real database without rebuilding the screens. `js/data/store.js` exposes `list`, `get`, `create`, `update`, `remove` and `snapshot`, and each table in `js/data/schema.js` maps to a table in the planned Supabase database. Before any real client information goes in:
-
-* Replace the passwordless demo entry with proper sign in, secure account recovery and multi factor authentication
-* Enforce access on the server with row level security and server side checks. `js/admin/access.js` only hides things in the interface
-* Store documents privately, with controlled and logged downloads
-* Keep the change history on the server where it can't be edited, and lock finalised notes at the database level
-* Choose an Australian hosting region, set up backups and test restoring them, and write a data breach plan
-* Keep identifiable information out of analytics, logs and ordinary email
-* Review privacy, consent, retention and incident processes against the Privacy Act 1988, the Health Records and Information Privacy Act 2002 (NSW), Queensland requirements, professional obligations and NDIS requirements
-* Remove the testing notices and `noindex` tags, and replace every placeholder
+* The therapist's details on the About page.
+* Before any client information goes in: backups on a paid Supabase plan with a tested restore, multi factor sign in required for everyone, private document storage, and a review against the Privacy Act 1988, the Health Records and Information Privacy Act 2002 (NSW), Queensland requirements and NDIS obligations.
+* The remaining stages are listed in `docs/audit.md` and tracked in `docs/register.md`.

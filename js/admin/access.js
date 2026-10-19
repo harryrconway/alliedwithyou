@@ -1,91 +1,97 @@
 /*
-  Simulated access levels for the demo.
-  This only changes what the interface shows. In the live system, access must be
-  enforced by the authentication service, database policies and server side checks.
+  Sections, roles and what each role can do.
+  This decides what the interface shows. The database enforces the same rules with
+  Row Level Security, so hiding something here is never the only protection.
+
+  Sections marked locked aren't switched on yet. They stay in the menu, greyed out,
+  until the practice is ready to keep that information in the dashboard.
 */
 (function () {
   const AWY = (window.AWY = window.AWY || {});
 
   const SECTIONS = [
-    { key: 'dashboard', label: 'Dashboard', icon: 'home', group: 'Overview' },
-    { key: 'clients', label: 'Client records', icon: 'users', group: 'Clients' },
-    { key: 'referrals', label: 'Referrals and intake', icon: 'inbox', group: 'Clients' },
-    { key: 'calendar', label: 'Appointments', icon: 'calendar', group: 'Clients' },
-    { key: 'notes', label: 'Clinical notes', icon: 'note', group: 'Clinical' },
-    { key: 'assessments', label: 'Assessments', icon: 'clipboard', group: 'Clinical' },
-    { key: 'goals', label: 'Goals and progress', icon: 'target', group: 'Clinical' },
-    { key: 'reports', label: 'Clinical reports', icon: 'report', group: 'Clinical' },
-    { key: 'documents', label: 'Documents and consent', icon: 'folder', group: 'Records' },
-    { key: 'agreements', label: 'Service agreements', icon: 'signature', group: 'Records' },
-    { key: 'funding', label: 'Funding and services', icon: 'wallet', group: 'Billing' },
-    { key: 'invoices', label: 'Invoices', icon: 'receipt', group: 'Billing' },
-    { key: 'tasks', label: 'Tasks', icon: 'tasks', group: 'Practice' },
-    { key: 'incidents', label: 'Incidents and complaints', icon: 'alert', group: 'Practice' },
-    { key: 'staff', label: 'Staff and access', icon: 'shield', group: 'Practice' },
-    { key: 'statistics', label: 'Business reports', icon: 'chart', group: 'Practice' },
-    { key: 'settings', label: 'Settings', icon: 'settings', group: 'Practice' }
+    { key: 'dashboard', label: 'Dashboard', icon: 'home', group: 'Overview', state: 'open' },
+    { key: 'calendar', label: 'Calendar', icon: 'calendar', group: 'Overview', state: 'open' },
+    { key: 'tasks', label: 'Tasks', icon: 'tasks', group: 'Overview', state: 'open' },
+    { key: 'clients', label: 'Client records', icon: 'users', group: 'Clients', state: 'locked' },
+    { key: 'referrals', label: 'Enquiries and referrals', icon: 'inbox', group: 'Clients', state: 'locked' },
+    { key: 'notes', label: 'Clinical notes', icon: 'note', group: 'Clinical', state: 'locked' },
+    { key: 'assessments', label: 'Assessments', icon: 'clipboard', group: 'Clinical', state: 'locked' },
+    { key: 'goals', label: 'Goals and progress', icon: 'target', group: 'Clinical', state: 'locked' },
+    { key: 'reports', label: 'Clinical reports', icon: 'report', group: 'Clinical', state: 'locked' },
+    { key: 'documents', label: 'Documents and consent', icon: 'folder', group: 'Records', state: 'locked' },
+    { key: 'agreements', label: 'Service agreements', icon: 'signature', group: 'Records', state: 'locked' },
+    { key: 'funding', label: 'Funding and services', icon: 'wallet', group: 'Billing', state: 'locked' },
+    { key: 'invoices', label: 'Invoices', icon: 'receipt', group: 'Billing', state: 'locked' },
+    { key: 'incidents', label: 'Incidents and complaints', icon: 'alert', group: 'Practice', state: 'locked' },
+    { key: 'staff', label: 'Team and access', icon: 'shield', group: 'Practice', state: 'open' },
+    { key: 'statistics', label: 'Business reports', icon: 'chart', group: 'Practice', state: 'locked' },
+    { key: 'settings', label: 'Settings', icon: 'settings', group: 'Practice', state: 'open' },
+    { key: 'feedback', label: 'Feedback and issues', icon: 'message', group: 'Practice', state: 'open' }
   ];
 
   const ALL = SECTIONS.map((s) => s.key);
 
   const ROLES = {
-    owner: {
-      label: 'Practice owner',
-      summary: 'Everything, including incidents, staff access and settings.',
+    administrator: {
+      label: 'Administrator',
+      summary: 'Everything, including approving accounts, roles, settings and fees.',
       sections: ALL
     },
     therapist: {
       label: 'Occupational therapist',
-      summary: 'Clients, appointments and all clinical records. No billing, incidents or settings.',
-      sections: ['dashboard', 'clients', 'referrals', 'calendar', 'notes', 'assessments', 'goals', 'reports', 'documents', 'agreements', 'funding', 'tasks', 'staff']
+      summary: 'The calendar, tasks and the team list. Settings and fees can be viewed but not changed.',
+      sections: ['dashboard', 'clients', 'referrals', 'calendar', 'notes', 'assessments', 'goals', 'reports', 'documents', 'agreements', 'funding', 'tasks', 'staff', 'settings', 'feedback']
     },
-    admin: {
-      label: 'Practice administrator',
-      summary: 'Referrals, bookings, agreements, billing, incidents and settings. No clinical notes or assessments.',
-      sections: ['dashboard', 'clients', 'referrals', 'calendar', 'reports', 'documents', 'agreements', 'funding', 'invoices', 'tasks', 'incidents', 'staff', 'statistics', 'settings']
+    reception: {
+      label: 'Reception',
+      summary: 'The calendar, tasks and the team list. Settings and fees can be viewed but not changed.',
+      sections: ['dashboard', 'clients', 'referrals', 'calendar', 'documents', 'agreements', 'funding', 'invoices', 'tasks', 'staff', 'settings', 'feedback']
     },
     support: {
-      label: 'Authorised support staff',
-      summary: 'Their own appointments, session notes, client goals and tasks.',
-      sections: ['dashboard', 'clients', 'calendar', 'notes', 'goals', 'tasks', 'staff']
+      label: 'Support staff',
+      summary: 'Their own calendar entries and tasks, and the team list.',
+      sections: ['dashboard', 'clients', 'calendar', 'notes', 'goals', 'tasks', 'staff', 'feedback']
+    },
+    developer: {
+      label: 'Developer',
+      summary: 'Feedback, reported issues and error reports, for fixing problems. No practice records.',
+      sections: ['dashboard', 'staff', 'feedback']
     }
   };
 
   /* Actions within sections */
   const CAPABILITIES = {
-    clinical: ['owner', 'therapist', 'support'],
-    assess: ['owner', 'therapist'],
-    reviewReports: ['owner'],
-    billing: ['owner', 'admin'],
-    manageReferrals: ['owner', 'therapist', 'admin'],
-    editClients: ['owner', 'therapist', 'admin'],
-    deleteClients: ['owner'],
-    deleteRecords: ['owner', 'admin'],
-    manageStaff: ['owner'],
-    settings: ['owner', 'admin'],
-    agreements: ['owner', 'therapist', 'admin']
+    manageStaff: ['administrator'],
+    settings: ['administrator'],
+    fees: ['administrator'],
+    everyCalendar: ['administrator'],
+    deleteAnyTask: ['administrator'],
+    reviewFeedback: ['administrator', 'developer'],
+    viewErrors: ['administrator', 'developer']
   };
 
   const CAPABILITY_LABELS = {
-    clinical: 'Read and write clinical notes',
-    assess: 'Record assessments and write reports',
-    reviewReports: 'Mark reports as reviewed',
-    billing: 'Invoices and payments',
-    manageReferrals: 'Accept referrals and add clients',
-    deleteClients: 'Delete client records',
-    manageStaff: 'Change staff access',
-    settings: 'Change practice settings'
+    manageStaff: 'Approve accounts and change roles',
+    settings: 'Change practice settings',
+    fees: 'Change fees',
+    everyCalendar: "Manage everyone's calendar entries",
+    deleteAnyTask: "Delete other people's tasks",
+    reviewFeedback: 'Review feedback and reported issues',
+    viewErrors: 'See error reports'
   };
 
   let user = null;
+
+  const section = (key) => SECTIONS.find((s) => s.key === key) || null;
 
   AWY.access = {
     SECTIONS: SECTIONS,
     ROLES: ROLES,
     CAPABILITIES: CAPABILITIES,
     CAPABILITY_LABELS: CAPABILITY_LABELS,
-    setUser(staff) {
-      user = staff;
+    setUser(profile) {
+      user = profile;
     },
     user() {
       return user;
@@ -93,9 +99,18 @@
     role() {
       return user ? user.role : null;
     },
-    canSee(section, role) {
+    section: section,
+    isLocked(key) {
+      const s = section(key);
+      return !!s && s.state === 'locked';
+    },
+    /* Part of the role, whether or not the section is switched on yet */
+    inRole(key, role) {
       const r = ROLES[role || (user && user.role)];
-      return !!r && r.sections.includes(section);
+      return !!r && r.sections.includes(key);
+    },
+    canSee(key, role) {
+      return AWY.access.inRole(key, role) && !AWY.access.isLocked(key);
     },
     can(capability, role) {
       const r = role || (user && user.role);

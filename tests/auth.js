@@ -3,20 +3,8 @@
   Creates throwaway accounts, tries what each one should and shouldn't be able to do,
   then removes everything it made. Never runs against production.
 */
-const fs = require('fs');
-const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
-
-function readEnv(root) {
-  const env = {};
-  const file = path.join(root, '.env');
-  if (!fs.existsSync(file)) return env;
-  for (const line of fs.readFileSync(file, 'utf8').split('\n')) {
-    const i = line.indexOf('=');
-    if (i > 0 && !line.startsWith('#')) env[line.slice(0, i)] = line.slice(i + 1);
-  }
-  return env;
-}
+const { readEnv } = require('./env');
 
 module.exports = async function auth(ctx) {
   const env = readEnv(ctx.root);
@@ -80,7 +68,21 @@ module.exports = async function auth(ctx) {
       made.users.push(sneaky.data.user.id);
       const row = (await service.from('profiles').select('status').eq('id', sneaky.data.user.id).single()).data;
       ok(row && row.status === 'pending', 'A reserved address registered without an invitation became active');
+      const sneakyApprove = await admin.client.from('profiles').update({ status: 'active' }).eq('id', sneaky.data.user.id).select('id');
+      ok(!!sneakyApprove.error, 'An administrator could approve a reserved address that was never invited');
     }
+
+    /* Approval needs proof the person owns the email address */
+    const unconfirmed = await service.auth.admin.createUser({ email: 'qa.unconfirmed.' + stamp + '@example.com', password, email_confirm: false });
+    if (unconfirmed.data && unconfirmed.data.user) {
+      made.users.push(unconfirmed.data.user.id);
+      const early = await admin.client.from('profiles').update({ status: 'active' }).eq('id', unconfirmed.data.user.id).select('id');
+      ok(!!early.error, 'An administrator could approve an account before its email was confirmed');
+    }
+    const { data: pendConfirmed } = await service.from('profiles').select('email_confirmed_at').eq('id', pending.id).single();
+    ok(pendConfirmed && pendConfirmed.email_confirmed_at, 'A confirmed sign up did not have its confirmation recorded on the profile');
+    const fakeConfirm = await admin.client.from('profiles').update({ email_confirmed_at: new Date().toISOString() }).eq('id', admin.id);
+    ok(!!fakeConfirm.error, 'An administrator could change an email confirmation time');
 
     /* Visitors who aren't signed in can't read anything */
     for (const t of ['profiles', 'settings', 'price_items', 'tasks', 'calendar_blocks', 'feedback', 'error_events', 'audit_events', 'signup_allowlist', 'form_limits']) {

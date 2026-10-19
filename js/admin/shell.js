@@ -1,4 +1,4 @@
-/* The dashboard frame: demo notice, sidebar, top bar, global search and role switcher. */
+/* The dashboard frame: sidebar, top bar and search across tasks and the team. */
 (function () {
   const AWY = (window.AWY = window.AWY || {});
   const html = AWY.html;
@@ -7,38 +7,43 @@
   const access = AWY.access;
   const rules = AWY.rules;
 
+  /* Every section in the person's role is listed. Ones not switched on yet are greyed and can't be opened. */
   function nav() {
     const groups = [];
-    access.SECTIONS.filter((s) => access.canSee(s.key)).forEach((s) => {
+    access.SECTIONS.filter((s) => access.inRole(s.key)).forEach((s) => {
       let g = groups.find((x) => x.name === s.group);
       if (!g) groups.push((g = { name: s.group, items: [] }));
       g.items.push(s);
     });
     return groups.map((g) => html`<div class="side-group">
       <h2>${g.name}</h2>
-      <ul>${g.items.map((s) => html`<li><a class="side-link" href="${s.key === 'dashboard' ? '#/' : '#/' + s.key}" data-section="${s.key}">${icon(s.icon)}<span>${s.label}</span><span class="count" data-count="${s.key}" hidden></span></a></li>`)}</ul>
+      <ul>${g.items.map((s) => (access.isLocked(s.key)
+        ? html`<li><span class="side-link is-locked" aria-disabled="true" title="Not switched on yet">${icon(s.icon)}<span>${s.label}<span class="sr-only">, not switched on yet</span></span>${icon('lock')}</span></li>`
+        : html`<li><a class="side-link" href="${s.key === 'dashboard' ? '#/' : '#/' + s.key}" data-section="${s.key}">${icon(s.icon)}<span>${s.label}</span><span class="count" data-count="${s.key}" hidden></span></a></li>`))}</ul>
     </div>`);
   }
 
-  function render(user, db) {
-    const staffOptions = db.staff.filter((s) => s.active !== false);
+  function userPanel(user) {
+    return html`<button type="button" class="side-account" data-action="account" title="Your account">
+        <span class="avatar" aria-hidden="true">${AWY.fmt.initials(user.name || user.email)}</span>
+        <span><strong>${user.name || user.email}</strong><span>${access.roleLabel(user.role)}</span></span>
+      </button>
+      <button type="button" class="btn btn-quiet btn-icon" data-action="signout" aria-label="Sign out" title="Sign out">${icon('logout')}</button>`;
+  }
+
+  function render(user) {
     return html`
-      <div class="demo-bar" role="note">
-        <span><strong>Demo environment.</strong> All information is fictional<span class="hide-small">, and nothing is sent, charged or submitted</span>.</span>
-        <button type="button" data-action="reset">Reset demo data</button>
-      </div>
       <div class="app">
         <aside class="sidebar" id="sidebar" aria-label="Dashboard">
           <a class="side-brand" href="#/">
             <img src="../images/logomark.svg" alt="" width="36" height="36">
             <span>Allied <span class="with">With</span> You<small>Practice dashboard</small></span>
           </a>
-          <nav class="side-nav" aria-label="Sections">${nav()}</nav>
-          <div class="side-user">
-            <span class="avatar" aria-hidden="true">${AWY.fmt.initials(user.name)}</span>
-            <div><strong>${user.name}</strong><span>${access.roleLabel(user.role)}</span></div>
-            <button type="button" class="btn btn-quiet btn-icon" data-action="signout" aria-label="Leave the demo dashboard" title="Leave the demo dashboard">${icon('logout')}</button>
-          </div>
+          <nav class="side-nav" aria-label="Sections">
+            ${nav()}
+            <p class="side-note">${icon('lock')}<span>Greyed sections aren't switched on yet.</span></p>
+          </nav>
+          <div class="side-user" id="sideUser">${userPanel(user)}</div>
         </aside>
         <div class="drawer-backdrop" data-action="close-drawer"></div>
         <div class="main-col">
@@ -46,16 +51,13 @@
             <button type="button" class="btn btn-secondary btn-icon menu-btn" data-action="menu" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar">${icon('menu')}</button>
             <div class="search" role="search">
               ${icon('search')}
-              <label class="sr-only" for="globalSearch">Search clients and records</label>
-              <input class="input" id="globalSearch" type="search" placeholder="Search clients, referrals, invoices" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="searchResults" aria-autocomplete="list">
+              <label class="sr-only" for="globalSearch">Search tasks and the team</label>
+              <input class="input" id="globalSearch" type="search" placeholder="Search tasks and the team" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="searchResults" aria-autocomplete="list">
               <div class="search-results" id="searchResults" role="listbox" aria-label="Search results" hidden></div>
             </div>
             <div class="topbar-actions">
-              <label class="sr-only" for="roleSwitch">Viewing the demo as</label>
-              <select class="select hide-small" id="roleSwitch" style="width:auto;min-height:2.4rem" title="Switch demo person to see other access levels">
-                ${staffOptions.map((s) => html`<option value="${s.id}" ${raw(s.id === user.id ? 'selected' : '')}>${s.name}, ${access.roleLabel(s.role).toLowerCase()}</option>`)}
-              </select>
-              ${access.canSee('calendar') ? html`<a class="btn btn-sm hide-small" href="#/calendar?new=1">${icon('plus')}New appointment</a>` : ''}
+              <button type="button" class="btn btn-secondary btn-sm" data-action="report" aria-label="Report an issue">${icon('message')}<span class="hide-small">Report an issue</span></button>
+              ${access.canSee('tasks') ? html`<button type="button" class="btn btn-sm hide-small" data-action="new-task">${icon('plus')}New task</button>` : ''}
             </div>
           </header>
           <main id="main" class="view" tabindex="-1"></main>
@@ -63,18 +65,19 @@
       </div>`;
   }
 
+  function updateUser(user) {
+    const el = AWY.$('#sideUser');
+    if (el) el.innerHTML = String(userPanel(user));
+  }
+
   /* Small counts beside sidebar links, worked out from the data */
   function updateCounts(db) {
     const today = AWY.date.today();
     const user = access.user();
-    const d = rules.dashboard(db, today);
-    const mine = (list, field) => (user.role === 'owner' || user.role === 'admin' ? list : list.filter((x) => x[field] === user.id));
     const counts = {
-      referrals: { n: d.newReferrals.length },
-      notes: { n: mine(d.notesOutstanding.map((x) => x.appointment), 'staffId').length, alert: true },
-      tasks: { n: mine(d.overdueTasks, 'assignedTo').length, alert: true },
-      invoices: { n: d.overdueInvoices.length, alert: true },
-      incidents: { n: db.incidents.filter((i) => i.status === 'open' || i.status === 'investigating').length }
+      tasks: { n: rules.overdueTasks(db, today, user.id).length, alert: true },
+      staff: { n: access.can('manageStaff') ? rules.pendingStaff(db).length : 0 },
+      feedback: { n: access.can('reviewFeedback') ? db.feedback.filter((f) => f.status === 'submitted').length : 0 }
     };
     AWY.$$('[data-count]').forEach((el) => {
       const c = counts[el.dataset.count];
@@ -88,31 +91,25 @@
   }
 
   function setActive(section) {
-    AWY.$$('.side-link').forEach((a) => {
+    AWY.$$('.side-link[data-section]').forEach((a) => {
       if (a.dataset.section === section) a.setAttribute('aria-current', 'page');
       else a.removeAttribute('aria-current');
     });
   }
 
-  /* Global search across the main record types */
+  /* Search across tasks and the team */
   function searchResults(db, q) {
     const query = q.trim().toLowerCase();
     if (query.length < 2) return [];
     const has = (...vals) => vals.some((v) => String(v || '').toLowerCase().includes(query));
     const groups = [];
-    const clients = db.clients.filter((c) => has(c.firstName + ' ' + c.lastName, c.preferredName, c.suburb, c.phone, c.ndisNumber, c.ref)).slice(0, 6);
-    if (clients.length) groups.push({ label: 'Clients', items: clients.map((c) => ({ href: '#/clients/' + c.id, title: rules.clientName(c), sub: 'Client ' + c.ref + ', ' + c.suburb })) });
-    if (access.canSee('referrals')) {
-      const refs = db.referrals.filter((r) => has(r.firstName + ' ' + r.lastName, r.referrerName, r.suburb, r.ref)).slice(0, 4);
-      if (refs.length) groups.push({ label: 'Referrals', items: refs.map((r) => ({ href: '#/referrals/' + r.id, title: r.firstName + ' ' + r.lastName, sub: AWY.schema.status('referral', r.status).label + ', received ' + AWY.fmt.date(r.receivedDate) })) });
+    if (access.canSee('tasks')) {
+      const tasks = db.tasks.filter((t) => t.status === 'open' && has(t.title, t.description)).slice(0, 6);
+      if (tasks.length) groups.push({ label: 'Tasks', icon: 'tasks', items: tasks.map((t) => ({ href: '#/tasks?task=' + t.id, title: t.title, sub: 'Due ' + AWY.fmt.date(t.dueDate) + ', ' + rules.staffName(db, t.assignedTo) })) });
     }
-    if (access.canSee('invoices')) {
-      const inv = db.invoices.filter((i) => has('invoice ' + i.number, i.billToName)).slice(0, 4);
-      if (inv.length) groups.push({ label: 'Invoices', items: inv.map((i) => ({ href: '#/invoices/' + i.id, title: 'Invoice ' + i.number, sub: rules.clientNameById(db, i.clientId) })) });
-    }
-    if (access.canSee('reports')) {
-      const reps = db.reports.filter((r) => has(r.title, rules.clientNameById(db, r.clientId))).slice(0, 4);
-      if (reps.length) groups.push({ label: 'Reports', items: reps.map((r) => ({ href: '#/reports/' + r.id, title: r.title, sub: rules.clientNameById(db, r.clientId) })) });
+    if (access.canSee('staff')) {
+      const people = db.staff.filter((s) => s.status === 'active' && has(s.name, s.email, s.title)).slice(0, 6);
+      if (people.length) groups.push({ label: 'Team', icon: 'user', items: people.map((s) => ({ href: '#/staff', title: s.name || s.email, sub: access.roleLabel(s.role) + (s.title ? ', ' + s.title : '') })) });
     }
     return groups;
   }
@@ -136,11 +133,12 @@
       if (current) input.setAttribute('aria-activedescendant', current.id);
     };
     input.addEventListener('input', AWY.debounce(() => {
-      const groups = searchResults(getDb(), input.value);
-      if (!input.value.trim()) return close();
+      const db = getDb();
+      if (!input.value.trim() || !db) return close();
+      const groups = searchResults(db, input.value);
       let n = 0;
       box.innerHTML = String(groups.length
-        ? html`${groups.map((g) => html`<div class="group">${g.label}</div>${g.items.map((it) => html`<a href="${it.href}" id="sr${n++}" role="option">${icon(g.label === 'Clients' ? 'user' : g.label === 'Referrals' ? 'inbox' : g.label === 'Invoices' ? 'receipt' : 'report')}<span>${it.title}<small>${it.sub}</small></span></a>`)}`)}`
+        ? html`${groups.map((g) => html`<div class="group">${g.label}</div>${g.items.map((it) => html`<a href="${it.href}" id="sr${n++}" role="option">${icon(g.icon)}<span>${it.title}<small>${it.sub}</small></span></a>`)}`)}`
         : html`<p class="muted small" style="padding:0.75rem">No matches for "${input.value}"</p>`);
       box.hidden = false;
       input.setAttribute('aria-expanded', 'true');
@@ -179,6 +177,7 @@
     const sidebar = AWY.$('#sidebar');
     const backdrop = AWY.$('.drawer-backdrop');
     const btn = AWY.$('.menu-btn');
+    if (!sidebar) return;
     sidebar.classList.toggle('is-open', open);
     backdrop.classList.toggle('is-open', open);
     btn.setAttribute('aria-expanded', String(open));
@@ -188,5 +187,5 @@
     }
   }
 
-  AWY.shell = { render: render, updateCounts: updateCounts, setActive: setActive, bindSearch: bindSearch, openDrawer: openDrawer };
+  AWY.shell = { render: render, updateUser: updateUser, updateCounts: updateCounts, setActive: setActive, bindSearch: bindSearch, openDrawer: openDrawer };
 })();

@@ -789,6 +789,15 @@
   color: var(--color-success);
 }
 
+/* A field only automated spam fills in. It's kept off screen and out of the tab order. */
+.trap {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 /* Portrait placeholder on the about page */
 
 .portrait {

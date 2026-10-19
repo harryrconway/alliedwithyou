@@ -31,7 +31,7 @@ Order of work:
 1. Write the migration.
 2. Apply it to the test project: `SUPABASE_DB_PASSWORD=... npx supabase db push --project-ref nndtedqltzavzxfegdka`
 3. Run `npm test` in `tests/`. The `auth` check signs in as each kind of account and confirms the security rules.
-4. Apply it to production. Production's database password isn't stored on this Mac, so migrations go through the Supabase management API with `npx supabase db query --linked --project-ref trqnpgawtuglrujifvcz -f <file>`, followed by a row in `supabase_migrations.schema_migrations` recording the version.
+4. Apply it to production. Production's database password isn't stored on this Mac, so migrations go through the Supabase management API with `npx supabase db query --linked --project-ref trqnpgawtuglrujifvcz -f <file>`. Wrap the file in `begin;` and `commit;`, and add the row recording its version in `supabase_migrations.schema_migrations` inside the same transaction, so a failure changes nothing.
 5. Record it in the migrations table in `docs/register.md`.
 
 Reverting website code doesn't undo database changes or bring back deleted records. A migration that removes or rewrites data needs its own written recovery step first.
@@ -47,20 +47,35 @@ The `[remotes.staging]` block points the test project's links at localhost, so t
 
 ## Edge Functions
 
-`supabase/functions/enquiry` emails website enquiries and referrals to the practice. On the test project they go to noreply@ instead, so testing never emails the practice. Deploy with:
+`supabase/functions/enquiry` emails website enquiries and referrals to the practice. On the test project they go to noreply@ instead, so testing never emails the practice. The website forms in `js/site/forms.js` call it, and visitors who can't get through are offered the admin@ address. Deploy with:
 
 `npx supabase functions deploy enquiry --project-ref <ref> --use-api --no-verify-jwt`
 
 ## Accounts
 
 * admin@, jake@ and chelsie@alliedwithyou.com.au are listed in `signup_allowlist`. They become administrators only after being invited and accepting the invitation, which proves they own the mailbox.
-* Anyone else who creates an account confirms their email and then waits in **Team and access** until an administrator approves or declines them.
+* Anyone else who creates an account confirms their email and then waits in **Team and access** until an administrator approves or declines them. The database won't approve an account whose email hasn't been confirmed.
 * There must always be at least one active administrator. The database refuses any change that would leave none.
-* Staff who leave are disabled rather than deleted, so the history of who did what is kept.
+* Staff who leave are switched off rather than deleted, so the history of who did what is kept. Switching off takes effect on their next request.
+* Staff with a practice address can sign in with just the first part, for example `jake`.
+
+### Sending an invitation
+
+In the Supabase dashboard for the production project, open **Authentication**, then **Users**, then **Invite user**, and enter the address. The email comes from noreply@ and links to https://alliedwithyou.com.au/admin/, where the person chooses their name and password. The link works for an hour. If it expires, send the invitation again.
+
+If a reserved address shows as **Reserved practice address** in the approvals list, someone created an account with it before the invitation was sent. Delete that user in **Authentication**, **Users**, then send the invitation.
+
+## Errors and feedback
+
+Every failure in the dashboard shows the person a six character reference and is logged in `error_events` with only safe details: where it happened, what kind of failure, and a scrubbed message. Administrators and developers see these under **Feedback and issues**, then **Error reports**. When someone uses **Report an issue** straight after an error, the reference is attached, so the two can be matched.
+
+## Tests
+
+`npm test` in `tests/` runs every check. `auth`, `enquiry` and `crm` use the test project's keys from `.env`, create throwaway `@example.com` accounts and remove them afterwards. They refuse to run if the test address matches production. `site` stands in for the enquiry function, so no email is sent.
 
 ## The earlier demo
 
-The interactive demo with fictional data was removed from the live site on 19 October 2026. It can be recovered from commit `80da9d9` with `git show 80da9d9:<path>`, for example `git show 80da9d9:js/data/seed.js`.
+The interactive demo with fictional data was removed from the live site on 19 October 2026, and its files were deleted when the real dashboard replaced them. They can be recovered from commit `80da9d9` with `git show 80da9d9:<path>`, for example `git show 80da9d9:js/data/seed.js` or `git show 80da9d9:js/admin/views/notes.js`.
 
 ## Backups
 

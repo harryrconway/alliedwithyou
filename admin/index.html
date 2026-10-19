@@ -3,7 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Staff sign in | Allied With You</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://trqnpgawtuglrujifvcz.supabase.co https://nndtedqltzavzxfegdka.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="referrer" content="no-referrer">
+  <title>Practice dashboard | Allied With You</title>
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#0c5661">
   <link rel="icon" href="../images/logomark.svg" type="image/svg+xml">
@@ -12,16 +14,37 @@
   <link rel="stylesheet" href="../css/base.css">
   <link rel="stylesheet" href="../css/components.css">
   <link rel="stylesheet" href="../css/admin.css">
+
+  <script src="../js/config.js" defer></script>
+  <script src="../js/vendor/supabase.js" defer></script>
+
+  <script src="../js/core/icons.js" defer></script>
+  <script src="../js/core/format.js" defer></script>
+  <script src="../js/core/dom.js" defer></script>
+  <script src="../js/core/validate.js" defer></script>
+  <script src="../js/core/ui.js" defer></script>
+  <script src="../js/core/errors.js" defer></script>
+
+  <script src="../js/data/schema.js" defer></script>
+  <script src="../js/data/remote.js" defer></script>
+  <script src="../js/data/rules.js" defer></script>
+
+  <script src="../js/admin/access.js" defer></script>
+  <script src="../js/admin/router.js" defer></script>
+  <script src="../js/admin/components.js" defer></script>
+  <script src="../js/admin/shell.js" defer></script>
+  <script src="../js/admin/actions.js" defer></script>
+
+  <script src="../js/admin/views/dashboard.js" defer></script>
+  <script src="../js/admin/views/calendar.js" defer></script>
+  <script src="../js/admin/views/tasks.js" defer></script>
+  <script src="../js/admin/views/staff.js" defer></script>
+  <script src="../js/admin/views/settings.js" defer></script>
+  <script src="../js/admin/views/feedback.js" defer></script>
+
+  <script src="../js/admin/app.js" defer></script>
 </head>
 <body class="admin">
-  <main class="entry" id="main" style="min-height:100vh">
-    <div class="entry-card">
-      <img src="../images/logo.svg" alt="Allied With You" width="144" height="104">
-      <h1>Staff sign in</h1>
-      <p>Staff sign in will be available here soon.</p>
-      <p class="small">To reach the practice, email <a href="mailto:admin@alliedwithyou.com.au">admin@alliedwithyou.com.au</a>.</p>
-      <p class="small"><a href="../index.html">Back to the website</a></p>
-    </div>
-  </main>
+  <noscript><p style="padding:2rem">The practice dashboard needs JavaScript turned on.</p></noscript>
 </body>
 </html>

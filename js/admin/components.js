@@ -1,6 +1,6 @@
 /*
   Reusable pieces for dashboard screens: badges, tables, filters, forms built from
-  the schema, record dialogs, document letterheads and printing.
+  the schema and record dialogs.
   Everything returns safe HTML from the AWY.html template tag.
 */
 (function () {
@@ -20,10 +20,6 @@
     badge(statusKey, value, label) {
       const s = schema.status(statusKey, value);
       return html`<span class="badge tone-${s.tone}">${icon(s.icon)}${label || s.label}</span>`;
-    },
-
-    autoTag(reason) {
-      return html`<span class="tag tag-auto" title="${reason || 'Created by an automation rule'}">${icon('zap')}Automatic</span>`;
     },
 
     pageHead(opts) {
@@ -50,26 +46,6 @@
       const name = rules.staffName(db, staffId);
       if (withAvatar === false) return name;
       return html`<span class="person"><span class="avatar" aria-hidden="true">${fmt.initials(name)}</span>${name}</span>`;
-    },
-
-    clientLink(db, clientId, tab) {
-      if (!clientId) return html`<span class="muted">No client</span>`;
-      const c = rules.client(db, clientId);
-      if (!c) return html`<span class="muted">Deleted client</span>`;
-      return html`<a href="${AWY.router.href(['clients', clientId, tab || ''])}">${rules.clientName(c)}</a>`;
-    },
-
-    meter(opts) {
-      const max = opts.max || 1;
-      const pct = Math.max(0, Math.min(100, (opts.value / max) * 100));
-      const tone = opts.tone ? ' is-' + opts.tone : '';
-      return html`<div class="meter">
-        <div class="meter-track" role="img" aria-label="${opts.label || Math.round(pct) + ' percent'}">
-          <div class="meter-fill${tone}" style="width:${pct}%"></div>
-          ${opts.target !== undefined && opts.target !== null && opts.target !== '' ? html`<div class="meter-target" style="left:calc(${(opts.target / max) * 100}% - 1px)"></div>` : ''}
-        </div>
-        ${opts.left || opts.right ? html`<div class="meter-text"><span>${opts.left || ''}</span><span>${opts.right || ''}</span></div>` : ''}
-      </div>`;
     },
 
     kv(pairs) {
@@ -225,10 +201,9 @@
       if (def.type === 'textarea') {
         return html`<div class="field${span}">${label}<textarea class="textarea" id="${id}" name="${def.name}" ${req} ${described} rows="${def.rows || 4}">${v}</textarea>${hint}</div>`;
       }
-      if (def.type === 'select' || def.type === 'client' || def.type === 'staff') {
+      if (def.type === 'select' || def.type === 'staff') {
         let options = def.options || [];
-        if (def.type === 'client') options = C.clientOptions(db, v);
-        if (def.type === 'staff') options = C.staffOptions(db, def.clinical);
+        if (def.type === 'staff') options = C.staffOptions(db, v);
         return html`<div class="field${span}">${label}
           <select class="select" id="${id}" name="${def.name}" ${req} ${described}>
             <option value="">Choose one</option>
@@ -241,7 +216,10 @@
         def.type === 'money' ? 'step="0.01" min="0" inputmode="decimal"' : '',
         def.type === 'number' && def.min !== undefined ? 'min="' + def.min + '"' : '',
         def.type === 'number' && def.max !== undefined ? 'max="' + def.max + '"' : '',
-        def.type === 'number' && def.step ? 'step="' + def.step + '"' : ''
+        def.type === 'number' && def.step ? 'step="' + def.step + '"' : '',
+        def.autocomplete ? 'autocomplete="' + def.autocomplete + '"' : '',
+        def.minlength ? 'minlength="' + def.minlength + '"' : '',
+        def.maxlength ? 'maxlength="' + def.maxlength + '"' : ''
       ].join(' ');
       return html`<div class="field${span}">${label}<input class="input" type="${type}" id="${id}" name="${def.name}" value="${v}" ${req} ${described} ${raw(extra)}>${hint}</div>`;
     },
@@ -250,18 +228,13 @@
       return html`<div class="form-grid">${defs.map((d) => C.field(d, (values || {})[d.name], db, prefix))}</div>`;
     },
 
-    clientOptions(db, current) {
-      return db.clients
-        .filter((c) => c.status !== 'archived' || c.id === current)
-        .slice()
-        .sort((a, b) => rules.clientName(a).localeCompare(rules.clientName(b)))
-        .map((c) => ({ value: c.id, label: rules.clientName(c) + (c.status !== 'active' ? ' (' + schema.status('client', c.status).label.toLowerCase() + ')' : '') }));
-    },
-
-    staffOptions(db, clinicalOnly) {
+    /* Active staff, plus whoever is already chosen so an old record still shows them */
+    staffOptions(db, current) {
       return db.staff
-        .filter((s) => s.active !== false && (!clinicalOnly || s.role === 'owner' || s.role === 'therapist'))
-        .map((s) => ({ value: s.id, label: s.name + ', ' + s.title.toLowerCase() }));
+        .filter((s) => s.status === 'active' || s.id === current)
+        .slice()
+        .sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email))
+        .map((s) => ({ value: s.id, label: (s.name || s.email) + (s.title ? ', ' + s.title.toLowerCase() : '') + (s.status !== 'active' ? ' (no longer active)' : '') }));
     },
 
     /* Converts raw form values into the right types for each field */
@@ -299,6 +272,7 @@
           <button type="submit" class="btn">${opts.submitLabel || 'Save'}</button>`,
         onOpen: opts.onOpen
       });
+      modal.requestId = AWY.uuid();
       modal.form.addEventListener('submit', async (event) => {
         event.preventDefault();
         const custom = (values) => {
@@ -316,13 +290,14 @@
           await AWY.ui.busy(button, () => opts.onSubmit(values, modal));
           modal.close();
         } catch (error) {
-          C.showStoreError(modal.form, error, prefix);
+          C.showStoreError(modal.form, error, prefix, { area: opts.area || opts.title, operation: opts.submitLabel || 'Save' });
         }
       });
       return modal;
     },
 
-    showStoreError(form, error, prefix) {
+    /* Shows a failed save inside the form, keeping everything the person typed */
+    showStoreError(form, error, prefix, where) {
       const summary = form.querySelector('.form-summary');
       if (error && error.errors && Object.keys(error.errors).length) {
         Object.keys(error.errors).forEach((name) => {
@@ -330,69 +305,47 @@
           if (el) AWY.validate.showError(el.tagName ? el : el[0], error.errors[name]);
         });
       }
+      const result = AWY.errors.capture(error, Object.assign({ write: true }, where || {}));
       if (summary) {
-        summary.innerHTML = String(html`<div class="notice notice-danger" role="alert">${icon('alertCircle')}<div>${(error && error.message) || 'Something went wrong. Please try again.'}</div></div>`);
+        summary.innerHTML = String(html`<div class="notice notice-danger" role="alert">${icon('alertCircle')}<div>${result.message}${result.category !== 'validation' && AWY.actions.reportIssue ? html` <button type="button" class="btn btn-quiet btn-sm" data-report-ref="${result.ref}">Report this issue</button>` : ''}</div></div>`);
+        const btn = summary.querySelector('[data-report-ref]');
+        if (btn) btn.addEventListener('click', () => AWY.actions.reportIssue({ errorRef: btn.dataset.reportRef }));
       }
-      console.error(error);
     },
 
     /* Saves a record, shows a message and reports errors as a toast */
-    async save(promise, message) {
+    async save(promise, message, where) {
       try {
         const result = await promise;
         if (message) AWY.ui.toast(message);
         return result;
       } catch (error) {
-        AWY.ui.toast(error.message || 'That could not be saved.', { tone: 'error' });
-        throw error;
+        const r = AWY.errors.capture(error, Object.assign({ write: true }, where || {}));
+        AWY.ui.toast(r.message, {
+          tone: 'error',
+          action: r.category !== 'validation' && AWY.actions.reportIssue ? { label: 'Report this issue', onClick: () => AWY.actions.reportIssue({ errorRef: r.ref }) } : null
+        });
+        return undefined;
       }
     },
 
-    /* Delete with a clear summary of related records that go with it */
+    /* Asks first, then deletes and says what happened */
     async confirmDelete(opts) {
-      const impact = AWY.store.impact(opts.table, opts.id);
-      const parts = Object.keys(impact).map((t) => fmt.plural(impact[t], schema.tables[t].singular, schema.tables[t].plural));
       const ok = await AWY.ui.confirm({
         title: 'Delete ' + opts.label + '?',
-        message: 'This removes the ' + schema.tables[opts.table].singular + ' from the demo data. It cannot be undone, but you can reset the demo data at any time.',
-        detail: parts.length ? 'This will also delete ' + C.listText(parts) + '.' : '',
+        message: 'This permanently removes the ' + schema.tables[opts.table].singular + '. It cannot be undone.',
         confirmLabel: 'Delete',
         danger: true
       });
       if (!ok) return false;
-      await C.save(AWY.store.remove(opts.table, opts.id), (opts.label.charAt(0).toUpperCase() + opts.label.slice(1)) + ' deleted.');
-      if (opts.after) opts.after();
-      return true;
+      const done = await C.save(AWY.store.remove(opts.table, opts.id), (opts.label.charAt(0).toUpperCase() + opts.label.slice(1)) + ' deleted.', { area: opts.table, operation: 'delete' });
+      if (done && opts.after) opts.after();
+      return !!done;
     },
 
     listText(parts) {
       if (parts.length <= 1) return parts.join('');
       return parts.slice(0, -1).join(', ') + ' and ' + parts[parts.length - 1];
-    },
-
-    letterhead(settings) {
-      const b = (settings && settings.business) || AWY.business;
-      return html`<div class="doc-letterhead">
-        <img src="../images/logo.svg" alt="Allied With You" width="120" height="87">
-        <address>
-          Allied With You<br>
-          Occupational therapy<br>
-          ${b.phone}<br>
-          ${b.email}<br>
-          ABN ${b.abn}
-        </address>
-      </div>`;
-    },
-
-    print() {
-      document.body.classList.add('print-doc');
-      const done = () => {
-        document.body.classList.remove('print-doc');
-        window.removeEventListener('afterprint', done);
-      };
-      window.addEventListener('afterprint', done);
-      window.print();
-      setTimeout(done, 1500);
     },
 
     options(key) {

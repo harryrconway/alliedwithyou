@@ -2,6 +2,8 @@
 
 Date: 14 October 2026. Audited at commit `4e137ac` on `main`.
 
+This is a record of the system as it was on that date. For what has changed since, see `docs/register.md`.
+
 This audit was requested by the master development plan before any further work. Each finding is marked **verified** (seen by running the system or reading the code) or **assumed** (reasoned but not yet checked against a running system).
 
 How it was done:

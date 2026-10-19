@@ -75,6 +75,7 @@
       <p class="acknowledgement">We acknowledge the Bundjalung and Yugambeh peoples, the Traditional Custodians of the land where we live and work, and pay our respects to Elders past and present.</p>
       <div class="footer-base">
         <span>Copyright ${year} Allied With You</span>
+        <a href="${root}admin/">Staff sign in</a>
       </div>
     </div>`;
   }

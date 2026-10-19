@@ -88,6 +88,49 @@
     },
     stampDate(stamp) {
       return stamp ? toISO(new Date(stamp)) : '';
+    },
+
+    /* Time zones. NSW has daylight saving and Queensland doesn't, so a stored moment
+       can show as different local times on either side of the border. */
+    localZone() {
+      try {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Australia/Brisbane';
+      } catch (error) {
+        return 'Australia/Brisbane';
+      }
+    },
+    /* The date and time a moment falls on in a given zone */
+    zoneParts(stamp, timeZone) {
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: timeZone, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+      }).formatToParts(new Date(stamp));
+      const get = (t) => (parts.find((p) => p.type === t) || {}).value;
+      return { date: get('year') + '-' + get('month') + '-' + get('day'), time: (get('hour') === '24' ? '00' : get('hour')) + ':' + get('minute') };
+    },
+    /* Minutes the zone is ahead of UTC at that moment */
+    zoneOffset(stamp, timeZone) {
+      const p = date.zoneParts(stamp, timeZone);
+      const [y, m, d] = p.date.split('-').map(Number);
+      const [h, mi] = p.time.split(':').map(Number);
+      const asUtc = Date.UTC(y, m - 1, d, h, mi);
+      const t = new Date(stamp).getTime();
+      return Math.round((asUtc - (t - (t % 60000))) / 60000);
+    },
+    /* The exact moment for a local date and time in a zone */
+    fromZone(day, time, timeZone) {
+      const [y, m, d] = day.split('-').map(Number);
+      const [h, mi] = String(time).split(':').map(Number);
+      const guess = Date.UTC(y, m - 1, d, h, mi);
+      let stamp = guess - date.zoneOffset(guess, timeZone) * 60000;
+      stamp = guess - date.zoneOffset(stamp, timeZone) * 60000;
+      return new Date(stamp).toISOString();
+    },
+    zoneLabel(timeZone) {
+      return timeZone === 'Australia/Sydney' ? 'NSW time' : timeZone === 'Australia/Brisbane' ? 'QLD time' : timeZone;
+    },
+    /* True when a moment shows at a different clock time in the zone than on this device */
+    zoneDiffers(stamp, timeZone) {
+      return date.zoneOffset(stamp, timeZone) !== date.zoneOffset(stamp, date.localZone());
     }
   };
 

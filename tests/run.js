@@ -1,15 +1,15 @@
 /*
   Runs every check, or the ones named on the command line:
     npm test
-    npm test -- journey screens
+    npm test -- crm site
   Exits with an error code if anything fails.
 */
 const path = require('path');
 const serve = require('./serve');
 
 const ROOT = path.resolve(__dirname, '..');
-const ALL = ['syntax', 'links', 'text', 'data', 'auth', 'enquiry', 'layout'];
-const BROWSER = ['text', 'layout'];
+const ALL = ['syntax', 'links', 'text', 'auth', 'enquiry', 'site', 'crm', 'layout'];
+const BROWSER = ['text', 'site', 'crm', 'layout'];
 
 (async () => {
   const names = process.argv.slice(2).length ? process.argv.slice(2) : ALL;
