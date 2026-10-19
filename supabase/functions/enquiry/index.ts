@@ -13,6 +13,7 @@ const LOCAL_ORIGIN = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 const PER_HOUR = 5;
 
 const LABELS: Record<string, string> = {
+  referralType: 'Type of referral',
   referrerName: 'Referrer name',
   referrerRole: 'Referrer is a',
   referrerOrg: 'Organisation',
@@ -41,7 +42,7 @@ const RULES: Record<string, { required: string[]; fields: string[] }> = {
   },
   referral: {
     required: ['referrerName', 'referrerRole', 'referrerPhone', 'referrerEmail', 'firstName', 'lastName', 'phone', 'suburb', 'state', 'fundingType', 'service', 'reason', 'consent'],
-    fields: ['referrerName', 'referrerRole', 'referrerOrg', 'referrerPhone', 'referrerEmail', 'firstName', 'lastName', 'phone', 'suburb', 'state', 'fundingType', 'ndisNumber', 'service', 'reason', 'consent'],
+    fields: ['referralType', 'referrerName', 'referrerRole', 'referrerOrg', 'referrerPhone', 'referrerEmail', 'firstName', 'lastName', 'phone', 'suburb', 'state', 'fundingType', 'ndisNumber', 'service', 'reason', 'consent'],
   },
 };
 

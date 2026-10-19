@@ -40,6 +40,7 @@ module.exports = async function site(ctx) {
   /* Referral form */
   const fillReferral = async () => {
     await p.goto(ctx.base + 'referrals.html', { waitUntil: 'networkidle' });
+    await p.selectOption('#referralType', 'ndis');
     await p.fill('#referrerName', 'Jo Referrer');
     await p.selectOption('#referrerRole', 'gp');
     await p.fill('#referrerPhone', '0400 000 000');
@@ -57,11 +58,17 @@ module.exports = async function site(ctx) {
 
   await fillReferral();
   ok(await p.isVisible('#ndisNumber'), 'The NDIS number field did not appear for an NDIS referral');
+  const fundingFor = (t) => p.selectOption('#referralType', t).then(() => p.$$eval('#fundingType option', (os) => os.map((o) => o.value).filter(Boolean).join(',')));
+  ok((await fundingFor('myagedcare')) === 'sah,unsure', 'A My Aged Care referral offered funding options that do not fit');
+  ok((await fundingFor('private')) === 'private,healthfund,medicare,unsure', 'A private referral offered funding options that do not fit');
+  ok((await fundingFor('ndis')) === 'ndis_self,ndis_plan,unsure', 'An NDIS referral offered funding options that do not fit');
+  ok((await p.inputValue('#fundingType')) === '', 'Changing the type of referral kept a funding choice that no longer fits');
+  await p.selectOption('#fundingType', 'ndis_plan');
   sent = null;
   answer = { status: 429, body: { ok: false, error: 'limit' } };
   await p.click('form[data-enquiry] [type="submit"]');
   ok(await p.waitForSelector('.form-summary >> text=paused', { timeout: 5000 }).then(() => true, () => false), 'Too many referrals did not explain the pause');
-  ok(sent && sent.kind === 'referral' && sent.consent === 'yes' && sent.fundingType === 'NDIS plan managed', 'The referral did not send readable details');
+  ok(sent && sent.kind === 'referral' && sent.referralType === 'NDIS' && sent.consent === 'yes' && sent.fundingType === 'NDIS plan managed', 'The referral did not send readable details: ' + JSON.stringify(sent));
 
   answer = 'drop';
   await p.click('form[data-enquiry] [type="submit"]');

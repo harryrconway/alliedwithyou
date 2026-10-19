@@ -62,6 +62,21 @@
               <input id="rWebsite" name="website" type="text" tabindex="-1" autocomplete="off">
             </div>
             <fieldset>
+              <legend>Type of referral</legend>
+              <div class="form-grid">
+                <div class="field span-all">
+                  <label for="referralType">Is this an NDIS, My Aged Care or private referral?</label>
+                  <select class="select" id="referralType" name="referralType" required>
+                    <option value="">Choose one</option>
+                    <option value="ndis">NDIS</option>
+                    <option value="myagedcare">My Aged Care</option>
+                    <option value="private">Privately funded</option>
+                  </select>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset>
               <legend>About you</legend>
               <div class="form-grid">
                 <div class="field"><label for="referrerName">Your name</label><input class="input" id="referrerName" name="referrerName" autocomplete="name" maxlength="120" required></div>
@@ -107,12 +122,12 @@
                   <label for="fundingType">How will therapy be funded?</label>
                   <select class="select" id="fundingType" name="fundingType" required>
                     <option value="">Choose one</option>
-                    <option value="private">Paying privately</option>
-                    <option value="healthfund">Private health insurance</option>
-                    <option value="medicare">Medicare GP plan</option>
-                    <option value="sah">Support at Home</option>
-                    <option value="ndis_self">NDIS self managed</option>
-                    <option value="ndis_plan">NDIS plan managed</option>
+                    <option value="private" data-for="private">Paying privately</option>
+                    <option value="healthfund" data-for="private">Private health insurance</option>
+                    <option value="medicare" data-for="private">Medicare GP plan</option>
+                    <option value="sah" data-for="myagedcare">Support at Home</option>
+                    <option value="ndis_self" data-for="ndis">NDIS self managed</option>
+                    <option value="ndis_plan" data-for="ndis">NDIS plan managed</option>
                     <option value="unsure">Not sure</option>
                   </select>
                 </div>

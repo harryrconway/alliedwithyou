@@ -91,6 +91,23 @@
     const kind = form.dataset.enquiry;
     AWY.validate.live(form);
 
+    /* Once the type of referral is chosen, the funding question only offers the options that fit it */
+    const type = form.elements.referralType;
+    const fundingSelect = form.elements.fundingType;
+    if (type && fundingSelect) {
+      const all = Array.from(fundingSelect.options).map((o) => o.cloneNode(true));
+      const fit = () => {
+        const current = fundingSelect.value;
+        fundingSelect.innerHTML = '';
+        all.filter((o) => !o.value || !o.dataset.for || !type.value || o.dataset.for === type.value)
+          .forEach((o) => fundingSelect.appendChild(o.cloneNode(true)));
+        fundingSelect.value = Array.from(fundingSelect.options).some((o) => o.value === current) ? current : '';
+        fundingSelect.dispatchEvent(new Event('change'));
+      };
+      type.addEventListener('change', fit);
+      fit();
+    }
+
     /* The NDIS number field only shows when it's relevant */
     const funding = form.elements.fundingType;
     const ndisField = form.querySelector('[data-show-for-ndis]');
