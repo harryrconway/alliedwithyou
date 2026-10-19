@@ -31,17 +31,43 @@
     summary.querySelector('.notice').focus();
   }
 
+  const HOME_AFTER = 10;
+
+  /* Confirms the send, then counts down and returns to the home page, unless the visitor chooses to stay */
   function done(form, kind) {
     const panel = form.closest('.form-panel');
-    panel.innerHTML = String(html`<div class="form-done" role="status" tabindex="-1">
+    const home = (document.body.dataset.root || '') + 'index.html';
+    panel.innerHTML = String(html`<div class="form-done" tabindex="-1">
       ${raw(AWY.icon('checkCircle'))}
-      <h2>Thanks, your ${kind === 'referral' ? 'referral' : 'message'} has been sent</h2>
-      <p>${kind === 'referral'
-        ? "We'll contact the person, or their representative, and let you know once we've been in touch."
-        : "We'll get back to you soon, by your preferred method."}</p>
-      <div class="btn-row"><a class="btn btn-secondary" href="">Send another</a></div>
+      <div role="status">
+        <h2>Thanks, your ${kind === 'referral' ? 'referral' : 'message'} has been sent</h2>
+        <p>${kind === 'referral'
+          ? "We'll contact the person, or their representative, and let you know once we've been in touch."
+          : "We'll get back to you soon, by your preferred method."}</p>
+      </div>
+      <p class="form-countdown" data-countdown>Taking you back to the home page in <strong data-seconds>${HOME_AFTER}</strong> seconds.</p>
+      <div class="btn-row">
+        <a class="btn" href="${home}">Go to the home page now</a>
+        <button type="button" class="btn btn-secondary" data-stay>Stay on this page</button>
+      </div>
     </div>`);
-    panel.querySelector('.form-done').focus();
+    const box = panel.querySelector('.form-done');
+    box.focus();
+    let left = HOME_AFTER;
+    const timer = setInterval(() => {
+      left -= 1;
+      if (left <= 0) {
+        clearInterval(timer);
+        window.location.href = home;
+        return;
+      }
+      box.querySelector('[data-seconds]').textContent = left;
+    }, 1000);
+    box.querySelector('[data-stay]').addEventListener('click', (event) => {
+      clearInterval(timer);
+      box.querySelector('[data-countdown]').textContent = 'You can stay on this page as long as you like.';
+      event.currentTarget.remove();
+    });
   }
 
   async function send(body) {

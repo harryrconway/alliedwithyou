@@ -1137,12 +1137,15 @@ a.figure:hover {
 /* Sign in */
 
 .auth-tabs {
-  display: flex;
-  margin: var(--space-5) 0 var(--space-4);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  width: fit-content;
+  margin: var(--space-5) auto var(--space-4);
 }
 
 .auth-tabs button {
-  flex: 1;
+  justify-content: center;
+  padding-inline: 1.25rem;
 }
 
 .auth-form {

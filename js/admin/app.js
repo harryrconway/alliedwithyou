@@ -200,7 +200,7 @@
       bindForm(create, async (v) => {
         await auth.signUp(v.fullName, v.email, AWY.$('#newPassword').value);
         screen(html`<h1>Check your email</h1>
-          ${notice('success', html`We've sent a link to <strong>${auth.toEmail(v.email)}</strong>. Open it to confirm your address.`)}
+          ${notice('success', html`Open the link we sent to <span class="nowrap">${auth.toEmail(v.email)}</span> to confirm your address.`)}
           <p style="margin-top:1rem">After that, someone at the practice needs to approve your account before you can use the dashboard. If the email hasn't arrived in a few minutes, check your junk folder.</p>
           <p class="small"><a href="./">Back to sign in</a></p>`, 'Check your email');
       });
