@@ -111,12 +111,19 @@
                 </div>
                 <div class="field"><label for="suburb">Suburb or town</label><input class="input" id="suburb" name="suburb" maxlength="80" required></div>
                 <div class="field">
-                  <label for="state">State</label>
-                  <select class="select" id="state" name="state" required>
+                  <label for="state">State or territory</label>
+                  <select class="select" id="state" name="state" required aria-describedby="stateHint">
                     <option value="">Choose one</option>
                     <option value="NSW">New South Wales</option>
+                    <option value="VIC">Victoria</option>
                     <option value="QLD">Queensland</option>
+                    <option value="SA">South Australia</option>
+                    <option value="WA">Western Australia</option>
+                    <option value="TAS">Tasmania</option>
+                    <option value="NT">Northern Territory</option>
+                    <option value="ACT">Australian Capital Territory</option>
                   </select>
+                  <p class="hint" id="stateHint">Outside the Northern Rivers and Gold Coast, we see people by telehealth.</p>
                 </div>
                 <div class="field">
                   <label for="fundingType">How will therapy be funded?</label>

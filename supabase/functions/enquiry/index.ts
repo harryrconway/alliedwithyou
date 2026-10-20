@@ -25,7 +25,7 @@ const LABELS: Record<string, string> = {
   phone: 'Phone',
   about: 'Asking',
   suburb: 'Suburb or town',
-  state: 'State',
+  state: 'State or territory',
   fundingType: 'Funding',
   ndisNumber: 'NDIS number',
   service: 'Service needed',
@@ -38,7 +38,7 @@ const LABELS: Record<string, string> = {
 const RULES: Record<string, { required: string[]; fields: string[] }> = {
   contact: {
     required: ['firstName', 'lastName', 'email', 'about', 'suburb', 'message'],
-    fields: ['firstName', 'lastName', 'email', 'phone', 'about', 'suburb', 'message', 'preferredContact'],
+    fields: ['firstName', 'lastName', 'email', 'phone', 'about', 'suburb', 'state', 'message', 'preferredContact'],
   },
   referral: {
     required: ['referrerName', 'referrerRole', 'referrerPhone', 'referrerEmail', 'firstName', 'lastName', 'phone', 'suburb', 'state', 'fundingType', 'service', 'reason', 'consent'],

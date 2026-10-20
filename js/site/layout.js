@@ -43,7 +43,7 @@
       <div class="footer-main">
         <div>
           <p class="footer-brand">Allied <span class="with">With</span> You</p>
-          <p>Occupational therapy across the ${biz.areas[0]} and ${biz.areas[1]}. We see people at home, in the community and by telehealth.</p>
+          <p>Occupational therapy at home and in the community across the ${biz.areas[0]} and ${biz.areas[1]}, and by telehealth anywhere in Australia.</p>
         </div>
         <div>
           <h2>Get in touch</h2>

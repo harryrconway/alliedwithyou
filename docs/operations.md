@@ -99,6 +99,14 @@ In the Supabase dashboard for the production project, open **Authentication**, t
 
 If a reserved address shows as **Reserved practice address** in the approvals list, someone created an account with it before the invitation was sent. Delete that user in **Authentication**, **Users**, then send the invitation.
 
+## Reports and downloads
+
+**Reports and downloads** in the dashboard is for administrators. Reports read every record for the chosen period straight from the database, so they aren't limited to what the dashboard has loaded. Calendar figures use the time zone of the device, or the practice's usual time zone on a device set outside Australia.
+
+**Download everything** saves one zip file with a spreadsheet for each area, the practice settings and every version of every template. It's the practice's own copy while the free plan has no backups, so it's worth saving one regularly somewhere private, such as the practice's Microsoft 365 storage once that's set up. Each download, from here or from a Download button beside a list, is noted in Change history under Downloads.
+
+Spreadsheet text that starts like a formula, for example with an equals sign, gets an apostrophe in front, so Excel never treats typing in a task or note as a formula.
+
 ## Stored files
 
 Template files live in the private `templates` storage bucket. Nobody can open a file directly. The dashboard asks for a link that works for two minutes, and the database only gives one for an approved template, or to an administrator. Files that became a version can't be deleted, so the history stays complete.

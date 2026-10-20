@@ -29,7 +29,7 @@
 
   function blockRow(db, b, showStaff) {
     return html`<li>
-      <div class="when">${fmt.time(b.start)}<small>${fmt.duration(b.duration)}</small></div>
+      <div class="when">${fmt.time(b.viewStart)}<small>${fmt.duration(b.duration)}</small></div>
       <div class="what">
         <button type="button" class="link-button" data-block="${b.id}">${C.label('blockKind', b.kind)}</button>
         <div class="meta">${A.zoneTag(b)}${showStaff ? html`<span>${icon('user')}${rules.staffName(db, b.staffId)}</span>` : ''}${b.note ? html`<span>${b.note}</span>` : ''}</div>
@@ -69,7 +69,7 @@
 
       /* The week ahead, grouped by day */
       const byDay = {};
-      myWeek.forEach((b) => (byDay[b.date] = byDay[b.date] || []).push(b));
+      myWeek.forEach((b) => (byDay[b.viewDate] = byDay[b.viewDate] || []).push(b));
       const weekPanel = calendarOn ? html`<section class="panel" aria-labelledby="weekTitle">
         <div class="panel-head"><h2 id="weekTitle">Your week</h2><a class="btn btn-quiet btn-sm" href="#/calendar">Open calendar</a></div>
         ${myWeek.length

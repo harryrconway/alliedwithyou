@@ -26,7 +26,7 @@
     { key: 'invoices', label: 'Invoices', icon: 'receipt', group: 'Billing', state: 'locked' },
     { key: 'incidents', label: 'Incidents and complaints', icon: 'alert', group: 'Practice', state: 'locked' },
     { key: 'staff', label: 'Team and access', icon: 'shield', group: 'Practice', state: 'open' },
-    { key: 'statistics', label: 'Business reports', icon: 'chart', group: 'Practice', state: 'locked' },
+    { key: 'statistics', label: 'Reports and downloads', icon: 'chart', group: 'Practice', state: 'open' },
     { key: 'history', label: 'Change history', icon: 'history', group: 'Practice', state: 'open' },
     { key: 'settings', label: 'Settings', icon: 'settings', group: 'Practice', state: 'open' },
     { key: 'feedback', label: 'Feedback and issues', icon: 'message', group: 'Practice', state: 'open' }
@@ -37,7 +37,7 @@
   const ROLES = {
     administrator: {
       label: 'Administrator',
-      summary: 'Everything, including approving accounts, roles, settings and fees.',
+      summary: 'Everything, including approving accounts, roles, settings, fees, reports and downloads.',
       sections: ALL
     },
     therapist: {

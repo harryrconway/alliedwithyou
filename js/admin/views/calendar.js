@@ -1,7 +1,9 @@
 /*
   The staff calendar: who is booked, away or unavailable, with week, month and list views.
   Entries only ever say "Booked" and similar, never who the client is.
-  Each entry shows at the local time where it was booked, marked NSW or QLD.
+  Everything is laid out in one time zone, this device's when it's in Australia, so a day
+  reads in order. Each entry is marked with the state or territory it was booked in, and
+  its clock time there when that's different.
 */
 (function () {
   const AWY = (window.AWY = window.AWY || {});
@@ -20,11 +22,11 @@
 
   /* Places overlapping entries side by side, for example two staff booked at once */
   function layout(events) {
-    const sorted = events.slice().sort((a, b) => D.minutes(a.start) - D.minutes(b.start));
+    const sorted = events.slice().sort((a, b) => D.minutes(a.viewStart) - D.minutes(b.viewStart));
     const clusters = [];
     let current = null;
     sorted.forEach((e) => {
-      const s = D.minutes(e.start);
+      const s = D.minutes(e.viewStart);
       const end = s + Number(e.duration);
       if (!current || s >= current.end) {
         current = { end: end, items: [] };
@@ -37,7 +39,7 @@
     clusters.forEach((cl) => {
       const lanes = [];
       cl.items.forEach((e) => {
-        const s = D.minutes(e.start);
+        const s = D.minutes(e.viewStart);
         let lane = lanes.findIndex((endAt) => endAt <= s);
         if (lane < 0) {
           lane = lanes.length;
@@ -60,8 +62,8 @@
     let first = Math.min(7, Number(String(settings.dayStart || '08:00').slice(0, 2)));
     let last = Math.max(18, Math.ceil(D.minutes(settings.dayEnd || '17:30') / 60));
     blocks.forEach((b) => {
-      first = Math.min(first, Math.floor(D.minutes(b.start) / 60));
-      last = Math.max(last, Math.min(24, Math.ceil((D.minutes(b.start) + Number(b.duration)) / 60)));
+      first = Math.min(first, Math.floor(D.minutes(b.viewStart) / 60));
+      last = Math.max(last, Math.min(24, Math.ceil((D.minutes(b.viewStart) + Number(b.duration)) / 60)));
     });
     return { first: first, last: last };
   }
@@ -70,7 +72,7 @@
     const { db, today, settings } = ctx;
     const monday = D.startOfWeek(anchor);
     const days = [0, 1, 2, 3, 4, 5, 6].map((i) => D.addDays(monday, i));
-    const inWeek = blocks.filter((b) => b.date >= days[0] && b.date <= days[6]);
+    const inWeek = blocks.filter((b) => b.viewDate >= days[0] && b.viewDate <= days[6]);
     const range = hourRange(inWeek, settings);
     const hours = [];
     for (let h = range.first; h < range.last; h += 1) hours.push(h);
@@ -78,18 +80,18 @@
     const nowMin = now.getHours() * 60 + now.getMinutes();
 
     const cols = days.map((day) => {
-      const placed = layout(inWeek.filter((b) => b.date === day));
+      const placed = layout(inWeek.filter((b) => b.viewDate === day));
       return html`<div class="cal-col${day === today ? ' is-today' : ''}" role="group" aria-label="${fmt.dateLong(day)}">
         ${hours.map((h) => html`<button type="button" class="cal-slot" data-slot="${day}" data-hour="${h}" aria-label="New calendar entry ${fmt.dateDay(day)} at ${fmt.time(String(h).padStart(2, '0') + ':00')}"></button>`)}
         ${placed.map(({ e, lane, lanes }) => {
-          const top = (D.minutes(e.start) - range.first * 60) / 60;
+          const top = (D.minutes(e.viewStart) - range.first * 60) / 60;
           const height = Math.max(Number(e.duration) / 60, 0.42);
           const left = 'calc(' + (lane / lanes) * 100 + '% + 3px)';
           const width = 'calc(' + 100 / lanes + '% - 6px)';
           const short = Number(e.duration) < 45 ? ' is-short' : '';
           return html`<button type="button" class="cal-event is-${e.kind}${short}" data-block="${e.id}" style="top:calc(var(--hour) * ${top});height:calc(var(--hour) * ${height} - 2px);left:${left};width:${width};right:auto" aria-label="${label(db, e)}">
             <strong>${C.label('blockKind', e.kind)}</strong>
-            <span>${fmt.time(e.start)} ${A.zoneTag(e)}</span>
+            <span>${fmt.time(e.viewStart)} ${A.zoneTag(e)}</span>
             ${!ctx.state.staff ? html`<span>${rules.staffFirstName(db, e.staffId)}</span>` : ''}
           </button>`;
         })}
@@ -112,11 +114,11 @@
     let day = D.startOfWeek(first);
     const cells = [];
     while (day <= last || D.weekday(day) !== 1) {
-      const list = blocks.filter((b) => b.date === day).sort((a, b) => a.start.localeCompare(b.start));
+      const list = blocks.filter((b) => b.viewDate === day).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
       const other = day < first || day > last;
       cells.push(html`<div class="cell${other ? ' is-other' : ''}${day === today ? ' is-today' : ''}">
         <span class="date">${Number(day.slice(8, 10))}</span>
-        ${list.slice(0, 3).map((b) => html`<button type="button" class="cal-chip is-${b.kind}" data-block="${b.id}" aria-label="${label(db, b)}">${fmt.time(b.start).replace(' ', '')} ${C.label('blockKind', b.kind)}${ctx.state.staff ? '' : ', ' + rules.staffFirstName(db, b.staffId)}</button>`)}
+        ${list.slice(0, 3).map((b) => html`<button type="button" class="cal-chip is-${b.kind}" data-block="${b.id}" aria-label="${label(db, b)}">${fmt.time(b.viewStart).replace(' ', '')} ${C.label('blockKind', b.kind)}${ctx.state.staff ? '' : ', ' + rules.staffFirstName(db, b.staffId)}</button>`)}
         ${list.length > 3 ? html`<button type="button" class="cal-more" data-goto-week="${day}">${list.length - 3} more</button>` : ''}
       </div>`);
       day = D.addDays(day, 1);
@@ -131,17 +133,17 @@
   function listView(ctx, blocks, anchor) {
     const { db } = ctx;
     const until = D.addDays(anchor, 13);
-    const list = blocks.filter((b) => b.date >= anchor && b.date <= until).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+    const list = blocks.filter((b) => b.viewDate >= anchor && b.viewDate <= until).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
     if (!list.length) return C.empty({ icon: 'calendar', title: 'Nothing in the calendar for these two weeks' });
     const byDay = {};
-    list.forEach((b) => (byDay[b.date] = byDay[b.date] || []).push(b));
+    list.forEach((b) => (byDay[b.viewDate] = byDay[b.viewDate] || []).push(b));
     return html`<section class="panel">${Object.keys(byDay).sort().map((day) => html`
       <div class="day-label">${fmt.dateLong(day)}</div>
       <ul class="rows">${byDay[day].map((b) => html`<li>
-        <div class="when">${fmt.time(b.start)}<small>${fmt.duration(b.duration)}</small></div>
+        <div class="when">${fmt.time(b.viewStart)}<small>${fmt.duration(b.duration)}</small></div>
         <div class="what">
           <button type="button" class="link-button" data-block="${b.id}">${C.label('blockKind', b.kind)}</button>
-          <div class="meta"><span>${icon('user')}${rules.staffName(db, b.staffId)}</span><span>${A.zoneTag(b)} ${AWY.date.zoneLabel(b.timeZone)}</span>${b.note ? html`<span>${b.note}</span>` : ''}</div>
+          <div class="meta"><span>${icon('user')}${rules.staffName(db, b.staffId)}</span><span>${A.zoneTag(b)}</span>${b.note ? html`<span>${b.note}</span>` : ''}</div>
         </div>
         <div class="end"><button type="button" class="btn btn-quiet btn-sm" data-block="${b.id}">Open</button></div>
       </li>`)}</ul>`)}</section>`;
@@ -179,13 +181,16 @@
       const staffOptions = rules.activeStaff(db).map((s) => ({ value: s.id, label: (s.name || s.email) + (s.id === user.id ? ' (you)' : '') }));
       const body = state.view === 'week' ? weekView(ctx, blocks, anchor) : state.view === 'month' ? monthView(ctx, blocks, anchor) : listView(ctx, blocks, anchor);
       const local = D.localZone();
-      const localNote = local === 'Australia/Sydney' || local === 'Australia/Brisbane' ? 'This device is on ' + D.zoneLabel(local) + '.' : 'This device is set to ' + local.replace(/_/g, ' ') + '.';
+      const zoneNote = D.ZONES[local]
+        ? 'Times show in ' + D.zoneLabel(db.viewZone) + ', as this device is set to it.'
+        : 'This device is set to ' + D.zoneLabel(local) + ', so times show in ' + D.zoneLabel(db.viewZone) + ', the practice\'s usual time zone.';
+      const shown = blocks.filter((b) => b.viewDate >= from && b.viewDate <= to).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
 
       ctx.el.innerHTML = String(html`
         ${C.pageHead({
           title: 'Calendar',
           subtitle: 'When each person is booked, away or unavailable. Entries never show who a booking is with.',
-          actions: html`<button type="button" class="btn" data-new-block>${icon('plus')}New entry</button>`
+          actions: html`<button type="button" class="btn btn-secondary" data-download ${raw(shown.length ? '' : 'disabled')}>${icon('download')}Download</button><button type="button" class="btn" data-new-block>${icon('plus')}New entry</button>`
         })}
         <div class="cal-toolbar">
           <div class="cal-nav">
@@ -205,7 +210,7 @@
         <div class="cal-legend" aria-hidden="true">
           ${KINDS.map((k) => html`<span><i class="cal-key is-${k}"></i>${C.label('blockKind', k)}</span>`)}
         </div>
-        <p class="small muted" style="margin-top:0.75rem">${icon('clock')} Times show in the time zone each entry was booked in, marked NSW or QLD. ${localNote}</p>
+        <p class="small muted" style="margin-top:0.75rem">${icon('clock')} ${zoneNote} Each entry is marked with the state or territory it was booked in, and shows the time there when it's different.</p>
       `);
 
       const el = ctx.el;
@@ -219,6 +224,7 @@
         else state.date = D.addDays(state.date, 14 * step);
         ctx.refresh();
       });
+      AWY.on(el, 'click', '[data-download]', () => AWY.exports.sheet('Calendar', AWY.exports.COLUMNS.calendar(db), shown));
       AWY.on(el, 'click', '[data-goto-week]', (event, btn) => {
         state.view = 'week';
         state.date = btn.dataset.gotoWeek;

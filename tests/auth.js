@@ -169,6 +169,15 @@ module.exports = async function auth(ctx) {
     const forOther = await therapist.client.from('calendar_blocks').insert({ staff_id: other.id, starts_at: start.toISOString(), duration_mins: 30, kind: 'booked' });
     ok(!!forOther.error, 'A therapist could add calendar entries for someone else');
 
+    /* Every state and territory has a time zone, and anywhere else is refused */
+    const at = (hours) => new Date(start.getTime() + hours * 3600000).toISOString();
+    const perth = await therapist.client.from('calendar_blocks').insert({ staff_id: therapist.id, starts_at: at(2), duration_mins: 30, kind: 'booked', time_zone: 'Australia/Perth' });
+    ok(!perth.error, 'A calendar entry in Western Australian time was refused: ' + (perth.error && perth.error.message));
+    const canberra = await therapist.client.from('calendar_blocks').insert({ staff_id: therapist.id, starts_at: at(3), duration_mins: 30, kind: 'booked', time_zone: 'Australia/Canberra' });
+    ok(!canberra.error, 'A calendar entry in ACT time was refused');
+    const abroad = await therapist.client.from('calendar_blocks').insert({ staff_id: therapist.id, starts_at: at(4), duration_mins: 30, kind: 'booked', time_zone: 'Europe/London' });
+    ok(!!abroad.error, 'A calendar entry in a time zone outside Australia was accepted');
+
     /* Feedback: your own only, administrators and developers see all */
     const fb = await therapist.client.from('feedback').insert({ title: 'QA feedback', description: 'Test', created_by: therapist.id }).select('id, ref').single();
     ok(!fb.error && fb.data.ref && fb.data.ref.length === 6, 'Feedback could not be submitted with a reference');
@@ -239,6 +248,8 @@ module.exports = async function auth(ctx) {
     ok(otherChk.data && otherChk.data.length === 0, "Staff could see someone else's checks");
     const selfChk = await therapist.client.from('staff_checks').insert({ staff_id: therapist.id, kind: 'police' });
     ok(!!selfChk.error, 'A therapist could record a check without an administrator');
+    const ochre = await admin.client.from('staff_checks').insert({ staff_id: therapist.id, kind: 'ochre_card', reference: 'QA' + stamp });
+    ok(!ochre.error, 'A Northern Territory Ochre Card could not be recorded');
 
     /* Errors are logged through the safe function and read only by administrators and developers */
     await therapist.client.rpc('log_error', { p_ref: 'QA' + stamp.slice(-4).toUpperCase(), p_category: 'network', p_area: 'tests', p_operation: 'auth check', p_message: 'Test error', p_app_version: 'test', p_fingerprint: 'qa' + stamp });
@@ -249,6 +260,16 @@ module.exports = async function auth(ctx) {
     await anon.rpc('log_error', { p_ref: 'X', p_category: 'network', p_area: '', p_operation: '', p_message: 'anon', p_app_version: '', p_fingerprint: 'anon' + stamp });
     const { count: anonErr } = await service.from('error_events').select('id', { count: 'exact', head: true }).eq('fingerprint', 'anon' + stamp);
     ok(!anonErr, 'A visitor who is not signed in could write error events');
+
+    /* Downloads are noted in the change history, and only active staff can note one */
+    const noted = await therapist.client.rpc('log_download', { p_what: 'QA download ' + stamp });
+    ok(!noted.error, 'An active staff member could not note a download');
+    const { data: dl } = await admin.client.from('audit_events').select('action, actor_id, table_name').eq('summary', 'QA download ' + stamp);
+    ok(dl && dl.length === 1 && dl[0].action === 'download' && dl[0].actor_id === therapist.id && dl[0].table_name === 'downloads', 'A download was not noted in the change history');
+    const pendingNote = await pending.client.rpc('log_download', { p_what: 'QA pending ' + stamp });
+    ok(!!pendingNote.error, 'An account waiting for approval could note a download');
+    const anonNote = await anon.rpc('log_download', { p_what: 'QA anon ' + stamp });
+    ok(!!anonNote.error, 'A visitor who is not signed in could note a download');
 
     /* Approvals: an administrator approves, and it's recorded in the audit trail */
     const approve = await admin.client.from('profiles').update({ status: 'active', role: 'therapist' }).eq('id', pending.id).select('status, approved_by');

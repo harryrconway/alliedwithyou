@@ -89,7 +89,7 @@
       roles: ['administrator']
     },
     monitorChecks: {
-      table: 'monitor_checks', order: 'name',
+      table: 'monitor_checks', order: 'name', key: 'name',
       columns: [],
       nullable: [],
       roles: ['administrator', 'developer']
@@ -218,6 +218,37 @@
     return run(name, q).then((rows) => rows.map((r) => fromRow(name, r)));
   }
 
+  /*
+    Every row of a table the person may see, read a page at a time, for downloads and reports.
+    The snapshot only holds recent records, and the database returns at most 1000 rows a request.
+    range: { column, from, to } limits the rows to from <= column < to.
+  */
+  const PAGE = 1000;
+  async function all(name, range) {
+    const def = TABLES[name];
+    if (!def || (def.roles && !(user && def.roles.includes(user.role)))) return [];
+    const out = [];
+    for (let from = 0; ; from += PAGE) {
+      let q = client.from(def.table).select('*').order(def.order, { ascending: !def.desc }).order(def.key || 'id', { ascending: true });
+      if (range && range.from) q = q.gte(range.column, range.from);
+      if (range && range.to) q = q.lt(range.column, range.to);
+      const rows = await run(name, q.range(from, from + PAGE - 1));
+      rows.forEach((r) => out.push(fromRow(name, r)));
+      if (rows.length < PAGE) return out;
+    }
+  }
+
+  /* Where each calendar entry sits on screen: the date and time in the zone the calendar is shown in */
+  function placeBlocks(blocks, usual) {
+    const zone = D.viewZone(usual);
+    blocks.forEach((b) => {
+      const p = D.zoneParts(b.startsAt, zone);
+      b.viewDate = p.date;
+      b.viewStart = p.time;
+    });
+    return zone;
+  }
+
   async function readSettings() {
     const row = await run('settings', client.from('settings').select('*').eq('id', 'practice').maybeSingle());
     if (!row) return { id: 'practice' };
@@ -269,10 +300,14 @@
       const db = {};
       names.forEach((n, i) => (db[n] = results[i]));
       db.settings = [results[names.length]];
+      db.viewZone = placeBlocks(db.calendar, db.settings[0].defaultTimeZone);
       return db;
     },
 
     list: list,
+    all: all,
+    placeBlocks: placeBlocks,
+    settings: readSettings,
 
     async create(name, data, options) {
       const opts = options || {};

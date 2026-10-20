@@ -20,7 +20,13 @@ const ZONE = 'Australia/Brisbane';
 const CHECK_LABELS: Record<string, string> = {
   ndis_screening: 'NDIS Worker Screening Check',
   wwcc_nsw: 'Working with Children Check (NSW)',
+  wwcc_vic: 'Working with Children Check (Victoria)',
   blue_card: 'Blue card (Queensland)',
+  wwcc_sa: 'Working with Children Check (South Australia)',
+  wwcc_wa: 'Working with Children Check (Western Australia)',
+  rwvp_tas: 'Working with Vulnerable People registration (Tasmania)',
+  ochre_card: 'Ochre Card (Northern Territory)',
+  wwvp_act: 'Working with Vulnerable People registration (ACT)',
   police: 'National police check',
   ahpra: 'Ahpra registration',
   indemnity: 'Professional indemnity insurance',
@@ -35,7 +41,8 @@ const CHECK_LABELS: Record<string, string> = {
 };
 
 type Person = { id: string; email: string; full_name: string; status: string; role: string };
-type Mail = { keys: string[]; to: string[]; subject: string; text: string };
+// check and before: for a service check email, which check it's about and its alerted state before this run
+type Mail = { keys: string[]; to: string[]; subject: string; text: string; check?: string; before?: boolean };
 
 function reply(status: number, body: Record<string, unknown>) {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
@@ -95,6 +102,7 @@ function firstName(p: Person): string {
 }
 
 Deno.serve(async (req) => {
+  const started = Date.now();
   if (req.method !== 'POST') return reply(405, { ok: false });
   const secret = Deno.env.get('NOTIFY_SECRET');
   if (!secret || req.headers.get('x-notify-secret') !== secret) return reply(401, { ok: false });
@@ -176,7 +184,7 @@ Deno.serve(async (req) => {
       let alerted = last.alerted;
       if (problem && failures >= 2 && !alerted && watchers.length) {
         alerted = true;
-        monitorMails.push({ keys: [], to: watchers, subject: CHECK_NAMES[name] + " isn't working", text: [
+        monitorMails.push({ keys: [], check: name, before: last.alerted, to: watchers, subject: CHECK_NAMES[name] + " isn't working", text: [
           'Hello,',
           '',
           CHECK_NAMES[name] + " hasn't been working for the last two checks, about 15 minutes apart. " + problem + '.',
@@ -188,7 +196,7 @@ Deno.serve(async (req) => {
       }
       if (!problem && last.alerted) {
         alerted = false;
-        monitorMails.push({ keys: [], to: watchers, subject: CHECK_NAMES[name] + ' is working again', text: [
+        monitorMails.push({ keys: [], check: name, before: last.alerted, to: watchers, subject: CHECK_NAMES[name] + ' is working again', text: [
           'Hello,',
           '',
           CHECK_NAMES[name] + ' is working again.',
@@ -324,31 +332,52 @@ Deno.serve(async (req) => {
     });
   }
 
+  // One connection for every email in the run, with time limits, so a slow mail server makes a send
+  // fail and be retried next run, rather than the platform stopping the function part way through
   const transport = nodemailer.createTransport({
     host: Deno.env.get('SMTP_HOST'),
     port: Number(Deno.env.get('SMTP_PORT') ?? 465),
     secure: true,
     auth: { user: Deno.env.get('SMTP_USER'), pass: Deno.env.get('SMTP_PASSWORD') },
+    pool: true,
+    maxConnections: 1,
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 20000,
   });
 
   let sent = 0;
   const failed: string[] = [];
+  const unsent: Mail[] = [];
+  const stopAt = started + 100000;
   for (const m of sending) {
+    if (Date.now() > stopAt) {
+      unsent.push(m);
+      continue;
+    }
     const to = REDIRECT ? [REDIRECT] : m.to;
     const text = REDIRECT ? '(Test project. This would have gone to ' + m.to.join(', ') + '.)\n\n' + m.text : m.text;
+    const began = Date.now();
     try {
       await transport.sendMail({ from: { name: 'Allied With You dashboard', address: Deno.env.get('SMTP_USER')! }, to, subject: m.subject, text });
       sent += 1;
     } catch (error) {
-      console.error('Alert email failed:', (error as Error).name);
-      failed.push(...m.keys);
+      console.error('Alert email failed:', (error as Error).name, (error as { code?: string }).code ?? '');
+      unsent.push(m);
     }
+    console.log('Alert email took', Date.now() - began, 'ms');
   }
-  // Anything that didn't send is cleared, so the next run tries again
+  transport.close();
+  // Anything that didn't send is cleared, so the next run tries again. A service check email
+  // puts the check back as it was, so the next run notices the change and sends it again.
+  for (const m of unsent) {
+    failed.push(...m.keys);
+    if (m.check) await db.from('monitor_checks').update({ alerted: m.before }).eq('name', m.check);
+  }
   if (failed.length) await db.from('notifications').delete().in('key', failed);
 
-  return reply(failed.length ? 502 : 200, {
-    ok: !failed.length,
+  return reply(unsent.length ? 502 : 200, {
+    ok: !unsent.length,
     signups: sending.filter((m) => m.subject.startsWith('A new account')).length,
     checks: newChecks.length,
     weekly: sending.some((m) => m.keys.includes(weekKey)),

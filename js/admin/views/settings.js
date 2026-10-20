@@ -18,7 +18,7 @@
     { name: 'phone', label: 'Phone', type: 'tel', rule: 'phone' },
     { name: 'abn', label: 'ABN', type: 'text' },
     { name: 'postal', label: 'Postal address', type: 'text', span: 'all' },
-    { name: 'areaDetail', label: 'Service area', type: 'textarea', span: 'all', rows: 2 }
+    { name: 'areaDetail', label: 'Service area', type: 'textarea', span: 'all', rows: 2, hint: 'Where you visit in person, and that telehealth reaches anywhere in Australia' }
   ];
 
   function section(id, title, intro, body, editable) {
@@ -109,7 +109,10 @@
     return html`<section class="panel settings-section" aria-labelledby="feesTitle">
       <div class="panel-head">
         <div><h2 id="feesTitle">Fees</h2><p>Each rate has a start date, so a price change never alters what was charged before. The website's fees page is updated separately.</p></div>
-        ${editable ? html`<button type="button" class="btn btn-secondary btn-sm" data-new-fee>${icon('plus')}Add a fee</button>` : ''}
+        <div class="btn-row">
+          <button type="button" class="btn btn-quiet btn-sm" data-download-fees ${raw(keys.length ? '' : 'disabled')}>${icon('download')}Download</button>
+          ${editable ? html`<button type="button" class="btn btn-secondary btn-sm" data-new-fee>${icon('plus')}Add a fee</button>` : ''}
+        </div>
       </div>
       ${keys.length ? html`<ul class="rows">${keys.map((key) => {
         const versions = rules.itemVersions(db, key);
@@ -171,7 +174,7 @@
               <select class="select" id="defaultTimeZone" name="defaultTimeZone" aria-describedby="defaultTimeZoneHint">
                 ${C.options('timeZone').map((o) => html`<option value="${o.value}" ${raw(o.value === (s.defaultTimeZone || 'Australia/Brisbane') ? 'selected' : '')}>${o.label}</option>`)}
               </select>
-              <p class="hint" id="defaultTimeZoneHint">Used for new calendar entries on devices outside NSW and Queensland.</p>
+              <p class="hint" id="defaultTimeZoneHint">The calendar uses this on devices set to a time zone outside Australia.</p>
             </div>
           </div>`, editable)}
 
@@ -221,6 +224,8 @@
 
       AWY.on(el, 'click', '[data-new-rate]', (event, btn) => newRate(btn.dataset.newRate));
       AWY.on(el, 'click', '[data-new-fee]', () => newFee());
+      AWY.on(el, 'click', '[data-download-fees]', () => AWY.exports.sheet('Fees', AWY.exports.COLUMNS.supportItems(), db.supportItems.slice().sort((a, b) =>
+        a.funding.localeCompare(b.funding) || a.name.localeCompare(b.name) || a.effectiveFrom.localeCompare(b.effectiveFrom))));
       AWY.on(el, 'click', '[data-remove-rate]', (event, btn) => removeUpcoming(db.supportItems.find((i) => i.id === btn.dataset.removeRate)));
     }
   };

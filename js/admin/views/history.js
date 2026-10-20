@@ -33,21 +33,6 @@
     );
   }
 
-  /* A spreadsheet friendly copy of what's on screen */
-  function download(db, list) {
-    const cell = (v) => '"' + String(v === null || v === undefined ? '' : v).replace(/"/g, '""') + '"';
-    const lines = [['When', 'Who', 'Area', 'What happened', 'Fields changed'].map(cell).join(',')].concat(list.map((e) =>
-      [fmt.stamp(e.at), who(db, e), C.label('auditTable', e.tableName), e.summary, fieldsText(e)].map(cell).join(',')));
-    const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'Change history ' + D.today() + '.csv';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-  }
-
   AWY.views.history = {
     title: 'Change history',
     render(ctx) {
@@ -78,7 +63,7 @@
         <p class="small muted" style="margin-top:0.75rem">Showing ${fmt.plural(list.length, 'change')} from the latest ${db.auditEvents.length} recorded. The history names the fields that changed, not what they changed to, except for roles and account status. Automatic means a change made by the system, such as an accepted invitation.</p>
       `);
       C.bindFilters(ctx);
-      AWY.on(ctx.el, 'click', '[data-download]', () => download(db, C.sortRows(list, columns, state.sort || '-at')));
+      AWY.on(ctx.el, 'click', '[data-download]', () => AWY.exports.sheet('Change history', AWY.exports.COLUMNS.auditEvents(db), C.sortRows(list, columns, state.sort || '-at')));
     }
   };
 })();

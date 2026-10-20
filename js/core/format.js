@@ -12,6 +12,19 @@
   const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+  /* A time zone for each state and territory, in the usual order. The ACT has its own
+     name so entries can be marked ACT, though its clock matches Sydney's. */
+  const ZONES = {
+    'Australia/Sydney': 'NSW',
+    'Australia/Melbourne': 'VIC',
+    'Australia/Brisbane': 'QLD',
+    'Australia/Adelaide': 'SA',
+    'Australia/Perth': 'WA',
+    'Australia/Hobart': 'TAS',
+    'Australia/Darwin': 'NT',
+    'Australia/Canberra': 'ACT'
+  };
+
   function parse(iso) {
     if (!iso) return null;
     const [y, m, d] = String(iso).slice(0, 10).split('-').map(Number);
@@ -90,8 +103,9 @@
       return stamp ? toISO(new Date(stamp)) : '';
     },
 
-    /* Time zones. NSW has daylight saving and Queensland doesn't, so a stored moment
-       can show as different local times on either side of the border. */
+    /* Time zones. Clocks differ by up to three hours across Australia, and only some states
+       have daylight saving, so a stored moment shows as different local times around the country. */
+    ZONES: ZONES,
     localZone() {
       try {
         return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Australia/Brisbane';
@@ -125,8 +139,17 @@
       stamp = guess - date.zoneOffset(stamp, timeZone) * 60000;
       return new Date(stamp).toISOString();
     },
+    zoneShort(timeZone) {
+      return ZONES[timeZone] || String(timeZone || '').replace(/_/g, ' ');
+    },
     zoneLabel(timeZone) {
-      return timeZone === 'Australia/Sydney' ? 'NSW time' : timeZone === 'Australia/Brisbane' ? 'QLD time' : timeZone;
+      return ZONES[timeZone] ? ZONES[timeZone] + ' time' : String(timeZone || '').replace(/_/g, ' ');
+    },
+    /* The zone the calendar is shown in: this device's when it's in Australia, otherwise the practice's usual zone */
+    viewZone(usual) {
+      const local = date.localZone();
+      if (ZONES[local]) return local;
+      return ZONES[usual] ? usual : 'Australia/Brisbane';
     },
     /* True when a moment shows at a different clock time in the zone than on this device */
     zoneDiffers(stamp, timeZone) {

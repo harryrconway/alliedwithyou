@@ -1230,6 +1230,11 @@ a.figure:hover {
   justify-content: flex-start;
 }
 
+/* Lines keep their height, so a wrapped time tag never squashes the title */
+.cal-event > * {
+  flex-shrink: 0;
+}
+
 .cal-event.is-short {
   flex-direction: row;
   align-items: baseline;
@@ -1426,4 +1431,45 @@ a.figure:hover {
   gap: var(--space-2);
   padding-bottom: var(--space-2);
   border-bottom: var(--border);
+}
+
+/* Reports: a number with a bar showing its share of the largest in the table */
+
+.meter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  min-width: 7.5rem;
+}
+
+.meter-n {
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+.meter-track {
+  display: block;
+  flex: 0 0 4.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--color-sage-soft);
+  overflow: hidden;
+}
+
+.meter-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-deep);
+}
+
+.text-danger {
+  color: var(--color-danger);
+  font-weight: var(--weight-semibold);
+}
+
+.text-warning {
+  color: var(--color-warning);
+  font-weight: var(--weight-semibold);
 }

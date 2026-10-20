@@ -68,8 +68,14 @@
       ['travel', 'Travel']
     ]),
     timeZone: opt([
-      ['Australia/Sydney', 'NSW time (Northern Rivers)'],
-      ['Australia/Brisbane', 'QLD time (Gold Coast)']
+      ['Australia/Sydney', 'New South Wales'],
+      ['Australia/Melbourne', 'Victoria'],
+      ['Australia/Brisbane', 'Queensland'],
+      ['Australia/Adelaide', 'South Australia'],
+      ['Australia/Perth', 'Western Australia'],
+      ['Australia/Hobart', 'Tasmania'],
+      ['Australia/Darwin', 'Northern Territory'],
+      ['Australia/Canberra', 'Australian Capital Territory']
     ]),
     blockLength: opt([
       ['15', '15 minutes'],
@@ -111,7 +117,13 @@
     checkKind: opt([
       ['ndis_screening', 'NDIS Worker Screening Check'],
       ['wwcc_nsw', 'Working with Children Check (NSW)'],
+      ['wwcc_vic', 'Working with Children Check (Victoria)'],
       ['blue_card', 'Blue card (Queensland)'],
+      ['wwcc_sa', 'Working with Children Check (South Australia)'],
+      ['wwcc_wa', 'Working with Children Check (Western Australia)'],
+      ['rwvp_tas', 'Working with Vulnerable People registration (Tasmania)'],
+      ['ochre_card', 'Ochre Card (Northern Territory)'],
+      ['wwvp_act', 'Working with Vulnerable People registration (ACT)'],
       ['police', 'National police check'],
       ['ahpra', 'AHPRA registration'],
       ['indemnity', 'Professional indemnity insurance'],
@@ -139,7 +151,8 @@
       ['calendar_blocks', 'Calendar'],
       ['templates', 'Templates'],
       ['template_versions', 'Template versions'],
-      ['staff_checks', 'Staff checks']
+      ['staff_checks', 'Staff checks'],
+      ['downloads', 'Downloads']
     ]),
     monitorCheck: opt([
       ['website', 'Website'],

@@ -27,11 +27,14 @@ module.exports = async function site(ctx) {
   await p.fill('#cLast', 'Tester');
   await p.fill('#cEmail', 'alex@example.com');
   await p.selectOption('#cAbout', 'myself');
-  await p.fill('#cSuburb', 'Lismore');
+  await p.fill('#cSuburb', 'Fremantle');
+  const everyState = 'NSW,VIC,QLD,SA,WA,TAS,NT,ACT';
+  ok((await p.$$eval('#cState option', (os) => os.map((o) => o.value).filter(Boolean).join(','))) === everyState, 'The contact form did not offer every state and territory');
+  await p.selectOption('#cState', 'WA');
   await p.fill('#cMessage', 'Checking the contact form works.');
   await p.click('form[data-enquiry] [type="submit"]');
   ok(await p.waitForSelector('text=has been sent', { timeout: 5000 }).then(() => true, () => false), 'A completed contact form did not confirm it was sent');
-  ok(sent && sent.kind === 'contact' && sent.about === 'For myself' && sent.preferredContact === 'Email' && sent.website === '', 'The contact form did not send readable details: ' + JSON.stringify(sent));
+  ok(sent && sent.kind === 'contact' && sent.about === 'For myself' && sent.state === 'Western Australia' && sent.preferredContact === 'Email' && sent.website === '', 'The contact form did not send readable details: ' + JSON.stringify(sent));
   ok(await p.isVisible('text=Taking you back to the home page'), 'A sent contact form did not count down to the home page');
   await p.click('[data-stay]');
   await p.waitForTimeout(1500);
@@ -49,7 +52,7 @@ module.exports = async function site(ctx) {
     await p.fill('#lastName', 'Person');
     await p.fill('#phone', '0400 000 001');
     await p.fill('#suburb', 'Tweed Heads');
-    await p.selectOption('#state', 'NSW');
+    await p.selectOption('#state', 'VIC');
     await p.selectOption('#fundingType', 'ndis_plan');
     await p.selectOption('#service', 'home');
     await p.fill('#reason', 'Checking the referral form works.');
@@ -57,6 +60,7 @@ module.exports = async function site(ctx) {
   };
 
   await fillReferral();
+  ok((await p.$$eval('#state option', (os) => os.map((o) => o.value).filter(Boolean).join(','))) === everyState, 'The referral form did not offer every state and territory');
   ok(await p.isVisible('#ndisNumber'), 'The NDIS number field did not appear for an NDIS referral');
   const fundingFor = (t) => p.selectOption('#referralType', t).then(() => p.$$eval('#fundingType option', (os) => os.map((o) => o.value).filter(Boolean).join(',')));
   ok((await fundingFor('myagedcare')) === 'sah,unsure', 'A My Aged Care referral offered funding options that do not fit');
@@ -68,7 +72,7 @@ module.exports = async function site(ctx) {
   answer = { status: 429, body: { ok: false, error: 'limit' } };
   await p.click('form[data-enquiry] [type="submit"]');
   ok(await p.waitForSelector('.form-summary >> text=paused', { timeout: 5000 }).then(() => true, () => false), 'Too many referrals did not explain the pause');
-  ok(sent && sent.kind === 'referral' && sent.referralType === 'NDIS' && sent.consent === 'yes' && sent.fundingType === 'NDIS plan managed', 'The referral did not send readable details: ' + JSON.stringify(sent));
+  ok(sent && sent.kind === 'referral' && sent.referralType === 'NDIS' && sent.state === 'Victoria' && sent.consent === 'yes' && sent.fundingType === 'NDIS plan managed', 'The referral did not send readable details: ' + JSON.stringify(sent));
 
   answer = 'drop';
   await p.click('form[data-enquiry] [type="submit"]');

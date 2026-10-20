@@ -72,7 +72,8 @@
       return db.templateVersions.filter((v) => v.templateId === templateId).sort((a, b) => b.versionNo - a.versionNo);
     },
 
-    /* Calendar entries. Each one happens at an exact moment, shown in the time zone it was booked in. */
+    /* Calendar entries. Each one happens at an exact moment and keeps the time zone it was booked in.
+       viewDate and viewStart place it in the zone the calendar is shown in. */
     blockStart(b) {
       return new Date(b.startsAt).getTime();
     },
@@ -87,13 +88,13 @@
     },
     blocksOn(db, day, staffId) {
       return db.calendar
-        .filter((b) => b.date === day && (!staffId || b.staffId === staffId))
-        .sort((a, b) => a.start.localeCompare(b.start));
+        .filter((b) => b.viewDate === day && (!staffId || b.staffId === staffId))
+        .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
     },
     blocksBetween(db, from, to, staffId) {
       return db.calendar
-        .filter((b) => b.date >= from && b.date <= to && (!staffId || b.staffId === staffId))
-        .sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
+        .filter((b) => b.viewDate >= from && b.viewDate <= to && (!staffId || b.staffId === staffId))
+        .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
     },
     weekAhead(today) {
       return D.addDays(today, 6);

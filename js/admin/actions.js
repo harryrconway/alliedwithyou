@@ -93,15 +93,16 @@
     return access.can('everyCalendar') || b.staffId === me().id;
   };
 
-  /* The zone a new entry starts in: this device's, if it's one of the practice's two, otherwise the practice default */
+  /* The zone a new entry starts in: the one the calendar is shown in */
   A.defaultZone = function () {
-    const local = D.localZone();
-    if (local === 'Australia/Sydney' || local === 'Australia/Brisbane') return local;
-    return ((db().settings[0] || {}).defaultTimeZone) || 'Australia/Brisbane';
+    return D.viewZone((db().settings[0] || {}).defaultTimeZone);
   };
 
+  /* Where an entry was booked, and its clock time there when that differs from the calendar's */
   A.zoneTag = function (b) {
-    return html`<span class="zone-tag" title="${D.zoneLabel(b.timeZone)}">${b.timeZone === 'Australia/Sydney' ? 'NSW' : 'QLD'}</span>`;
+    const differs = b.viewStart && (b.viewStart !== b.start || b.viewDate !== b.date);
+    const there = differs ? fmt.time(b.start) + (b.viewDate !== b.date ? ' ' + fmt.dateDay(b.date) : '') : '';
+    return html`<span class="zone-tag" title="${D.zoneLabel(b.timeZone)}${there ? ', ' + there + ' there' : ''}">${D.zoneShort(b.timeZone)}${there ? ' ' + there : ''}</span>`;
   };
 
   A.blockWhen = function (b) {
@@ -118,7 +119,7 @@
       { name: 'date', label: 'Date', type: 'date', required: true },
       { name: 'start', label: 'Start time', type: 'time', required: true },
       { name: 'duration', label: 'Length', type: 'select', options: schema.options.blockLength, required: true },
-      { name: 'timeZone', label: 'Time zone', type: 'select', options: schema.options.timeZone, required: true, hint: 'NSW has daylight saving and Queensland does not, so times can differ by an hour across the border.' },
+      { name: 'timeZone', label: 'State or territory', type: 'select', options: schema.options.timeZone, required: true, hint: 'Where the person is, so the time is right for them. Broken Hill uses South Australian time.' },
       { name: 'note', label: 'Short note', type: 'text', span: 'all', maxlength: 140, hint: schema.NO_CLIENT_DETAILS }
     ].filter(Boolean);
     const start = Object.assign({ staffId: me().id, kind: 'booked', date: D.today(), start: '09:00', duration: '60', timeZone: A.defaultZone() }, prefill || {}, existing || {});

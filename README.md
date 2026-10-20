@@ -1,6 +1,6 @@
 # Allied With You
 
-Website and staff dashboard for Allied With You, an occupational therapy practice working across the Northern Rivers and the Gold Coast.
+Website and staff dashboard for Allied With You, an occupational therapy practice working in person across the Northern Rivers and the Gold Coast, and by telehealth anywhere in Australia.
 
 The website is live at https://alliedwithyou.com.au. The staff dashboard lives at `/admin/` and runs on Supabase, with only the less sensitive sections switched on for now.
 
@@ -15,16 +15,17 @@ The website is live at https://alliedwithyou.com.au. The staff dashboard lives a
 
 ## The dashboard
 
-Open sections: dashboard, calendar, tasks, templates, team and access (including each person's checks and registrations), settings and fees, and feedback and issues. Every other section is listed in the menu but greyed out until the practice is ready to keep that information in the dashboard.
+Open sections: dashboard, calendar, tasks, templates, team and access (including each person's checks and registrations), settings and fees, reports and downloads, change history, and feedback and issues. Every other section is listed in the menu but greyed out until the practice is ready to keep that information in the dashboard.
 
 * Staff create an account and confirm their email, then an administrator approves them. admin@, jake@ and chelsie@ are set up by invitation instead.
-* The calendar shows when people are booked or away, never who with. Each entry keeps its NSW or QLD time.
+* The calendar shows when people are booked or away, never who with. Entries can be in any state or territory, for telehealth anywhere in Australia. The calendar is laid out in the device's own time, and each entry shows its state and its time there.
 * Tasks and calendar notes must not include client details until client records are switched on.
 * Any failure shows a short reference, and **Report an issue** sends it to the administrators with that reference attached.
 * Templates are versioned: administrators upload a new version with a note on what changed, and every earlier version stays available.
 * Checks and registrations record details and expiry dates only, never copies of documents.
 * Administrators get an email when someone is waiting for approval, a weekly summary on Monday mornings, and an alert if the website, sign in or the enquiry form stops working. Staff get reminders before their checks expire.
 * Feedback and reported issues are tracked as tickets, and administrators can see every change in Change history.
+* Administrators have reports for any period and can download spreadsheets or one zip file of everything. Each download is noted in Change history.
 
 ## Running it locally
 

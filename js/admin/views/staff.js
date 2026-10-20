@@ -184,8 +184,14 @@
       ], tab)}</div>`;
 
       if (tab === 'checks') {
-        ctx.el.innerHTML = String(html`${C.pageHead({ title: 'Team and access', subtitle: 'Screening checks, registrations, insurance and certificates for each person.' })}${tabs}${checksTab(ctx)}`);
+        const everyone = access.can('manageChecks');
+        const download = everyone ? html`<button type="button" class="btn btn-secondary" data-download-checks ${raw(db.staffChecks.length ? '' : 'disabled')}>${icon('download')}Download</button>` : '';
+        ctx.el.innerHTML = String(html`${C.pageHead({ title: 'Team and access', subtitle: 'Screening checks, registrations, insurance and certificates for each person.', actions: download })}${tabs}${checksTab(ctx)}`);
         C.bindFilters(ctx);
+        AWY.on(ctx.el, 'click', '[data-download-checks]', () => {
+          const shown = db.staffChecks.filter((c) => ctx.state.checks !== 'due' || ['expired', 'expiring'].includes(rules.checkStatus(c, today)));
+          AWY.exports.sheet('Staff checks', AWY.exports.COLUMNS.staffChecks(db, today), shown.slice().sort((a, b) => rules.staffName(db, a.staffId).localeCompare(rules.staffName(db, b.staffId)) || String(a.expiresOn).localeCompare(String(b.expiresOn))));
+        });
         AWY.on(ctx.el, 'click', '[data-add-check]', (event, btn) => checkForm(db.staff.find((s) => s.id === btn.dataset.addCheck), null));
         AWY.on(ctx.el, 'click', '[data-edit-check]', (event, btn) => {
           const c = db.staffChecks.find((x) => x.id === btn.dataset.editCheck);
@@ -207,7 +213,7 @@
       </section>` : '';
 
       ctx.el.innerHTML = String(html`
-        ${C.pageHead({ title: 'Team and access', subtitle: 'Who has an account, and what each role can do.' })}
+        ${C.pageHead({ title: 'Team and access', subtitle: 'Who has an account, and what each role can do.', actions: manage ? html`<button type="button" class="btn btn-secondary" data-download-team>${icon('download')}Download</button>` : '' })}
         ${tabs}
         ${approvals}
         <section class="panel" style="margin-bottom:1.5rem" aria-labelledby="teamTitle">
@@ -252,6 +258,7 @@
       AWY.on(ctx.el, 'click', '[data-decline]', (event, btn) => setStatus(find(btn.dataset.decline), 'declined'));
       AWY.on(ctx.el, 'click', '[data-switch-on]', (event, btn) => setStatus(find(btn.dataset.switchOn), 'active'));
       AWY.on(ctx.el, 'click', '[data-edit-staff]', (event, btn) => editForm(find(btn.dataset.editStaff)));
+      AWY.on(ctx.el, 'click', '[data-download-team]', () => AWY.exports.sheet('Team', AWY.exports.COLUMNS.staff(), team.concat(pending, inactive)));
     }
   };
 })();

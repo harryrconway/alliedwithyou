@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Contact us | Allied With You</title>
-  <meta name="description" content="Contact Allied With You about occupational therapy in the Northern Rivers and Gold Coast.">
+  <meta name="description" content="Contact Allied With You about occupational therapy in the Northern Rivers and Gold Coast, or by telehealth anywhere in Australia.">
   <meta name="theme-color" content="#0c5661">
   <link rel="icon" href="images/logomark.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="images/touchicon.png">
@@ -38,7 +38,7 @@
         <div class="stack-lg">
           <ul class="contact-list">
             <li><span data-icon="mail"></span><div><strong>Email</strong><a href="mailto:admin@alliedwithyou.com.au">admin@alliedwithyou.com.au</a></div></li>
-            <li><span data-icon="pin"></span><div><strong>Where we work</strong>The Northern Rivers in New South Wales and the Gold Coast in Queensland.</div></li>
+            <li><span data-icon="pin"></span><div><strong>Where we work</strong>In person across the Northern Rivers in New South Wales and the Gold Coast in Queensland, and by telehealth anywhere in Australia.</div></li>
           </ul>
           <div class="notice notice-danger">
             <span data-icon="alertCircle"></span>
@@ -60,7 +60,7 @@
               <div class="field"><label for="cLast">Last name</label><input class="input" id="cLast" name="lastName" autocomplete="family-name" maxlength="80" required></div>
               <div class="field"><label for="cEmail">Email</label><input class="input" id="cEmail" name="email" type="email" autocomplete="email" maxlength="160" required></div>
               <div class="field"><label for="cPhone">Phone <span class="optional">(optional)</span></label><input class="input" id="cPhone" name="phone" type="tel" autocomplete="tel" data-rule="phone"></div>
-              <div class="field">
+              <div class="field span-all">
                 <label for="cAbout">I'm asking</label>
                 <select class="select" id="cAbout" name="about" required>
                   <option value="">Choose one</option>
@@ -73,8 +73,22 @@
               </div>
               <div class="field">
                 <label for="cSuburb">Suburb or town</label>
-                <input class="input" id="cSuburb" name="suburb" autocomplete="address-level2" maxlength="80" required aria-describedby="cSuburbHint">
-                <p class="hint" id="cSuburbHint">So we know whether you're in our area.</p>
+                <input class="input" id="cSuburb" name="suburb" autocomplete="address-level2" maxlength="80" required>
+              </div>
+              <div class="field">
+                <label for="cState">State or territory</label>
+                <select class="select" id="cState" name="state" autocomplete="address-level1" required aria-describedby="cStateHint">
+                  <option value="">Choose one</option>
+                  <option value="NSW">New South Wales</option>
+                  <option value="VIC">Victoria</option>
+                  <option value="QLD">Queensland</option>
+                  <option value="SA">South Australia</option>
+                  <option value="WA">Western Australia</option>
+                  <option value="TAS">Tasmania</option>
+                  <option value="NT">Northern Territory</option>
+                  <option value="ACT">Australian Capital Territory</option>
+                </select>
+                <p class="hint" id="cStateHint">We visit in the Northern Rivers and on the Gold Coast. Anywhere else, we can see you by telehealth.</p>
               </div>
               <div class="field span-all">
                 <label for="cMessage">Message</label>

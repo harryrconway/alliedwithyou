@@ -31,7 +31,7 @@
       const people = rules.activeStaff(db).map((s) => ({ value: s.id, label: (s.name || s.email) + (s.id === user.id ? ' (you)' : '') }));
 
       ctx.el.innerHTML = String(html`
-        ${C.pageHead({ title: 'Tasks', subtitle: 'Follow up for the practice. Tick a task to complete it, or open it to reassign or reschedule.', actions: html`<button type="button" class="btn" data-new-task>${icon('plus')}New task</button>` })}
+        ${C.pageHead({ title: 'Tasks', subtitle: 'Follow up for the practice. Tick a task to complete it, or open it to reassign or reschedule.', actions: html`<button type="button" class="btn btn-secondary" data-download ${raw(base.length ? '' : 'disabled')} title="Open tasks and those completed in the last 90 days, with the filters above">${icon('download')}Download</button><button type="button" class="btn" data-new-task>${icon('plus')}New task</button>` })}
         <div class="notice" style="margin-bottom:1rem">${icon('info')}<div>${AWY.schema.NO_CLIENT_DETAILS}</div></div>
         <div class="toolbar">
           ${C.search(state.q, 'Search tasks')}
@@ -51,6 +51,7 @@
       `);
       C.bindFilters(ctx);
       A.bindCommon(ctx);
+      AWY.on(ctx.el, 'click', '[data-download]', () => AWY.exports.sheet('Tasks', AWY.exports.COLUMNS.tasks(db, today), base.slice().sort((a, b) => a.dueDate.localeCompare(b.dueDate))));
 
       /* Opened from search */
       if (query.task && state.openedFor !== query.task) {

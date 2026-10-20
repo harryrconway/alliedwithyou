@@ -4,6 +4,10 @@
   locked sections can't be opened and that failed saves explain themselves.
   Everything it creates is removed afterwards. Never runs against production.
 */
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { execFileSync } = require('child_process');
 const { createClient } = require('@supabase/supabase-js');
 const { open } = require('./page');
 const { readEnv } = require('./env');
@@ -179,6 +183,25 @@ module.exports = async function crm(ctx) {
     const { data: blocks } = await service.from('calendar_blocks').select('starts_at, time_zone').eq('staff_id', therapist.id);
     ok(blocks && blocks.length === 1 && blocks[0].starts_at.startsWith('2031-03-02T22:00'), 'A 9am NSW entry was not stored as the right moment');
 
+    /* A telehealth booking in Western Australia keeps its time there, and sits at this device's time in the week */
+    const browserZone = await p.evaluate(() => Intl.DateTimeFormat().resolvedOptions().timeZone);
+    await p.click('.page-head [data-new-block]');
+    ok((await p.$$eval('dialog select[name="timeZone"] option', (list) => list.map((o) => o.value).filter(Boolean).join(','))) === 'Australia/Sydney,Australia/Melbourne,Australia/Brisbane,Australia/Adelaide,Australia/Perth,Australia/Hobart,Australia/Darwin,Australia/Canberra', 'The calendar did not offer every state and territory');
+    await p.selectOption('dialog select[name="kind"]', 'booked');
+    await p.fill('dialog input[name="date"]', '2031-03-04');
+    await p.fill('dialog input[name="start"]', '14:00');
+    await p.selectOption('dialog select[name="duration"]', '60');
+    await p.selectOption('dialog select[name="timeZone"]', 'Australia/Perth');
+    await p.click('dialog [type="submit"]');
+    ok(await toast(p, 'WA time'), 'A Western Australian calendar entry was not saved');
+    const { data: waBlocks } = await service.from('calendar_blocks').select('starts_at').eq('staff_id', therapist.id).eq('time_zone', 'Australia/Perth');
+    ok(waBlocks && waBlocks.length === 1 && waBlocks[0].starts_at.startsWith('2031-03-04T06:00'), 'A 2pm WA entry was not stored as the right moment');
+    const waTag = await p.waitForSelector('.cal-event .zone-tag:has-text("WA")', { timeout: 8000 }).then((el) => el.textContent(), () => '');
+    ok(/^WA/.test(waTag) && (browserZone === 'Australia/Perth' || /2:00 pm/.test(waTag)), 'A WA entry did not show its time in WA: ' + waTag);
+    const [calFile] = await Promise.all([p.waitForEvent('download', { timeout: 10000 }), p.click('.page-head [data-download]')]);
+    const calCsv = fs.readFileSync(await calFile.path(), 'utf8');
+    ok(/State or territory/.test(calCsv) && /"2:00 pm","3:00 pm","WA"/.test(calCsv) && /"9:00 am","10:00 am","NSW"/.test(calCsv), 'The calendar download did not list both entries in their own time');
+
     /* Reporting an issue */
     await p.click('[data-action="report"]');
     await p.selectOption('dialog select[name="kind"]', 'bug');
@@ -240,9 +263,6 @@ module.exports = async function crm(ctx) {
 
     /* Templates: an administrator adds one as a draft, uploads a second version and approves it */
     const tplName = 'QA template ' + stamp;
-    const fs = require('fs');
-    const path = require('path');
-    const os = require('os');
     const fileOne = path.join(os.tmpdir(), 'qa' + stamp + 'one.txt');
     const fileTwo = path.join(os.tmpdir(), 'qa' + stamp + 'two.txt');
     fs.writeFileSync(fileOne, 'QA template, first version');
@@ -278,6 +298,48 @@ module.exports = async function crm(ctx) {
     ok(await toast(p, 'First aid certificate added'), 'An administrator could not record a staff check');
     await p.goto(ctx.base + 'admin/#/');
     ok(await p.waitForSelector('h2:has-text("Checks to renew")', { timeout: 8000 }).then(() => true, () => false), 'A check due to expire was not flagged on the dashboard');
+
+    /* Reports: booked time by person and by state or territory this month */
+    const todayQld = new Intl.DateTimeFormat('en-CA', { timeZone: 'Australia/Brisbane' }).format(new Date());
+    const noonQld = new Date(todayQld + 'T02:00:00Z');
+    const seeded = await service.from('calendar_blocks').insert([
+      { staff_id: therapist.id, starts_at: noonQld.toISOString(), duration_mins: 60, kind: 'booked', time_zone: 'Australia/Perth', note: 'QA report' },
+      { staff_id: therapist.id, starts_at: new Date(noonQld.getTime() + 2 * 3600000).toISOString(), duration_mins: 90, kind: 'booked', time_zone: 'Australia/Sydney', note: 'QA report' }
+    ]);
+    if (seeded.error) throw new Error('Could not add calendar entries for the reports: ' + seeded.error.message);
+    await p.goto(ctx.base + 'admin/#/statistics');
+    ok(await p.waitForSelector('#statesTitle', { timeout: 15000 }).then(() => true, () => false), 'The reports did not load');
+    const rowsOf = (id) => p.$$eval('section[aria-labelledby="' + id + '"] tbody tr', (rows) => rows.map((r) => Array.from(r.cells).map((c) => c.textContent.replace(/\s+/g, ' ').trim()).join(' | ')));
+    const stateRows = await rowsOf('statesTitle');
+    ok(stateRows.some((r) => /^NSW/.test(r)) && stateRows.some((r) => /^WA/.test(r)), 'The report by state did not show the NSW and WA bookings: ' + stateRows.join(', '));
+    const timeRows = await rowsOf('timeTitle');
+    ok(timeRows.some((r) => /^QA therapist \| 2\.5 /.test(r)), 'The report by person did not show 2.5 hours booked: ' + timeRows.join(', '));
+    const [repFile] = await Promise.all([p.waitForEvent('download', { timeout: 10000 }), p.click('[data-report="states"]')]);
+    const repCsv = fs.readFileSync(await repFile.path(), 'utf8');
+    ok(/State or territory/.test(repCsv) && /"WA"/.test(repCsv) && /^Booked time by state \d{4}-\d{2}-\d{2} to \d{4}-\d{2}-\d{2}\.csv$/.test(repFile.suggestedFilename()), 'The report download was not the table by state: ' + repFile.suggestedFilename());
+
+    /* A copy of everything, as one zip file that opens cleanly */
+    await p.click('a.tab[href="#/statistics/downloads"]');
+    await p.waitForSelector('[data-everything]');
+    const [zipFile] = await Promise.all([p.waitForEvent('download', { timeout: 60000 }), p.click('[data-everything]')]);
+    const zipPath = path.join(os.tmpdir(), 'qa' + stamp + '.zip');
+    await zipFile.saveAs(zipPath);
+    let zipOk = true;
+    try {
+      execFileSync('unzip', ['-tq', zipPath]);
+    } catch (error) {
+      zipOk = false;
+    }
+    ok(zipOk, 'The zip file of everything did not open cleanly');
+    const listing = zipOk ? execFileSync('unzip', ['-Z1', zipPath]).toString().split('\n') : [];
+    ok(['Read me.txt', 'Tasks.csv', 'Calendar.csv', 'Team.csv', 'Staff checks.csv', 'Fees.csv', 'Templates.csv', 'Tickets.csv', 'Change history.csv', 'Practice settings.csv'].every((n) => listing.includes(n)), 'The zip file was missing a spreadsheet: ' + listing.join(', '));
+    ok(listing.some((n) => n.startsWith('Template files/' + tplName + '/Version 2, ')), 'The zip file did not include the template files');
+    const zipCal = zipOk ? execFileSync('unzip', ['-p', zipPath, 'Calendar.csv']).toString() : '';
+    ok(/"2:00 pm","3:00 pm","WA"/.test(zipCal), 'The full calendar copy did not keep the WA entry in its own time');
+    fs.unlinkSync(zipPath);
+    await p.reload();
+    await p.goto(ctx.base + 'admin/#/history');
+    ok(await p.waitForSelector('td:has-text("Downloaded a copy of everything")', { timeout: 10000 }).then(() => true, () => false), 'The full download was not noted in the change history');
 
     await signOut(p);
 

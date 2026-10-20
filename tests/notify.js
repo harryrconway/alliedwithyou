@@ -37,6 +37,17 @@ module.exports = async function notify(ctx) {
   const service = createClient(env.STAGING_URL, env.STAGING_SECRET_KEY, { auth: { persistSession: false } });
   const url = env.STAGING_URL + '/functions/v1/notify';
   const call = (secret, body) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-notify-secret': secret }, body: JSON.stringify(body || {}) });
+  /* A run whose emails didn't all send releases them for the next run, so try again as the schedule would */
+  let retried = 0;
+  const run = async (body) => {
+    for (let attempt = 0; ; attempt += 1) {
+      const res = await call(env.STAGING_NOTIFY_SECRET, body);
+      const json = await res.json().catch(() => ({}));
+      if (res.status !== 502 || attempt === 3) return { status: res.status, body: json };
+      retried += 1;
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+  };
   const inbox = (marker, action) => Number(execFileSync('python3', ['-c', INBOX, ctx.root + '/.env', marker, action]).toString().trim());
   const stamp = Date.now().toString(36);
   const marker = 'QA Alert ' + stamp;
@@ -73,35 +84,34 @@ module.exports = async function notify(ctx) {
     const id = (kind) => checks.find((c) => c.kind === kind).id;
     keys.push('signup:' + waiting.id, 'check:' + id('first_aid') + ':30:' + soon, 'check:' + id('car_insurance') + ':expired:' + gone);
 
-    const first = await call(env.STAGING_NOTIFY_SECRET);
-    const body = await first.json().catch(() => ({}));
-    ok(first.status === 200 && body.ok, 'The alerts function failed: ' + first.status + ' ' + JSON.stringify(body));
+    const first = await run({});
+    ok(first.status === 200 && first.body.ok, 'The alerts function failed: ' + first.status + ' ' + JSON.stringify(first.body));
     const { data: recorded } = await service.from('notifications').select('key').in('key', keys);
     ok(recorded && recorded.length === 3, 'Not every alert that was due was recorded: ' + (recorded || []).length + ' of 3');
     const { data: far } = await service.from('notifications').select('key').like('key', 'check:' + id('cpr') + ':%');
     ok(far && far.length === 0, 'A reminder was sent for a check that is not due yet');
 
-    await call(env.STAGING_NOTIFY_SECRET);
+    await run({});
 
     /* The weekly summary goes once a week. This week's record is cleared first, as the schedule may have sent it already. */
-    const weekly = (await (await call(env.STAGING_NOTIFY_SECRET, { only: ['weekly'] })).json());
+    const weekly = (await run({ only: ['weekly'] })).body;
     if (!weekly.weekly) {
       await service.from('notifications').delete().like('key', 'weekly:%');
     }
-    const weeklyAgain = weekly.weekly ? (await (await call(env.STAGING_NOTIFY_SECRET, { only: ['weekly'] })).json()) : (await (await call(env.STAGING_NOTIFY_SECRET, { only: ['weekly'] })).json());
-    const weeklyThird = await (await call(env.STAGING_NOTIFY_SECRET, { only: ['weekly'] })).json();
+    const weeklyAgain = weekly.weekly ? (await run({ only: ['weekly'] })).body : (await run({ only: ['weekly'] })).body;
+    const weeklyThird = (await run({ only: ['weekly'] })).body;
     ok((weekly.weekly || weeklyAgain.weekly) && !weeklyThird.weekly, 'The weekly summary was not sent exactly once');
     const { data: weekRows } = await service.from('notifications').select('key').like('key', 'weekly:%');
     keys.push(...(weekRows || []).map((r) => r.key));
 
     /* Service checks: the real ones pass, and a pretend failure alerts after the second failure, then recovers */
-    const real = await (await call(env.STAGING_NOTIFY_SECRET, { only: ['monitor'] })).json();
+    const real = (await run({ only: ['monitor'] })).body;
     ok(real.monitor && real.monitor.website === '' && real.monitor.signin === '' && real.monitor.enquiry === '', 'A service check failed: ' + JSON.stringify(real.monitor));
     await service.from('monitor_checks').upsert({ name: 'website', ok: false, failures: 1, alerted: false });
-    const down = await (await call(env.STAGING_NOTIFY_SECRET, { only: ['monitor'], fail: ['website'] })).json();
+    const down = (await run({ only: ['monitor'], fail: ['website'] })).body;
     const { data: downRow } = await service.from('monitor_checks').select('ok, alerted').eq('name', 'website').single();
     ok(down.monitor.website && downRow && !downRow.ok && downRow.alerted, 'A failing service was not marked and alerted after two failures');
-    await call(env.STAGING_NOTIFY_SECRET, { only: ['monitor'] });
+    await run({ only: ['monitor'] });
     const { data: upRow } = await service.from('monitor_checks').select('ok, alerted').eq('name', 'website').single();
     ok(upRow && upRow.ok && !upRow.alerted, 'A service that recovered was not marked as working');
 
