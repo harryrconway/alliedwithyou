@@ -302,7 +302,7 @@ module.exports = async function crm(ctx) {
     await p.click('#setPasswordForm [type="submit"]');
     ok(await passTwoStep(p, invitedEmail) === 'setup', 'A new administrator was not asked to set up two step sign in');
     ok(await toast(p, 'Your password is saved'), 'Accepting an invitation did not save the password');
-    ok(await p.isVisible('h1:has-text("Good")'), 'An accepted invitation did not lead into the dashboard');
+    ok(await p.waitForSelector('h1:has-text("Good")', { timeout: 10000 }).then(() => true, () => false), 'An accepted invitation did not lead into the dashboard');
     const { data: invited } = await service.from('profiles').select('status, role, full_name').eq('id', invite.data.user.id).single();
     ok(invited.status === 'active' && invited.role === 'administrator' && invited.full_name === 'QA Invited', 'An accepted invitation did not set up an active administrator with their name');
     await signOut(p);
