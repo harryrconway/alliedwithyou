@@ -33,7 +33,7 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | Email alerts | Complete and verified | `supabase/functions/notify`, `supabase/migrations` | `notifications`, `pg_cron` job `notify`, Vault | notify | Every 15 minutes: an email to administrators when a confirmed account is waiting for approval (with a warning for reserved addresses), and reminders 60, 30 and 7 days before a staff check expires and once after, to the person and as one list to administrators. Recorded before sending so nothing goes twice. Check type and date only, no reference numbers. On the test project everything goes to noreply@ |
 | Weekly summary and service checks | Complete and verified | `supabase/functions/notify` | `monitor_checks`, `notifications` | notify | A Monday morning summary for administrators. Every 15 minutes the website, staff sign in and the enquiry form are checked, with an email after two failures in a row and when working again. Results show under Feedback and issues. They can't detect Supabase itself being down |
 | Privacy requests | Missing | none | `privacy_requests` | none | Stage 7 |
-| Automated tests in the repository | Complete and verified | `tests/` | none | all eight pass | Chromium only |
+| Automated tests in the repository | Complete and verified | `tests/` | none | all nine pass | Chromium only |
 
 ## Changes
 
@@ -53,6 +53,7 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | 20 Oct 2026 | Stage 3 | Skipped for now at the practice's request. No backups on the free plan, so client records, clinical notes, invoices and copies of staff documents stay locked until it's done. The practice keeps its own copies of important files. Free projects can pause after about a week without use |  |
 | 20 Oct 2026 | Stage 6 | Email alerts for accounts waiting for approval and staff checks due for renewal, sent from noreply@ by a scheduled Edge Function, on both projects | this change |
 | 20 Oct 2026 | Stages 4, 5 and 6 | Developer tickets with notes and history, grouped error reports, Change history for administrators, a weekly summary email and service checks with alerts, on both projects | this change |
+| 20 Oct 2026 | Hosting | IPv6 (AAAA) records for GitHub Pages added in cPanel and confirmed on both name servers and public resolvers. Domain records written into `docs/operations.md` | this change |
 
 ## Database migrations
 

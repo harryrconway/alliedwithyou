@@ -13,6 +13,18 @@ How the live site, the database and the supporting services fit together, and ho
 
 The test database only ever holds fictional records and throwaway test accounts. Real staff and practice information goes only into production.
 
+## Domain records
+
+The domain's records are in the cPanel Zone Editor. The website points at GitHub Pages:
+
+| Name | Type | Value |
+|---|---|---|
+| alliedwithyou.com.au | A | 185.199.108.153, 185.199.109.153, 185.199.110.153 and 185.199.111.153 |
+| alliedwithyou.com.au | AAAA | 2606:50c0:8000::153, 2606:50c0:8001::153, 2606:50c0:8002::153 and 2606:50c0:8003::153 |
+| www.alliedwithyou.com.au | CNAME | harryrconway.github.io |
+
+The AAAA records were added on 20 Oct 2026, after the VentraIP health check flagged them as missing. Leave the mail records (MX, SPF, DKIM, autodiscover and the `mail` record) as they are until email moves to Microsoft 365.
+
 ## Secrets
 
 Secrets live in two places only, and never in the repository:
