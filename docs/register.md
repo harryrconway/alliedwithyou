@@ -29,7 +29,7 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | Global search | Partially implemented | `js/admin/shell.js` | none | none | Tasks and the team only, from data already loaded |
 | Client records, intake, appointments, notes, assessments, goals, reports, documents, consent, agreements, funding, invoices, incidents, business reports | Locked | none | none yet | crm (locked) | The demo versions were removed and are recoverable from commit `80da9d9`. Each returns with its own tables, rules and tests when the practice is ready |
 | Developer tickets and dashboard | Missing | none | `dev_tickets`, `ticket_comments`, `ticket_events` | none | Stage 4. Feedback and error reports cover the first part |
-| Backups and recovery | Missing | none | none | none | Stage 3. Needed before any client information goes in |
+| Backups and recovery | Missing | none | none | none | Stage 3, skipped for now at the practice's request on 20 Oct 2026. Sensitive sections stay locked until it's done |
 | System administration and monitoring | Missing | none | `monitoring_config`, `job_runs` | none | Stage 6 |
 | Notifications and scheduled jobs | Missing | none | `notifications`, `job_runs` | none | Stage 6. For example, an email when someone is waiting for approval |
 | Privacy requests | Missing | none | `privacy_requests` | none | Stage 7 |
@@ -50,6 +50,7 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | 20 Oct 2026 | Website | Referral form asks for the type of referral (NDIS, My Aged Care or privately funded). Website forms count down to the home page after sending. Home page hero redesigned without the photo, in the logo's teal and sage with the brand mark on a floating medallion, chosen by the practice from previews. The photo files and previews were removed. New My Aged Care page, from myagedcare.gov.au and health.gov.au, in the menu between NDIS and How it works. The menu switches to the Menu button below 1140 pixels so it never wraps | this change |
 | 20 Oct 2026 | CRM | Templates library and staff checks and registrations, with their migration applied to both projects. Nine starter templates written and loaded into both projects as drafts for the practice to review | this change |
 | 20 Oct 2026 | Stage 2 | Two step sign in: set up and code screens, a Your account option, a practice setting to require it for everyone, team list badges, and database enforcement | this change |
+| 20 Oct 2026 | Stage 3 | Skipped for now at the practice's request. No backups on the free plan, so client records, clinical notes, invoices and copies of staff documents stay locked until it's done. The practice keeps its own copies of important files. Free projects can pause after about a week without use |  |
 
 ## Database migrations
 
