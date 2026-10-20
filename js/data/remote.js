@@ -67,8 +67,32 @@
     },
     feedback: {
       table: 'feedback', order: 'created_at', desc: true, limit: 300,
-      columns: ['kind', 'title', 'description', 'area', 'expected', 'actual', 'error_ref', 'status', 'response', 'request_id'],
-      nullable: ['request_id']
+      columns: ['kind', 'title', 'description', 'area', 'expected', 'actual', 'error_ref', 'status', 'response', 'priority', 'assigned_to', 'request_id'],
+      nullable: ['request_id', 'assigned_to']
+    },
+    feedbackNotes: {
+      table: 'feedback_notes', order: 'created_at', limit: 1000,
+      columns: ['feedback_id', 'body', 'request_id'],
+      nullable: ['request_id'],
+      roles: ['administrator', 'developer']
+    },
+    feedbackEvents: {
+      table: 'feedback_events', order: 'at', desc: true, limit: 2000,
+      columns: [],
+      nullable: [],
+      roles: ['administrator', 'developer']
+    },
+    auditEvents: {
+      table: 'audit_events', order: 'at', desc: true, limit: 500,
+      columns: [],
+      nullable: [],
+      roles: ['administrator']
+    },
+    monitorChecks: {
+      table: 'monitor_checks', order: 'name',
+      columns: [],
+      nullable: [],
+      roles: ['administrator', 'developer']
     },
     templates: {
       table: 'templates', order: 'title',
@@ -240,7 +264,7 @@
 
     /* Everything the open sections need, read in parallel */
     async snapshot() {
-      const names = ['staff', 'tasks', 'calendar', 'supportItems', 'feedback', 'templates', 'templateVersions', 'staffChecks', 'errorEvents'];
+      const names = ['staff', 'tasks', 'calendar', 'supportItems', 'feedback', 'feedbackNotes', 'feedbackEvents', 'templates', 'templateVersions', 'staffChecks', 'errorEvents', 'auditEvents', 'monitorChecks'];
       const results = await Promise.all(names.map((n) => list(n)).concat([readSettings()]));
       const db = {};
       names.forEach((n, i) => (db[n] = results[i]));

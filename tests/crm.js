@@ -223,9 +223,20 @@ module.exports = async function crm(ctx) {
     await p.selectOption('dialog select[name="status"]', 'under_review');
     await p.fill('dialog textarea[name="response"]', 'Thanks, looking into it.');
     await p.click('dialog [type="submit"]');
-    ok(await toast(p, 'updated'), 'An administrator could not update a report');
+    ok(await toast(p, 'saved'), 'An administrator could not update a ticket');
+    await p.waitForTimeout(1500);
+    await p.click('[data-open-report]:has-text("QA report ' + stamp + '")');
+    await p.fill('#ticketNote', 'QA private note ' + stamp);
+    await p.click('[data-add-note]');
+    ok(await p.waitForSelector('.note-list >> text=QA private note ' + stamp, { timeout: 8000 }).then(() => true, () => false), 'A private note was not added to the ticket');
+    ok(await p.isVisible('.timeline-list >> text=Status submitted to under review'), 'The ticket history did not show the status change');
+    await p.click('dialog [data-close] >> nth=0');
     await p.goto(ctx.base + 'admin/#/feedback/errors');
-    ok(await p.waitForSelector('td:has-text("Save not confirmed")', { timeout: 5000 }).then(() => true, () => false), 'The dropped connection was not in the error reports');
+    ok(await p.waitForSelector('text=Save not confirmed', { timeout: 5000 }).then(() => true, () => false), 'The dropped connection was not in the error reports');
+
+    /* Change history shows recent changes, including the approval above */
+    await p.goto(ctx.base + 'admin/#/history');
+    ok(await p.waitForSelector('td:has-text("status pending to active")', { timeout: 8000 }).then(() => true, () => false), 'The change history did not show the approval');
 
     /* Templates: an administrator adds one as a draft, uploads a second version and approves it */
     const tplName = 'QA template ' + stamp;

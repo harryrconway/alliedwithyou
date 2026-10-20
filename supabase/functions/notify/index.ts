@@ -1,6 +1,9 @@
 // Sends the dashboard's email alerts:
 //   a new account waiting for approval, to every active administrator
 //   staff checks coming up for renewal, to the person and, as one list, to administrators
+//   a weekly summary for administrators, on Monday mornings
+//   service checks: the website, staff sign in and the enquiry form, with an email to
+//   administrators and developers after two failures in a row, and when it's working again
 // The database's scheduler calls this every 15 minutes with a shared secret. Each alert is
 // recorded in the notifications table before it's sent, so nothing goes out twice, and a
 // failed send is cleared so it's tried again next time. Emails name the type of check and
@@ -69,6 +72,24 @@ function checkLine(c: { kind: string; details: string; expires_on: string }, now
   return what + ', ' + (c.expires_on < now ? 'expired ' : 'expires ') + longDate(c.expires_on);
 }
 
+/* The weekday and hour in Queensland, for the Monday morning summary */
+function clock(): { weekday: string; hour: number } {
+  const parts = new Intl.DateTimeFormat('en-AU', { timeZone: ZONE, weekday: 'long', hour: 'numeric', hourCycle: 'h23' }).formatToParts(new Date());
+  return { weekday: parts.find((p) => p.type === 'weekday')!.value, hour: Number(parts.find((p) => p.type === 'hour')!.value) };
+}
+
+async function probe(url: string, init: RequestInit, expect: (r: Response, text: string) => boolean): Promise<string> {
+  try {
+    const r = await fetch(url, { ...init, signal: AbortSignal.timeout(10000) });
+    const text = init.method === 'OPTIONS' ? '' : await r.text();
+    return expect(r, text) ? '' : 'Answered with status ' + r.status;
+  } catch (error) {
+    return (error as Error).name === 'TimeoutError' ? 'No answer within 10 seconds' : 'Could not connect';
+  }
+}
+
+const CHECK_NAMES: Record<string, string> = { website: 'The website', signin: 'Staff sign in', enquiry: 'The website enquiry and referral forms' };
+
 function firstName(p: Person): string {
   return (p.full_name || '').trim().split(' ')[0] || 'there';
 }
@@ -78,10 +99,14 @@ Deno.serve(async (req) => {
   const secret = Deno.env.get('NOTIFY_SECRET');
   if (!secret || req.headers.get('x-notify-secret') !== secret) return reply(401, { ok: false });
 
-  const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
-    auth: { persistSession: false },
-  });
+  const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+  const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const db = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
   const now = today();
+  // The scheduler sends {}. A test can ask for one part, and on the test project can pretend a service is down.
+  const body = await req.json().catch(() => ({}));
+  const parts: string[] = Array.isArray(body.only) ? body.only : ['signups', 'checks', 'weekly', 'monitor'];
+  const pretendDown: string[] = REDIRECT && Array.isArray(body.fail) ? body.fail : [];
 
   const { data: people, error: peopleError } = await db.from('profiles').select('id, email, full_name, status, role, created_at, email_confirmed_at');
   if (peopleError) return reply(500, { ok: false, error: 'read' });
@@ -92,7 +117,7 @@ Deno.serve(async (req) => {
 
   // New accounts that have confirmed their email and are waiting. Without an administrator
   // to tell, nothing is recorded, so the alert goes out once there is one.
-  if (adminEmails.length) {
+  if (parts.includes('signups') && adminEmails.length) {
     const since = new Date(Date.now() - 14 * 86400000).toISOString();
     const { data: reserved } = await db.from('signup_allowlist').select('email');
     const reservedEmails = new Set((reserved ?? []).map((r: { email: string }) => r.email));
@@ -130,12 +155,63 @@ Deno.serve(async (req) => {
     .not('expires_on', 'is', null)
     .lte('expires_on', addDays(now, 60));
   if (checksError) return reply(500, { ok: false, error: 'read' });
-  const due = (checks ?? [])
+  const due = (parts.includes('checks') ? checks ?? [] : [])
     .map((c: { id: string; staff_id: string; kind: string; details: string; expires_on: string }) => ({ ...c, stage: stage(daysUntil(now, c.expires_on)) }))
     .filter((c) => c.stage && byId.get(c.staff_id)?.status === 'active');
 
+  // Service checks. An alert goes out after two failures in a row, and once more when it's working again.
+  const watchers = (people as Person[]).filter((p) => (p.role === 'administrator' || p.role === 'developer') && p.status === 'active').map((p) => p.email);
+  const monitorMails: Mail[] = [];
+  const results: Record<string, string> = {};
+  if (parts.includes('monitor')) {
+    results.website = await probe(Deno.env.get('MONITOR_SITE') ?? 'https://alliedwithyou.com.au/', { method: 'GET' }, (r, t) => r.ok && t.includes('Allied With You'));
+    results.signin = await probe(SUPABASE_URL + '/auth/v1/health', { method: 'GET', headers: { apikey: SERVICE_KEY } }, (r) => r.ok);
+    results.enquiry = await probe(SUPABASE_URL + '/functions/v1/enquiry', { method: 'OPTIONS', headers: { Origin: 'https://alliedwithyou.com.au', 'Access-Control-Request-Method': 'POST' } }, (r) => r.status === 204);
+    for (const name of pretendDown) if (name in results) results[name] = 'Pretend failure for testing';
+    const { data: before } = await db.from('monitor_checks').select('*');
+    const previous = new Map((before ?? []).map((m: { name: string }) => [m.name, m]));
+    for (const [name, problem] of Object.entries(results)) {
+      const last = (previous.get(name) ?? { ok: true, failures: 0, alerted: false }) as { ok: boolean; failures: number; alerted: boolean };
+      const failures = problem ? last.failures + 1 : 0;
+      let alerted = last.alerted;
+      if (problem && failures >= 2 && !alerted && watchers.length) {
+        alerted = true;
+        monitorMails.push({ keys: [], to: watchers, subject: CHECK_NAMES[name] + " isn't working", text: [
+          'Hello,',
+          '',
+          CHECK_NAMES[name] + " hasn't been working for the last two checks, about 15 minutes apart. " + problem + '.',
+          '',
+          "You'll get another email when it's working again.",
+          '',
+          'Allied With You dashboard',
+        ].join('\n') });
+      }
+      if (!problem && last.alerted) {
+        alerted = false;
+        monitorMails.push({ keys: [], to: watchers, subject: CHECK_NAMES[name] + ' is working again', text: [
+          'Hello,',
+          '',
+          CHECK_NAMES[name] + ' is working again.',
+          '',
+          'Allied With You dashboard',
+        ].join('\n') });
+      }
+      await db.from('monitor_checks').upsert({
+        name, ok: !problem, failures, alerted, detail: problem.slice(0, 200),
+        checked_at: new Date().toISOString(),
+        ...(problem ? !last.ok : last.ok) ? {} : { changed_at: new Date().toISOString() },
+      });
+    }
+  }
+
+  // The weekly summary, on Monday mornings in Queensland, or whenever a test asks for it
+  const time = clock();
+  const weeklyDue = parts.includes('weekly') && adminEmails.length && (Array.isArray(body.only) || (time.weekday === 'Monday' && time.hour >= 8));
+  const weekKey = 'weekly:' + addDays(now, -((['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].indexOf(time.weekday) + 7) % 7));
+
   // Record every candidate before sending. Keys that already exist come back empty.
   const candidates = [
+    ...(weeklyDue ? [{ key: weekKey, kind: 'weekly' }] : []),
     ...mails.flatMap((m) => m.keys.map((key) => ({ key, kind: 'signup' }))),
     ...due.map((c) => ({ key: 'check:' + c.id + ':' + c.stage + ':' + c.expires_on, kind: 'check' })),
   ];
@@ -150,6 +226,53 @@ Deno.serve(async (req) => {
   }
 
   const sending = mails.filter((m) => m.keys.every((k) => claimed.has(k)));
+  sending.push(...monitorMails);
+
+  if (weeklyDue && claimed.has(weekKey)) {
+    const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+    const [tasks, templates, tickets, errors, monitor] = await Promise.all([
+      db.from('tasks').select('due_date').eq('status', 'open'),
+      db.from('templates').select('id').eq('status', 'draft'),
+      db.from('feedback').select('status, priority, created_at').in('status', ['submitted', 'under_review', 'planned', 'in_progress']),
+      db.from('error_events').select('fingerprint').gte('created_at', weekAgo),
+      db.from('monitor_checks').select('name, ok'),
+    ]);
+    const waiting = (people as (Person & { email_confirmed_at: string | null })[]).filter((p) => p.status === 'pending' && p.email_confirmed_at);
+    const openTasks = tasks.data ?? [];
+    const renew = (checks ?? []).filter((c: { staff_id: string; expires_on: string }) => byId.get(c.staff_id)?.status === 'active');
+    const openTickets = tickets.data ?? [];
+    const problems = new Set((errors.data ?? []).map((e: { fingerprint: string }) => e.fingerprint)).size;
+    const down = (monitor.data ?? []).filter((m: { ok: boolean }) => !m.ok).map((m: { name: string }) => CHECK_NAMES[m.name]);
+    const count = (n: number, one: string, many: string) => (n === 0 ? 'No ' + many : n + ' ' + (n === 1 ? one : many));
+    const overdue = openTasks.filter((t: { due_date: string }) => t.due_date < now).length;
+    const upcoming = openTasks.filter((t: { due_date: string }) => t.due_date >= now && t.due_date <= addDays(now, 6)).length;
+    const urgent = openTickets.filter((t: { priority: string }) => t.priority === 'urgent' || t.priority === 'high').length;
+    const fresh = openTickets.filter((t: { created_at: string }) => t.created_at >= weekAgo).length;
+    const errorCount = (errors.data ?? []).length;
+    sending.push({
+      keys: [weekKey],
+      to: adminEmails,
+      subject: 'Your weekly dashboard summary',
+      text: [
+        'Hello,',
+        '',
+        'Here is how the practice dashboard is looking this week.',
+        '',
+        '\u2022 ' + count(waiting.length, 'account is', 'accounts are') + ' waiting for approval' + (waiting.length ? ': ' + waiting.map((w) => w.full_name || w.email).join(', ') : ''),
+        '\u2022 ' + count(overdue, 'task is', 'tasks are') + ' overdue, and ' + (upcoming === 0 ? 'none are' : upcoming + (upcoming === 1 ? ' is' : ' are')) + ' due in the next 7 days',
+        '\u2022 ' + (renew.length === 0 ? 'No staff checks expire in the next 60 days' : renew.length === 1 ? '1 staff check expires in the next 60 days or has already expired' : renew.length + ' staff checks expire in the next 60 days or have already expired'),
+        '\u2022 ' + count((templates.data ?? []).length, 'template is', 'templates are') + ' waiting for approval',
+        '\u2022 ' + (openTickets.length === 0 ? 'No tickets are open' : count(openTickets.length, 'ticket is', 'tickets are') + ' open, ' + (urgent === 0 ? 'none' : urgent) + ' high priority or urgent, and ' + (fresh === 0 ? 'none' : fresh) + ' new this week'),
+        '\u2022 ' + (errorCount === 0 ? 'No errors were recorded this week' : count(errorCount, 'error was', 'errors were') + ' recorded this week, across ' + (problems === 1 ? '1 problem' : problems + ' problems')),
+        '\u2022 ' + (down.length ? 'Not working at the last check: ' + down.join(', ') : 'The website, sign in and enquiry forms were all working at the last check'),
+        '',
+        'Open the dashboard:',
+        DASHBOARD,
+        '',
+        'Allied With You dashboard',
+      ].join('\n'),
+    });
+  }
   const newChecks = due.filter((c) => claimed.has('check:' + c.id + ':' + c.stage + ':' + c.expires_on));
   const checkKey = (c: typeof newChecks[number]) => 'check:' + c.id + ':' + c.stage + ':' + c.expires_on;
 
@@ -228,6 +351,8 @@ Deno.serve(async (req) => {
     ok: !failed.length,
     signups: sending.filter((m) => m.subject.startsWith('A new account')).length,
     checks: newChecks.length,
+    weekly: sending.some((m) => m.keys.includes(weekKey)),
+    monitor: results,
     emails: sent,
   });
 });

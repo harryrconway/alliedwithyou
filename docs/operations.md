@@ -55,6 +55,8 @@ The `[remotes.staging]` block points the test project's links at localhost, so t
 
 The database runs it every 15 minutes, through the `pg_cron` job named `notify`. The job reads the function's address and a shared secret from Supabase Vault (`notify_url` and `notify_secret`), and the function checks the secret against its own `NOTIFY_SECRET`. Each alert is recorded in the `notifications` table before it's sent, so it never goes twice, and a failed send is cleared to be tried again. On the test project, the `NOTIFY_REDIRECT` secret sends every alert to noreply@ instead.
 
+The same function sends a weekly summary to administrators on Monday mornings, from 8am Queensland time, and checks every 15 minutes that the website, staff sign in and the enquiry form are answering. After two failures in a row it emails administrators and developers, and again when it's working. Results show under **Feedback and issues**, then **Errors and service checks**. Because these checks run inside Supabase, they can't report Supabase itself being down. A free outside monitor, such as UptimeRobot watching https://alliedwithyou.com.au/admin/, would cover that.
+
 To pause the alerts, run `select cron.unschedule('notify');` in the SQL editor. The migration shows how to schedule it again. Recent runs are in `cron.job_run_details` and the function's replies in `net._http_response`.
 
 ## Edge Functions

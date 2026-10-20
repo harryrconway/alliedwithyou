@@ -36,7 +36,7 @@ module.exports = async function notify(ctx) {
   const ok = (cond, msg) => { if (!cond) failures.push(msg); };
   const service = createClient(env.STAGING_URL, env.STAGING_SECRET_KEY, { auth: { persistSession: false } });
   const url = env.STAGING_URL + '/functions/v1/notify';
-  const call = (secret) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-notify-secret': secret }, body: '{}' });
+  const call = (secret, body) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-notify-secret': secret }, body: JSON.stringify(body || {}) });
   const inbox = (marker, action) => Number(execFileSync('python3', ['-c', INBOX, ctx.root + '/.env', marker, action]).toString().trim());
   const stamp = Date.now().toString(36);
   const marker = 'QA Alert ' + stamp;
@@ -82,14 +82,37 @@ module.exports = async function notify(ctx) {
     ok(far && far.length === 0, 'A reminder was sent for a check that is not due yet');
 
     await call(env.STAGING_NOTIFY_SECRET);
+
+    /* The weekly summary goes once a week. This week's record is cleared first, as the schedule may have sent it already. */
+    const weekly = (await (await call(env.STAGING_NOTIFY_SECRET, { only: ['weekly'] })).json());
+    if (!weekly.weekly) {
+      await service.from('notifications').delete().like('key', 'weekly:%');
+    }
+    const weeklyAgain = weekly.weekly ? (await (await call(env.STAGING_NOTIFY_SECRET, { only: ['weekly'] })).json()) : (await (await call(env.STAGING_NOTIFY_SECRET, { only: ['weekly'] })).json());
+    const weeklyThird = await (await call(env.STAGING_NOTIFY_SECRET, { only: ['weekly'] })).json();
+    ok((weekly.weekly || weeklyAgain.weekly) && !weeklyThird.weekly, 'The weekly summary was not sent exactly once');
+    const { data: weekRows } = await service.from('notifications').select('key').like('key', 'weekly:%');
+    keys.push(...(weekRows || []).map((r) => r.key));
+
+    /* Service checks: the real ones pass, and a pretend failure alerts after the second failure, then recovers */
+    const real = await (await call(env.STAGING_NOTIFY_SECRET, { only: ['monitor'] })).json();
+    ok(real.monitor && real.monitor.website === '' && real.monitor.signin === '' && real.monitor.enquiry === '', 'A service check failed: ' + JSON.stringify(real.monitor));
+    await service.from('monitor_checks').upsert({ name: 'website', ok: false, failures: 1, alerted: false });
+    const down = await (await call(env.STAGING_NOTIFY_SECRET, { only: ['monitor'], fail: ['website'] })).json();
+    const { data: downRow } = await service.from('monitor_checks').select('ok, alerted').eq('name', 'website').single();
+    ok(down.monitor.website && downRow && !downRow.ok && downRow.alerted, 'A failing service was not marked and alerted after two failures');
+    await call(env.STAGING_NOTIFY_SECRET, { only: ['monitor'] });
+    const { data: upRow } = await service.from('monitor_checks').select('ok, alerted').eq('name', 'website').single();
+    ok(upRow && upRow.ok && !upRow.alerted, 'A service that recovered was not marked as working');
+
     /* Every alert mentions the run's code: the waiting person's details, the redirected address or the staff name */
     let emails = 0;
-    for (let i = 0; i < 6 && emails < 3; i += 1) {
+    for (let i = 0; i < 8 && emails < 6; i += 1) {
       await new Promise((resolve) => setTimeout(resolve, 5000));
       emails = inbox(stamp, 'count');
     }
-    /* The approval alert, the reminder to the staff member and the list for administrators, once each */
-    ok(emails === 3, 'Expected 3 alert emails after running twice, found ' + emails);
+    /* Approval alert, the staff member's reminder, the administrators' list, the weekly summary, not working, working again */
+    ok(emails === 6, 'Expected 6 alert emails, found ' + emails);
   } catch (error) {
     failures.push('The check stopped: ' + error.message);
   } finally {

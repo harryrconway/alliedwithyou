@@ -177,6 +177,24 @@ module.exports = async function auth(ctx) {
     const adminSeesFb = await admin.client.from('feedback').select('id').eq('id', fb.data.id);
     ok(adminSeesFb.data && adminSeesFb.data.length === 1, 'An administrator could not read feedback');
 
+    /* Tickets: history written by the database, private notes, resolution time */
+    const work = await admin.client.from('feedback').update({ priority: 'high', assigned_to: admin.id, status: 'in_progress' }).eq('id', fb.data.id).select('id');
+    ok(!work.error && work.data.length === 1, 'An administrator could not update a ticket: ' + (work.error && work.error.message));
+    const { data: events } = await admin.client.from('feedback_events').select('field, actor_id').eq('feedback_id', fb.data.id);
+    const fields = (events || []).map((e) => e.field).sort().join(',');
+    ok(fields === 'assigned_to,created,priority,status', 'The ticket history did not record every change: ' + fields);
+    ok((events || []).filter((e) => e.field !== 'created').every((e) => e.actor_id === admin.id), 'The ticket history did not record who made the change');
+    const note = await admin.client.from('feedback_notes').insert({ feedback_id: fb.data.id, body: 'QA private note', author_id: admin.id });
+    ok(!note.error, 'An administrator could not add a private note: ' + (note.error && note.error.message));
+    const thNotes = await therapist.client.from('feedback_notes').select('id').eq('feedback_id', fb.data.id);
+    ok(thNotes.data && thNotes.data.length === 0, 'The person who reported an issue could read the private notes');
+    const thNote = await therapist.client.from('feedback_notes').insert({ feedback_id: fb.data.id, body: 'sneaky', author_id: therapist.id });
+    ok(!!thNote.error, 'A therapist could add a private note to a ticket');
+    const thEvents = await therapist.client.from('feedback_events').select('id').eq('feedback_id', fb.data.id);
+    ok(thEvents.data && thEvents.data.length === 0, 'A therapist could read the ticket history');
+    const done = await admin.client.from('feedback').update({ status: 'completed' }).eq('id', fb.data.id).select('resolved_at').single();
+    ok(!done.error && done.data.resolved_at, 'Completing a ticket did not record when it was resolved');
+
     /* Templates: administrators manage them, everyone else sees approved ones only */
     const tpl = await admin.client.from('templates').insert({ title: 'QA template ' + stamp, category: 'form' }).select('id').single();
     ok(!tpl.error, 'An administrator could not add a template: ' + (tpl.error && tpl.error.message));

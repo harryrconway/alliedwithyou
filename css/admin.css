@@ -1379,3 +1379,51 @@ a.figure:hover {
   background: var(--color-warning-bg);
   color: var(--color-warning);
 }
+
+/* Tickets: private notes and history */
+
+.ticket-notes,
+.ticket-history {
+  display: grid;
+  gap: var(--space-2);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: var(--border);
+}
+
+.note-list,
+.timeline-list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.note-list > li {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-green-light);
+}
+
+.note-list .meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.note-list p {
+  margin-top: 0.2rem;
+  white-space: pre-line;
+}
+
+.timeline-list > li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-bottom: var(--space-2);
+  border-bottom: var(--border);
+}

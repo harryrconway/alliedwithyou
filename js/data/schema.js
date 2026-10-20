@@ -124,6 +124,28 @@
       ['training', 'Training'],
       ['other', 'Other']
     ]),
+    ticketPriority: opt([
+      ['low', 'Low'],
+      ['normal', 'Normal'],
+      ['high', 'High'],
+      ['urgent', 'Urgent']
+    ]),
+    auditTable: opt([
+      ['profiles', 'Staff accounts'],
+      ['signup_allowlist', 'Reserved addresses'],
+      ['settings', 'Practice settings'],
+      ['price_items', 'Fees'],
+      ['tasks', 'Tasks'],
+      ['calendar_blocks', 'Calendar'],
+      ['templates', 'Templates'],
+      ['template_versions', 'Template versions'],
+      ['staff_checks', 'Staff checks']
+    ]),
+    monitorCheck: opt([
+      ['website', 'Website'],
+      ['signin', 'Staff sign in'],
+      ['enquiry', 'Enquiry and referral forms']
+    ]),
     errorCategory: opt([
       ['validation', 'Form check'],
       ['network', 'Connection dropped'],
@@ -145,7 +167,8 @@
     priority: {
       low: s('Low', 'neutral', 'chevronDown'),
       normal: s('Normal', 'info', 'dot'),
-      high: s('High', 'danger', 'chevronUp')
+      high: s('High', 'warning', 'chevronUp'),
+      urgent: s('Urgent', 'danger', 'alert')
     },
     account: {
       pending: s('Waiting for approval', 'warning', 'clock'),

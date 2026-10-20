@@ -25,14 +25,13 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | Templates library | Complete and verified | `js/admin/views/templates.js`, `js/data/remote.js` | `templates`, `template_versions`, storage bucket `templates` | auth, crm | Administrators add, version, approve and retire templates. Everyone else sees approved ones only. Every version is kept. Files are private and downloaded through links that expire after two minutes. Nine starter templates loaded as drafts on 20 Oct 2026 |
 | Staff checks and registrations | Complete and verified | `js/admin/views/staff.js`, `js/admin/views/dashboard.js` | `staff_checks` | auth, crm | Screening checks, Ahpra registration, insurance, certificates and similar, with expiry dates. Details only, no copies of documents. Each person sees their own, administrators see and record everyone's. Flagged on the dashboard 60 days before expiry |
 | Error handling and logging | Complete and verified | `js/core/errors.js`, `js/admin/components.js` | `error_events`, `log_error()` | auth, crm | Every failure shows a reference and a plain message. Diagnostics are scrubbed of personal details. Kept and sent later if logging is down |
-| Audit trail | Complete and verified | `supabase/migrations` | `audit_events` | auth | Written by the database, can't be changed or deleted. Not shown on screen yet |
+| Audit trail and change history | Complete and verified | `supabase/migrations`, `js/admin/views/history.js` | `audit_events` | auth, crm | Written by the database, can't be changed or deleted. Administrators see the latest 500 changes in Change history, with filters and a spreadsheet download |
 | Global search | Partially implemented | `js/admin/shell.js` | none | none | Tasks and the team only, from data already loaded |
 | Client records, intake, appointments, notes, assessments, goals, reports, documents, consent, agreements, funding, invoices, incidents, business reports | Locked | none | none yet | crm (locked) | The demo versions were removed and are recoverable from commit `80da9d9`. Each returns with its own tables, rules and tests when the practice is ready |
-| Developer tickets and dashboard | Missing | none | `dev_tickets`, `ticket_comments`, `ticket_events` | none | Stage 4. Feedback and error reports cover the first part |
+| Developer tickets | Complete and verified | `js/admin/views/feedback.js`, `supabase/migrations` | `feedback`, `feedback_notes`, `feedback_events` | auth, crm | Feedback and reported issues are tickets with a status, priority, assignee, private notes for administrators and developers, and a history written by the database. Error reports are grouped by problem with counts, and can become tickets |
 | Backups and recovery | Missing | none | none | none | Stage 3, skipped for now at the practice's request on 20 Oct 2026. Sensitive sections stay locked until it's done |
-| System administration and monitoring | Missing | none | `monitoring_config`, `job_runs` | none | Stage 6 |
 | Email alerts | Complete and verified | `supabase/functions/notify`, `supabase/migrations` | `notifications`, `pg_cron` job `notify`, Vault | notify | Every 15 minutes: an email to administrators when a confirmed account is waiting for approval (with a warning for reserved addresses), and reminders 60, 30 and 7 days before a staff check expires and once after, to the person and as one list to administrators. Recorded before sending so nothing goes twice. Check type and date only, no reference numbers. On the test project everything goes to noreply@ |
-| Other notifications and scheduled jobs | Missing | none | `job_runs` | none | Stage 6, for example a weekly summary |
+| Weekly summary and service checks | Complete and verified | `supabase/functions/notify` | `monitor_checks`, `notifications` | notify | A Monday morning summary for administrators. Every 15 minutes the website, staff sign in and the enquiry form are checked, with an email after two failures in a row and when working again. Results show under Feedback and issues. They can't detect Supabase itself being down |
 | Privacy requests | Missing | none | `privacy_requests` | none | Stage 7 |
 | Automated tests in the repository | Complete and verified | `tests/` | none | all eight pass | Chromium only |
 
@@ -53,6 +52,7 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | 20 Oct 2026 | Stage 2 | Two step sign in: set up and code screens, a Your account option, a practice setting to require it for everyone, team list badges, and database enforcement | this change |
 | 20 Oct 2026 | Stage 3 | Skipped for now at the practice's request. No backups on the free plan, so client records, clinical notes, invoices and copies of staff documents stay locked until it's done. The practice keeps its own copies of important files. Free projects can pause after about a week without use |  |
 | 20 Oct 2026 | Stage 6 | Email alerts for accounts waiting for approval and staff checks due for renewal, sent from noreply@ by a scheduled Edge Function, on both projects | this change |
+| 20 Oct 2026 | Stages 4, 5 and 6 | Developer tickets with notes and history, grouped error reports, Change history for administrators, a weekly summary email and service checks with alerts, on both projects | this change |
 
 ## Database migrations
 
@@ -65,6 +65,8 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | `20261020010000_templates.sql` | Templates and their versions, a private storage bucket with its own rules, and staff checks | 20 Oct 2026 | 20 Oct 2026 |
 | `20261020020000_twostep.sql` | Two step sign in enforced in the database for administrators, or everyone when the practice chooses, and recorded on each profile | 20 Oct 2026 | 20 Oct 2026 |
 | `20261020030000_notify.sql` | The notifications record and the 15 minute schedule that calls the notify function | 20 Oct 2026 | 20 Oct 2026 |
+| `20261020040000_tickets.sql` | Ticket priority, assignee and resolution time, private notes and a change history for each ticket | 20 Oct 2026 | 20 Oct 2026 |
+| `20261020050000_monitor.sql` | Service check results, and weekly summaries and monitoring added to the notifications record | 20 Oct 2026 | 20 Oct 2026 |
 
 ## Security findings
 
