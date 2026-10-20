@@ -59,6 +59,14 @@ The `[remotes.staging]` block points the test project's links at localhost, so t
 * Staff who leave are switched off rather than deleted, so the history of who did what is kept. Switching off takes effect on their next request.
 * Staff with a practice address can sign in with just the first part, for example `jake`.
 
+### Two step sign in
+
+Administrators must set up an authenticator app the first time they sign in, and enter a code each time after that. In **Settings**, **Two step sign in** can require it for everyone. Anyone can also turn it on from **Your account**.
+
+The database enforces this. Until the code is entered, an administrator's session counts as not active, so a stolen password alone gets nothing.
+
+If someone loses their phone, remove their authenticator in Supabase so they can set it up again at their next sign in. In the production project's dashboard, open **Authentication**, then **Users**, choose the person and remove their MFA factor. If that option isn't there, run this in the SQL editor with their email address: `delete from auth.mfa_factors where user_id = (select id from auth.users where email = 'name@alliedwithyou.com.au');`
+
 ### Sending an invitation
 
 In the Supabase dashboard for the production project, open **Authentication**, then **Users**, then **Invite user**, and enter the address. The email comes from noreply@ and links to https://alliedwithyou.com.au/admin/, where the person chooses their name and password. The link works for an hour. If it expires, send the invitation again.

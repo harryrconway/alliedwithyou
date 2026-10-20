@@ -175,6 +175,13 @@
             </div>
           </div>`, editable)}
 
+        ${section('security', 'Two step sign in', 'A code from an authenticator app as well as a password. Administrators always need it.', html`
+          <fieldset class="field"><legend>Required for</legend><div class="choices">
+            <label class="choice"><input type="radio" name="mfaFor" value="administrators" ${raw((s.mfaFor || 'administrators') === 'administrators' ? 'checked' : '')}> Administrators only</label>
+            <label class="choice"><input type="radio" name="mfaFor" value="everyone" ${raw(s.mfaFor === 'everyone' ? 'checked' : '')}> Everyone</label>
+          </div>
+          <p class="hint">If you choose everyone, anyone without it will be asked to set it up the next time they sign in.</p></fieldset>`, editable)}
+
         ${s.updatedAt ? html`<p class="small muted">Settings last changed ${fmt.stamp(s.updatedAt)}${s.updatedBy ? ' by ' + rules.staffName(db, s.updatedBy) : ''}.</p>` : ''}
       `);
 
@@ -195,6 +202,7 @@
         if (kind === 'business') patch = { business: Object.assign({}, b, v) };
         if (kind === 'funding') patch = { acceptedFunding: AWY.$$('input[name="acceptedFunding"]:checked', form).map((i) => i.value) };
         if (kind === 'services') patch = { services: AWY.$$('input[name="services"]:checked', form).map((i) => i.value) };
+        if (kind === 'security') patch = { mfaFor: v.mfaFor === 'everyone' ? 'everyone' : 'administrators' };
         if (kind === 'appointments') {
           const d = {};
           C.options('appointmentType').forEach((o) => (d[o.value] = Number(v['dur_' + o.value])));

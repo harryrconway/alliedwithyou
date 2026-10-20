@@ -299,7 +299,81 @@
     }
     if (!profile) return accountScreen({ email: session.user.email, status: 'pending', name: '' });
     if (profile.status !== 'active') return accountScreen(profile);
+    let step;
+    try {
+      step = await auth.twoStep();
+    } catch (error) {
+      return failedStart(error, () => check(session, welcome));
+    }
+    if (step.factor && step.level !== 'aal2') return showTwoStepCode(step.factor, welcome);
+    if (!step.factor && step.required) return showTwoStepSetup(profile, welcome, true);
     enter(profile, welcome);
+  }
+
+  /* Two step sign in: setting up an authenticator app, and entering its code */
+
+  const appsHint = 'An authenticator app such as Microsoft Authenticator or Google Authenticator. On an iPhone or Mac, the built in Passwords app works too.';
+
+  function codeField(id) {
+    return html`<div class="field">
+      <label for="${id}">Six digit code</label>
+      <input class="input code-input" id="${id}" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]*" maxlength="7" required data-error="Please enter the six digit code from your app">
+    </div>`;
+  }
+
+  async function showTwoStepSetup(profile, welcome, required) {
+    let start;
+    try {
+      start = await auth.startTwoStep();
+    } catch (error) {
+      return failedStart(error, () => showTwoStepSetup(profile, welcome, required));
+    }
+    const key = start.secret.replace(/(.{4})/g, '$1 ').trim();
+    screen(html`<h1>Set up two step sign in</h1>
+      <p>${required
+        ? 'Administrators enter a code from their phone as well as their password. It keeps the practice\'s information safe even if a password is guessed.'
+        : 'Each time you sign in, you\'ll enter a code from your phone as well as your password.'}</p>
+      <form class="form auth-form" id="twoStepSetupForm" data-operation="set up two step sign in" novalidate>
+        <div class="form-summary"></div>
+        <div class="twostep-step"><strong>Get an app</strong><p class="small">${appsHint}</p></div>
+        <div class="twostep-step"><strong>Scan this code with the app</strong>
+          <img class="twostep-qr" src="${start.qr}" alt="QR code for setting up the authenticator app" width="200" height="200">
+          <p class="small">Can't scan it? Choose to enter a key in the app, and type this one:<span class="twostep-key" data-twostep-key="${start.secret}">${key}</span></p>
+        </div>
+        <div class="twostep-step"><strong>Enter the code the app shows</strong>${codeField('setupCode')}</div>
+        <button class="btn" type="submit">Turn on two step sign in</button>
+        ${required ? '' : html`<button class="btn btn-quiet" type="button" data-not-now>Not now</button>`}
+      </form>
+      <p class="small"><button type="button" class="link-button small" data-signout>Sign out</button></p>`, 'Two step sign in');
+    const form = AWY.$('#twoStepSetupForm');
+    AWY.$('[data-signout]').addEventListener('click', () => signOut());
+    const later = AWY.$('[data-not-now]');
+    if (later) later.addEventListener('click', () => enter(profile));
+    bindForm(form, async (v) => {
+      await auth.verifyTwoStep(start.factorId, v.code);
+      touch();
+      const session = await auth.session();
+      await check(session, welcome || 'Two step sign in is on. You\'ll enter a code each time you sign in.');
+    });
+  }
+
+  function showTwoStepCode(factor, welcome) {
+    screen(html`<h1>Enter your code</h1>
+      <p>Open your authenticator app and enter the six digit code for Allied With You.</p>
+      <form class="form auth-form" id="twoStepCodeForm" data-operation="two step sign in" novalidate>
+        <div class="form-summary"></div>
+        ${codeField('signinCode')}
+        <button class="btn" type="submit">Continue</button>
+      </form>
+      <p class="small">Lost access to your app? Email <a href="mailto:${cfg.practiceEmail}">${cfg.practiceEmail}</a> and an administrator can reset it for you.</p>
+      <p class="small"><button type="button" class="link-button small" data-signout>Sign out</button></p>`, 'Enter your code');
+    AWY.$('#signinCode').focus();
+    AWY.$('[data-signout]').addEventListener('click', () => signOut());
+    bindForm(AWY.$('#twoStepCodeForm'), async (v) => {
+      await auth.verifyTwoStep(factor.id, v.code);
+      touch();
+      await check(await auth.session(), welcome);
+    });
   }
 
   async function signOut(message) {
@@ -400,7 +474,7 @@
       return false;
     }
     if (fresh.role !== me.role) {
-      enter(fresh);
+      auth.session().then((session) => check(session));
       return false;
     }
     access.setUser(fresh);
@@ -556,6 +630,8 @@
   });
 
   app.reload = reload;
+  /* Turning two step sign in on from Your account, without being made to */
+  app.setUpTwoStep = () => showTwoStepSetup(access.user(), '', false);
   app.updateUser = (profile) => {
     access.setUser(profile);
     store.setUser(profile);

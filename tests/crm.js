@@ -7,6 +7,7 @@
 const { createClient } = require('@supabase/supabase-js');
 const { open } = require('./page');
 const { readEnv } = require('./env');
+const totp = require('./totp');
 
 module.exports = async function crm(ctx) {
   const env = readEnv(ctx.root);
@@ -57,9 +58,31 @@ module.exports = async function crm(ctx) {
     await p.waitForSelector('#identifier');
   }
 
+  /* Gets through two step sign in like a person would: reading the key off the set up screen,
+     then using it for the code on later sign ins */
+  const keys = {};
+  async function passTwoStep(p, email) {
+    const which = await Promise.race([
+      p.waitForSelector('#twoStepSetupForm', { timeout: 12000 }).then(() => 'setup'),
+      p.waitForSelector('#twoStepCodeForm', { timeout: 12000 }).then(() => 'code')
+    ]).catch(() => null);
+    if (which === 'setup') {
+      keys[email] = await p.getAttribute('[data-twostep-key]', 'data-twostep-key');
+      ok(await p.isVisible('.twostep-qr'), 'The two step set up screen did not show a QR code');
+      await p.fill('#setupCode', await totp.fresh(keys[email]));
+      await p.click('#twoStepSetupForm [type="submit"]');
+    } else if (which === 'code') {
+      await p.fill('#signinCode', await totp.fresh(keys[email]));
+      await p.click('#twoStepCodeForm [type="submit"]');
+    } else {
+      failures.push('Two step sign in was not asked for ' + email);
+    }
+    return which;
+  }
+
   /* Expected noise: dropped connections, a wrong password, and the database refusing the double booking
      when it gets there before the screen's own check does */
-  const expected = /ERR_FAILED|Failed to load resource|Reference [A-Z0-9]{6}|status of 400|status of 401|status of 409|400 for .*token\?grant_type=password|(400|409) for .*calendar_blocks/;
+  const expected = /ERR_FAILED|Failed to load resource|Reference [A-Z0-9]{6}|status of 400|status of 401|status of 409|status of 422|400 for .*token\?grant_type=password|(400|409) for .*calendar_blocks|422 for .*\/factors\/.*\/verify/;
   const pages = [];
 
   try {
@@ -166,9 +189,14 @@ module.exports = async function crm(ctx) {
 
     await signOut(p);
 
-    /* An administrator approves the waiting account and changes a fee */
+    /* An administrator must set up two step sign in before getting in */
     await signIn(p, admin.email);
-    await p.waitForSelector('h1:has-text("Good")', { timeout: 10000 });
+    ok(await passTwoStep(p, admin.email) === 'setup', 'An administrator without two step sign in was not asked to set it up');
+    ok(await p.waitForSelector('h1:has-text("Good")', { timeout: 10000 }).then(() => true, () => false), 'Setting up two step sign in did not lead into the dashboard');
+    const { data: adminTwoStep } = await service.from('profiles').select('mfa_enabled').eq('id', admin.id).single();
+    ok(adminTwoStep && adminTwoStep.mfa_enabled, 'Two step sign in was not recorded for the administrator');
+
+    /* An administrator approves the waiting account and changes a fee */
     await p.goto(ctx.base + 'admin/#/staff');
     await p.click('[data-approve="' + pending.id + '"]');
     await p.selectOption('dialog select[name="role"]', 'support');
@@ -272,10 +300,21 @@ module.exports = async function crm(ctx) {
     await p.fill('#setPassword', password);
     await p.fill('#setConfirm', password);
     await p.click('#setPasswordForm [type="submit"]');
+    ok(await passTwoStep(p, invitedEmail) === 'setup', 'A new administrator was not asked to set up two step sign in');
     ok(await toast(p, 'Your password is saved'), 'Accepting an invitation did not save the password');
     ok(await p.isVisible('h1:has-text("Good")'), 'An accepted invitation did not lead into the dashboard');
     const { data: invited } = await service.from('profiles').select('status, role, full_name').eq('id', invite.data.user.id).single();
     ok(invited.status === 'active' && invited.role === 'administrator' && invited.full_name === 'QA Invited', 'An accepted invitation did not set up an active administrator with their name');
+    await signOut(p);
+
+    /* Signing in again asks for the code, and a wrong code is refused */
+    await signIn(p, invitedEmail);
+    await p.waitForSelector('#twoStepCodeForm', { timeout: 10000 });
+    await p.fill('#signinCode', '000000');
+    await p.click('#twoStepCodeForm [type="submit"]');
+    ok(await p.waitForSelector('#twoStepCodeForm .form-summary >> text=didn\'t work', { timeout: 8000 }).then(() => true, () => false), 'A wrong two step code was not refused clearly');
+    ok(await passTwoStep(p, invitedEmail) === 'code', 'Signing in again did not ask for the two step code');
+    ok(await p.waitForSelector('h1:has-text("Good")', { timeout: 10000 }).then(() => true, () => false), 'The right two step code did not lead into the dashboard');
     await signOut(p);
 
     /* Resetting a forgotten password from the emailed link */

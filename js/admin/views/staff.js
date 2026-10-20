@@ -215,7 +215,7 @@
           <ul class="rows">${team.map((s) => html`<li>
             <span class="avatar" aria-hidden="true">${fmt.initials(s.name || s.email)}</span>
             <div class="what"><strong>${s.name || s.email}${s.id === user.id ? html` <span class="tag">You</span>` : ''}</strong>${personMeta(s)}</div>
-            <div class="end"><span class="badge tone-sage">${icon('shield')}${access.roleLabel(s.role)}</span>
+            <div class="end">${manage ? (s.mfaEnabled ? html`<span class="tag" title="Two step sign in is on">${icon('lock')}Two step on</span>` : html`<span class="tag tag-warning" title="Two step sign in is off">Two step off</span>`) : ''}<span class="badge tone-sage">${icon('shield')}${access.roleLabel(s.role)}</span>
               ${manage ? html`<button type="button" class="btn btn-quiet btn-sm" data-edit-staff="${s.id}" aria-label="Edit ${s.name || s.email}">Edit</button>` : s.id === user.id ? html`<button type="button" class="btn btn-quiet btn-sm" data-action="account">Edit your details</button>` : ''}
             </div>
           </li>`)}</ul>

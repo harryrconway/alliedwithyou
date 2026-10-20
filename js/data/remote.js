@@ -376,6 +376,8 @@
     if (code === 'same_password') return invalid('Your new password needs to be different from the current one.');
     if (code === 'reauthentication_needed') return invalid('For security, please sign out and sign back in, then change your password.');
     if (code === 'signup_disabled') return invalid('New accounts are switched off at the moment. Please contact the practice.');
+    if (code === 'mfa_verification_failed' || code === 'mfa_challenge_expired') return invalid("That code didn't work. Codes change every 30 seconds, so use the newest one and try again.");
+    if (code === 'insufficient_aal') return invalid('Please enter a code from your authenticator app first.');
     return e;
   }
 
@@ -433,6 +435,43 @@
     async profile(userId) {
       const row = await run('staff', client.from('profiles').select('*').eq('id', userId).maybeSingle());
       return row ? fromRow('staff', row) : null;
+    },
+
+    /* Two step sign in with an authenticator app */
+    async twoStep() {
+      const [aal, factors, required] = await Promise.all([
+        client.auth.mfa.getAuthenticatorAssuranceLevel(),
+        client.auth.mfa.listFactors(),
+        client.rpc('mfa_required')
+      ]);
+      if (aal.error) throw authError(aal.error);
+      if (factors.error) throw authError(factors.error);
+      if (required.error) throw toError('staff', required.error, required.status);
+      const verified = (factors.data.totp || []).filter((f) => f.status === 'verified');
+      return { level: aal.data.currentLevel, factor: verified[0] || null, required: !!required.data };
+    },
+
+    /* Starts setting up an app. Any half finished set up from before is cleared first. */
+    async startTwoStep() {
+      const list = await client.auth.mfa.listFactors();
+      if (list.error) throw authError(list.error);
+      for (const f of list.data.all || []) {
+        if (f.status !== 'verified') await client.auth.mfa.unenroll({ factorId: f.id });
+      }
+      const { data, error } = await client.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'Authenticator app' });
+      if (error) throw authError(error);
+      return { factorId: data.id, qr: data.totp.qr_code, secret: data.totp.secret };
+    },
+
+    async verifyTwoStep(factorId, code) {
+      const { error } = await client.auth.mfa.challengeAndVerify({ factorId: factorId, code: String(code).replace(/\s/g, '') });
+      if (error) throw authError(error);
+    },
+
+    async stopTwoStep(factorId) {
+      const { error } = await client.auth.mfa.unenroll({ factorId: factorId });
+      if (error) throw authError(error);
+      await client.auth.refreshSession();
     },
 
     async saveName(userId, name) {

@@ -5,6 +5,7 @@
 */
 const { createClient } = require('@supabase/supabase-js');
 const { readEnv } = require('./env');
+const totp = require('./totp');
 
 module.exports = async function auth(ctx) {
   const env = readEnv(ctx.root);
@@ -22,7 +23,7 @@ module.exports = async function auth(ctx) {
   const password = 'Test' + Math.random().toString(36).slice(2) + 'Aa9!';
   const made = { users: [], allow: [], templates: [] };
 
-  async function makeUser(label, profile) {
+  async function makeUser(label, profile, twoStep) {
     const email = 'qa.' + label + '.' + stamp + '@example.com';
     const { data, error } = await service.auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { full_name: 'QA ' + label } });
     if (error) throw new Error('Could not create ' + label + ': ' + error.message);
@@ -34,11 +35,17 @@ module.exports = async function auth(ctx) {
     const client = createClient(env.STAGING_URL, env.STAGING_PUBLISHABLE_KEY, opts);
     const { error: e3 } = await client.auth.signInWithPassword({ email, password });
     if (e3) throw new Error('Could not sign in as ' + label + ': ' + e3.message);
+    if (twoStep) {
+      const en = await client.auth.mfa.enroll({ factorType: 'totp', friendlyName: 'QA ' + label });
+      if (en.error) throw new Error('Could not set up two step sign in for ' + label + ': ' + en.error.message);
+      const v = await client.auth.mfa.challengeAndVerify({ factorId: en.data.id, code: await totp.fresh(en.data.totp.secret) });
+      if (v.error) throw new Error('Two step sign in failed for ' + label + ': ' + v.error.message);
+    }
     return { id: data.user.id, email, client };
   }
 
   try {
-    const admin = await makeUser('admin', { role: 'administrator', status: 'active' });
+    const admin = await makeUser('admin', { role: 'administrator', status: 'active' }, true);
     const therapist = await makeUser('therapist', { role: 'therapist', status: 'active' });
     const pending = await makeUser('pending', null);
     const other = await makeUser('other', { role: 'therapist', status: 'active' });
@@ -83,6 +90,29 @@ module.exports = async function auth(ctx) {
     ok(pendConfirmed && pendConfirmed.email_confirmed_at, 'A confirmed sign up did not have its confirmation recorded on the profile');
     const fakeConfirm = await admin.client.from('profiles').update({ email_confirmed_at: new Date().toISOString() }).eq('id', admin.id);
     ok(!!fakeConfirm.error, 'An administrator could change an email confirmation time');
+
+    /* Two step sign in: administrators get nothing until they've entered a code */
+    const plainAdmin = await makeUser('plainadmin', { role: 'administrator', status: 'active' });
+    const plainTeam = await plainAdmin.client.from('profiles').select('id');
+    ok(plainTeam.data && plainTeam.data.length === 1, 'An administrator without two step sign in could see the team');
+    const plainSettings = await plainAdmin.client.from('settings').update({ data: {} }).eq('id', 'practice').select('id');
+    ok(plainSettings.error || (plainSettings.data && plainSettings.data.length === 0), 'An administrator without two step sign in could change settings');
+    const plainRequired = await plainAdmin.client.rpc('mfa_required');
+    ok(plainRequired.data === true, 'Two step sign in was not required for an administrator');
+    const { data: adminRow } = await service.from('profiles').select('mfa_enabled').eq('id', admin.id).single();
+    ok(adminRow && adminRow.mfa_enabled === true, 'Setting up two step sign in was not recorded on the profile');
+    const fakeTwoStep = await therapist.client.from('profiles').update({ mfa_enabled: true }).eq('id', therapist.id);
+    ok(!!fakeTwoStep.error, 'Someone could mark themselves as having two step sign in');
+
+    /* Requiring it for everyone locks out a therapist who hasn't set it up */
+    const { data: before } = await service.from('settings').select('data').eq('id', 'practice').single();
+    await service.from('settings').update({ data: Object.assign({}, before.data, { mfaFor: 'everyone' }) }).eq('id', 'practice');
+    const lockedOut = await therapist.client.from('tasks').select('id').limit(1);
+    const lockedTeam = await therapist.client.from('profiles').select('id');
+    ok(lockedOut.data && lockedOut.data.length === 0 && lockedTeam.data && lockedTeam.data.length === 1, 'A therapist without two step sign in kept access when it was required for everyone');
+    await service.from('settings').update({ data: before.data }).eq('id', 'practice');
+    const back = await therapist.client.from('profiles').select('id');
+    ok(back.data && back.data.length > 1, 'A therapist did not get access back when two step sign in went back to administrators only');
 
     /* Visitors who aren't signed in can't read anything */
     for (const t of ['profiles', 'settings', 'price_items', 'tasks', 'calendar_blocks', 'feedback', 'error_events', 'audit_events', 'signup_allowlist', 'form_limits']) {

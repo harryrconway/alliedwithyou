@@ -230,11 +230,16 @@
       values: user,
       db: AWY.app.db,
       submitLabel: 'Save details',
-      footerStart: html`<button type="button" class="btn btn-secondary" data-change-password>${icon('lock')}Change password</button>`,
+      footerStart: html`<button type="button" class="btn btn-secondary" data-change-password>${icon('lock')}Change password</button>
+        <button type="button" class="btn btn-secondary" data-two-step>${icon('shield')}Two step sign in</button>`,
       onOpen(modal) {
         modal.el.querySelector('[data-change-password]').addEventListener('click', () => {
           modal.close();
           A.passwordForm();
+        });
+        modal.el.querySelector('[data-two-step]').addEventListener('click', () => {
+          modal.close();
+          A.twoStepForm();
         });
       },
       async onSubmit(values) {
@@ -242,6 +247,39 @@
         AWY.app.updateUser(saved);
         AWY.ui.toast('Your details have been saved.');
       }
+    });
+  };
+
+  /* Two step sign in for your own account */
+  A.twoStepForm = async function () {
+    let step;
+    try {
+      step = await AWY.auth.twoStep();
+    } catch (error) {
+      return C.save(Promise.reject(error), '', { area: 'account', operation: 'two step status' });
+    }
+    const on = !!step.factor;
+    const modal = AWY.ui.modal({
+      title: 'Two step sign in',
+      size: 'narrow',
+      body: on
+        ? html`<p>Two step sign in is <strong>on</strong>. Each time you sign in, you enter a code from your authenticator app as well as your password.</p>
+          ${step.required ? html`<p class="small muted" style="margin-top:0.75rem">It's required for your account, so it can't be turned off.</p>` : ''}`
+        : html`<p>Two step sign in is <strong>off</strong>. Turning it on means signing in needs a code from your phone as well as your password, so a guessed password isn't enough on its own.</p>`,
+      footer: html`<button type="button" class="btn btn-secondary" data-close>Close</button>
+        ${on && !step.required ? html`<button type="button" class="btn btn-danger-solid" data-two-step-off>Turn off</button>` : ''}
+        ${on ? '' : html`<button type="button" class="btn" data-two-step-on>${icon('shield')}Set up</button>`}`
+    });
+    const start = modal.el.querySelector('[data-two-step-on]');
+    if (start) start.addEventListener('click', () => {
+      modal.close();
+      AWY.app.setUpTwoStep();
+    });
+    const stop = modal.el.querySelector('[data-two-step-off]');
+    if (stop) stop.addEventListener('click', async () => {
+      modal.close();
+      const ok = await AWY.ui.confirm({ title: 'Turn off two step sign in?', message: 'Signing in will only need your password. You can turn it back on at any time.', confirmLabel: 'Turn off', danger: true });
+      if (ok) await C.save(AWY.auth.stopTwoStep(step.factor.id), 'Two step sign in is off.', { area: 'account', operation: 'turn off two step' });
     });
   };
 
