@@ -15,12 +15,14 @@ The website is live at https://alliedwithyou.com.au. The staff dashboard lives a
 
 ## The dashboard
 
-Open sections: dashboard, calendar, tasks, team and access, settings and fees, and feedback and issues. Every other section is listed in the menu but greyed out until the practice is ready to keep that information in the dashboard.
+Open sections: dashboard, calendar, tasks, templates, team and access (including each person's checks and registrations), settings and fees, and feedback and issues. Every other section is listed in the menu but greyed out until the practice is ready to keep that information in the dashboard.
 
 * Staff create an account and confirm their email, then an administrator approves them. admin@, jake@ and chelsie@ are set up by invitation instead.
 * The calendar shows when people are booked or away, never who with. Each entry keeps its NSW or QLD time.
 * Tasks and calendar notes must not include client details until client records are switched on.
 * Any failure shows a short reference, and **Report an issue** sends it to the administrators with that reference attached.
+* Templates are versioned: administrators upload a new version with a note on what changed, and every earlier version stays available.
+* Checks and registrations record details and expiry dates only, never copies of documents.
 
 ## Running it locally
 

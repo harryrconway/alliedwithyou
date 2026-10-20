@@ -21,6 +21,8 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | Staff calendar | Complete and verified on the test project | `js/admin/views/calendar.js`, `js/admin/actions.js` | `calendar_blocks` | auth, crm | Labels such as Booked and Leave only. Stored as exact moments with a NSW or QLD time zone. The database refuses double bookings |
 | Settings and fees | Complete and verified on the test project | `js/admin/views/settings.js` | `settings`, `price_items` | auth, crm | Administrators change them, everyone else reads. Fees have start dates. The website's fees page is updated separately |
 | Report an issue and staff feedback | Complete and verified on the test project | `js/admin/views/feedback.js`, `js/admin/actions.js` | `feedback` | auth, crm | Each report gets a six character reference. Administrators and developers review and reply |
+| Templates library | Complete and verified | `js/admin/views/templates.js`, `js/data/remote.js` | `templates`, `template_versions`, storage bucket `templates` | auth, crm | Administrators add, version, approve and retire templates. Everyone else sees approved ones only. Every version is kept. Files are private and downloaded through links that expire after two minutes. Nine starter templates loaded as drafts on 20 Oct 2026 |
+| Staff checks and registrations | Complete and verified | `js/admin/views/staff.js`, `js/admin/views/dashboard.js` | `staff_checks` | auth, crm | Screening checks, Ahpra registration, insurance, certificates and similar, with expiry dates. Details only, no copies of documents. Each person sees their own, administrators see and record everyone's. Flagged on the dashboard 60 days before expiry |
 | Error handling and logging | Complete and verified on the test project | `js/core/errors.js`, `js/admin/components.js` | `error_events`, `log_error()` | auth, crm | Every failure shows a reference and a plain message. Diagnostics are scrubbed of personal details. Kept and sent later if logging is down |
 | Audit trail | Complete and verified on the test project | `supabase/migrations` | `audit_events` | auth | Written by the database, can't be changed or deleted. Not shown on screen yet |
 | Global search | Partially implemented | `js/admin/shell.js` | none | none | Tasks and the team only, from data already loaded |
@@ -45,6 +47,7 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | 19 Oct 2026 | Release | Production: the four migrations applied (each in one transaction, matching the test project table for table), sign in settings and email templates pushed, enquiry function deployed with its own secrets and no local access. `crm` merged into `main` | `782e749` |
 | 19 Oct 2026 | Release checks | Live site checked: both forms and the staff sign in link show, `/admin/` shows sign in and stays out of search engines, production sign in answers, reserved addresses are sent to their invitation. The first live test enquiry failed because the mail password was changed when uploaded. Uploaded again with quotes, checked by fingerprint, and the second test enquiry arrived in admin@, confirmed by Harry in Outlook | this change |
 | 20 Oct 2026 | Website | Referral form asks for the type of referral (NDIS, My Aged Care or privately funded). Website forms count down to the home page after sending. Home page hero redesigned without the photo, in the logo's teal and sage with the brand mark on a floating medallion, chosen by the practice from previews. The photo files and previews were removed. New My Aged Care page, from myagedcare.gov.au and health.gov.au, in the menu between NDIS and How it works. The menu switches to the Menu button below 1140 pixels so it never wraps | this change |
+| 20 Oct 2026 | CRM | Templates library and staff checks and registrations, with their migration applied to both projects. Nine starter templates written and loaded into both projects as drafts for the practice to review | this change |
 
 ## Database migrations
 
@@ -54,6 +57,7 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | `20261019010000_staffrefs.sql` | Lets links to a removed staff account clear instead of blocking the removal | 19 Oct 2026 | 19 Oct 2026 |
 | `20261019020000_invites.sql` | Reserved addresses activate only after an accepted invitation | 19 Oct 2026 | 19 Oct 2026 |
 | `20261019030000_approvals.sql` | Copies the email confirmation time onto the profile. Approval needs it, and reserved addresses can't be approved by hand | 19 Oct 2026 | 19 Oct 2026 |
+| `20261020010000_templates.sql` | Templates and their versions, a private storage bucket with its own rules, and staff checks | 20 Oct 2026 | 20 Oct 2026 |
 
 ## Security findings
 
@@ -75,7 +79,9 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 * Nobody is told when a new account is waiting for approval. Administrators see it on the dashboard.
 * The calendar loads a window of about four months either side of what's on screen, and tasks completed more than 90 days ago aren't shown.
 * Browser tests run in Chromium only, not Safari or Firefox.
-* The Supabase free plan has no backups. Acceptable for staff accounts, settings, tasks and availability, not for client information.
+* The Supabase free plan has no backups, and database backups never include stored files anyway. Acceptable for staff accounts, settings, tasks, availability and blank templates, not for client information or copies of staff documents.
+* Staff checks hold details only. Uploading copies of documents waits for backups and two step sign in for administrators.
+* Templates are edited on a computer and uploaded as a new version. There is no editing in the browser, and no filling in of client details yet.
 
 ## Outstanding work
 

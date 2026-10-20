@@ -1274,3 +1274,27 @@ a.figure:hover {
   flex-basis: 100%;
   font-size: var(--text-xs);
 }
+
+/* Templates */
+
+.icon-tile {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-sage-soft);
+  color: var(--color-deep);
+}
+
+.icon-tile .icon {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.version-list {
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  margin-top: var(--space-2);
+}

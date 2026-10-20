@@ -69,6 +69,85 @@
     });
   }
 
+  /* Checks and registrations */
+
+  function checkForm(person, existing) {
+    C.openForm({
+      title: existing ? 'Edit check' : 'Add a check for ' + (person.name || person.email),
+      subtitle: 'Record the details after sighting the original. Please don\'t keep copies of certificates or police checks here.',
+      area: 'staff checks',
+      fields: schema.tables.staffChecks.fields,
+      values: existing || {},
+      db: AWY.app.db,
+      size: 'wide',
+      submitLabel: existing ? 'Save check' : 'Add check',
+      footerStart: existing ? html`<button type="button" class="btn btn-danger" data-delete-check>${icon('trash')}Delete</button>` : '',
+      validate(v) {
+        if (v.issuedOn && v.expiresOn && v.expiresOn < v.issuedOn) return { expiresOn: 'The expiry date should be after the issue date' };
+        if ((v.kind === 'other' || v.kind === 'training') && !v.details) return { details: 'Please say what it is' };
+        return {};
+      },
+      onOpen(modal) {
+        const del = modal.el.querySelector('[data-delete-check]');
+        if (del) del.addEventListener('click', () => {
+          modal.close();
+          C.confirmDelete({ table: 'staffChecks', id: existing.id, label: 'this check' });
+        });
+      },
+      async onSubmit(values, modal) {
+        if (existing) {
+          await store.update('staffChecks', existing.id, values);
+          AWY.ui.toast('Check saved.');
+        } else {
+          await store.create('staffChecks', Object.assign({ staffId: person.id }, values), { requestId: modal.requestId });
+          AWY.ui.toast(C.label('checkKind', values.kind) + ' added for ' + (person.name || person.email) + '.');
+        }
+      }
+    });
+  }
+
+  function checkRow(c, today, manage) {
+    const status = rules.checkStatus(c, today);
+    return html`<li>
+      <div class="what"><strong>${C.label('checkKind', c.kind)}</strong>${c.details ? html`<span class="muted">, ${c.details}</span>` : ''}
+        <div class="meta">
+          ${c.reference ? html`<span>${c.reference}</span>` : ''}
+          ${c.expiresOn ? html`<span>${icon('clock')}${status === 'expired' ? 'Expired ' : 'Expires '}${fmt.date(c.expiresOn)}</span>` : ''}
+          ${c.issuedOn ? html`<span>Issued ${fmt.date(c.issuedOn)}</span>` : ''}
+          ${c.sightedOn ? html`<span>${icon('check')}Original sighted ${fmt.date(c.sightedOn)}</span>` : ''}
+        </div>
+        ${c.notes ? html`<div class="meta" style="margin-top:0.2rem"><span>${c.notes}</span></div>` : ''}
+      </div>
+      <div class="end">${C.badge('check', status)}${manage ? html`<button type="button" class="btn btn-quiet btn-sm" data-edit-check="${c.id}">Edit</button>` : ''}</div>
+    </li>`;
+  }
+
+  function checksTab(ctx) {
+    const { db, state, today, user } = ctx;
+    const manage = access.can('manageChecks');
+    if (state.checks === undefined) state.checks = 'all';
+    const people = manage ? rules.activeStaff(db) : db.staff.filter((s) => s.id === user.id);
+    const due = rules.checksDue(db, today);
+    return html`
+      ${manage
+        ? html`<div class="notice" style="margin-bottom:1rem">${icon('shield')}<div>Each person can see their own checks, and only administrators can see everyone's. Record the details after sighting the original. Please don't keep copies of certificates or police checks here.</div></div>
+          ${C.seg('checks', [{ value: 'all', label: 'Everyone' }, { value: 'due', label: 'Needs renewing', count: due.length }], state.checks)}`
+        : html`<p class="muted" style="margin-bottom:1rem">The practice keeps these details for you. If something has changed, let an administrator know.</p>`}
+      <div class="stack-panels">${people.map((p) => {
+        const mine = db.staffChecks.filter((c) => c.staffId === p.id && (state.checks !== 'due' || ['expired', 'expiring'].includes(rules.checkStatus(c, today))));
+        if (state.checks === 'due' && !mine.length) return '';
+        const order = { expired: 0, expiring: 1, current: 2, noexpiry: 3 };
+        mine.sort((a, b) => order[rules.checkStatus(a, today)] - order[rules.checkStatus(b, today)] || String(a.expiresOn).localeCompare(String(b.expiresOn)));
+        return html`<section class="panel" aria-labelledby="ck_${p.id}">
+          <div class="panel-head">
+            <div><h2 id="ck_${p.id}">${p.id === user.id && !manage ? 'Your checks and registrations' : p.name || p.email}</h2><p>${access.roleLabel(p.role)}${p.title && p.title.toLowerCase() !== access.roleLabel(p.role).toLowerCase() ? ', ' + p.title : ''}</p></div>
+            ${manage ? html`<button type="button" class="btn btn-secondary btn-sm" data-add-check="${p.id}">${icon('plus')}Add check</button>` : ''}
+          </div>
+          ${mine.length ? html`<ul class="rows">${mine.map((c) => checkRow(c, today, manage))}</ul>` : html`<div class="panel-body"><p class="muted small">Nothing recorded yet.</p></div>`}
+        </section>`;
+      })}</div>`;
+  }
+
   function personMeta(s) {
     return html`<div class="meta">${s.title ? html`<span>${s.title}</span>` : ''}<span>${icon('mail')}${s.email}</span>${s.phone ? html`<span>${icon('phone')}${s.phone}</span>` : ''}${s.registration ? html`<span>AHPRA ${s.registration}</span>` : ''}</div>`;
   }
@@ -95,8 +174,25 @@
   AWY.views.staff = {
     title: 'Team and access',
     render(ctx) {
-      const { db, user } = ctx;
+      const { db, user, today } = ctx;
       const manage = access.can('manageStaff');
+      const tab = ctx.params.id === 'checks' ? 'checks' : 'team';
+      const dueCount = rules.checksDue(db, today, access.can('manageChecks') ? '' : user.id).length;
+      const tabs = html`<div class="tabs-wrap">${C.tabs([
+        { key: 'team', label: 'Team', href: '#/staff' },
+        { key: 'checks', label: 'Checks and registrations', href: '#/staff/checks', count: dueCount || undefined }
+      ], tab)}</div>`;
+
+      if (tab === 'checks') {
+        ctx.el.innerHTML = String(html`${C.pageHead({ title: 'Team and access', subtitle: 'Screening checks, registrations, insurance and certificates for each person.' })}${tabs}${checksTab(ctx)}`);
+        C.bindFilters(ctx);
+        AWY.on(ctx.el, 'click', '[data-add-check]', (event, btn) => checkForm(db.staff.find((s) => s.id === btn.dataset.addCheck), null));
+        AWY.on(ctx.el, 'click', '[data-edit-check]', (event, btn) => {
+          const c = db.staffChecks.find((x) => x.id === btn.dataset.editCheck);
+          checkForm(db.staff.find((s) => s.id === c.staffId), c);
+        });
+        return;
+      }
       const roles = Object.keys(access.ROLES);
       const yes = html`<span class="yes">${icon('check')}Yes</span>`;
       const no = html`<span class="no">${icon('minusCircle')}No</span>`;
@@ -112,6 +208,7 @@
 
       ctx.el.innerHTML = String(html`
         ${C.pageHead({ title: 'Team and access', subtitle: 'Who has an account, and what each role can do.' })}
+        ${tabs}
         ${approvals}
         <section class="panel" style="margin-bottom:1.5rem" aria-labelledby="teamTitle">
           <div class="panel-head"><h2 id="teamTitle">Team</h2></div>

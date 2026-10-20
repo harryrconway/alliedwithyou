@@ -53,13 +53,16 @@
       const pending = approvals ? rules.pendingStaff(db).filter((s) => s.emailConfirmedAt) : [];
       const newFeedback = review ? db.feedback.filter((f) => f.status === 'submitted') : [];
       const myFeedback = db.feedback.filter((f) => f.createdBy === user.id);
+      const checksAll = access.can('manageChecks');
+      const checksDue = rules.checksDue(db, today, checksAll ? '' : user.id);
 
       const figureList = [
         figure({ value: myOpen.length, label: 'Your open tasks', detail: myOpen.filter((t) => t.dueDate <= weekEnd).length + ' due this week', href: '#/tasks', hidden: !tasksOn }),
         figure({ value: myOverdue.length, label: 'Overdue tasks', detail: 'Assigned to you', href: '#/tasks', tone: myOverdue.length ? 'alert' : '', hidden: !tasksOn }),
         figure({ value: myWeek.length, label: 'Calendar entries', detail: 'Yours, in the next 7 days', href: '#/calendar', hidden: !calendarOn }),
         figure({ value: pending.length, label: 'Waiting for approval', detail: 'New accounts', href: '#/staff', tone: pending.length ? 'warning' : '', hidden: !approvals }),
-        figure({ value: newFeedback.length, label: 'New feedback', detail: 'Not looked at yet', href: '#/feedback', tone: newFeedback.length ? 'warning' : '', hidden: !review })
+        figure({ value: newFeedback.length, label: 'New feedback', detail: 'Not looked at yet', href: '#/feedback', tone: newFeedback.length ? 'warning' : '', hidden: !review }),
+        figure({ value: checksDue.length, label: 'Checks to renew', detail: checksAll ? 'Expired or due within 60 days' : 'Yours, expired or due soon', href: '#/staff/checks', tone: checksDue.some((c) => rules.checkStatus(c, today) === 'expired') ? 'alert' : 'warning', hidden: !checksDue.length })
       ].filter(Boolean);
       const n = figureList.length;
       const figures = n ? html`<div class="figures" style="--cols:${n}" aria-label="Key figures">${figureList}</div>` : '';
@@ -89,6 +92,14 @@
         </li>`)}</ul>
       </section>` : '';
 
+      const checksPanel = checksDue.length ? html`<section class="panel" aria-labelledby="checksTitle">
+        <div class="panel-head"><h2 id="checksTitle">Checks to renew</h2><a class="btn btn-quiet btn-sm" href="#/staff/checks">All checks</a></div>
+        <ul class="rows">${checksDue.slice(0, 6).map((c) => html`<li>
+          <div class="what"><a href="#/staff/checks">${C.label('checkKind', c.kind)}</a><div class="meta">${checksAll ? html`<span>${icon('user')}${rules.staffName(db, c.staffId)}</span>` : ''}<span>${rules.checkStatus(c, today) === 'expired' ? 'Expired ' : 'Expires '}${fmt.date(c.expiresOn)}</span></div></div>
+          <div class="end">${C.badge('check', rules.checkStatus(c, today))}</div>
+        </li>`)}</ul>
+      </section>` : '';
+
       const feedbackList = review ? db.feedback.slice(0, 5) : myFeedback.slice(0, 5);
       const feedbackPanel = html`<section class="panel" aria-labelledby="fbTitle">
         <div class="panel-head"><h2 id="fbTitle">${review ? 'Recent feedback' : 'Your feedback'}</h2><a class="btn btn-quiet btn-sm" href="#/feedback">${review ? 'All feedback' : 'View'}</a></div>
@@ -111,7 +122,7 @@
         ${figures}
         <div class="columns">
           <div class="stack-panels">${weekPanel}${tasksPanel}</div>
-          <div class="stack-panels">${approvalPanel}${feedbackPanel}</div>
+          <div class="stack-panels">${approvalPanel}${checksPanel}${feedbackPanel}</div>
         </div>
         <p class="small muted" style="margin-top:1.5rem">${icon('lock')} Client records, clinical notes and billing aren't switched on yet. They're greyed out in the menu, and will open once the practice is ready to keep that information here.</p>
       `);

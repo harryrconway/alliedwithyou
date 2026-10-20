@@ -20,7 +20,7 @@ module.exports = async function auth(ctx) {
   const anon = createClient(env.STAGING_URL, env.STAGING_PUBLISHABLE_KEY, opts);
   const stamp = Date.now().toString(36);
   const password = 'Test' + Math.random().toString(36).slice(2) + 'Aa9!';
-  const made = { users: [], allow: [] };
+  const made = { users: [], allow: [], templates: [] };
 
   async function makeUser(label, profile) {
     const email = 'qa.' + label + '.' + stamp + '@example.com';
@@ -147,6 +147,51 @@ module.exports = async function auth(ctx) {
     const adminSeesFb = await admin.client.from('feedback').select('id').eq('id', fb.data.id);
     ok(adminSeesFb.data && adminSeesFb.data.length === 1, 'An administrator could not read feedback');
 
+    /* Templates: administrators manage them, everyone else sees approved ones only */
+    const tpl = await admin.client.from('templates').insert({ title: 'QA template ' + stamp, category: 'form' }).select('id').single();
+    ok(!tpl.error, 'An administrator could not add a template: ' + (tpl.error && tpl.error.message));
+    made.templates.push(tpl.data.id);
+    const thTpl = await therapist.client.from('templates').insert({ title: 'QA sneaky template', category: 'form' });
+    ok(!!thTpl.error, 'A therapist could add a template');
+    const filePath = tpl.data.id + '/qa' + stamp + '.txt';
+    const upload = await admin.client.storage.from('templates').upload(filePath, Buffer.from('QA template file'), { contentType: 'text/plain' });
+    ok(!upload.error, 'An administrator could not upload a template file: ' + (upload.error && upload.error.message));
+    const thUpload = await therapist.client.storage.from('templates').upload(tpl.data.id + '/sneaky.txt', Buffer.from('x'), { contentType: 'text/plain' });
+    ok(!!thUpload.error, 'A therapist could upload a template file');
+    const ver = await admin.client.from('template_versions').insert({ template_id: tpl.data.id, file_path: filePath, file_name: 'qa.txt', mime_type: 'text/plain', size_bytes: 16 }).select('version_no').single();
+    ok(!ver.error && ver.data.version_no === 1, 'The first template version was not numbered 1');
+    const draftSeen = await therapist.client.from('templates').select('id').eq('id', tpl.data.id);
+    ok(draftSeen.data && draftSeen.data.length === 0, 'A therapist could see a draft template');
+    const draftFile = await therapist.client.storage.from('templates').createSignedUrl(filePath, 60);
+    ok(!!draftFile.error, 'A therapist could download a draft template file');
+    const approveTpl = await admin.client.from('templates').update({ status: 'approved' }).eq('id', tpl.data.id).select('approved_by, current_version_id').single();
+    ok(!approveTpl.error && approveTpl.data.approved_by === admin.id && approveTpl.data.current_version_id, 'Approving a template did not record who approved it and its current version');
+    const approvedFile = await therapist.client.storage.from('templates').createSignedUrl(filePath, 60);
+    ok(!approvedFile.error && approvedFile.data && approvedFile.data.signedUrl, 'A therapist could not download an approved template');
+    if (approvedFile.data && approvedFile.data.signedUrl) {
+      const res = await fetch(approvedFile.data.signedUrl);
+      ok(res.status === 200 && (await res.text()) === 'QA template file', 'The approved template download did not return the file');
+    }
+    const editVer = await admin.client.from('template_versions').update({ note: 'changed' }).eq('template_id', tpl.data.id).select('id');
+    ok(editVer.error || (editVer.data && editVer.data.length === 0), 'A template version could be changed after it was saved');
+    await admin.client.storage.from('templates').remove([filePath]);
+    const stillThere = await service.storage.from('templates').list(tpl.data.id);
+    ok(stillThere.data && stillThere.data.some((f) => filePath.endsWith(f.name)), 'A template file in use could be deleted');
+    const emptyTpl = await admin.client.from('templates').insert({ title: 'QA empty template ' + stamp, category: 'form' }).select('id').single();
+    made.templates.push(emptyTpl.data.id);
+    const approveEmpty = await admin.client.from('templates').update({ status: 'approved' }).eq('id', emptyTpl.data.id);
+    ok(!!approveEmpty.error, 'A template with no file could be approved');
+
+    /* Staff checks: each person sees their own, and administrators record them */
+    const chk = await admin.client.from('staff_checks').insert({ staff_id: therapist.id, kind: 'ahpra', reference: 'QA' + stamp, expires_on: '2030-11-30' }).select('id').single();
+    ok(!chk.error, 'An administrator could not record a staff check: ' + (chk.error && chk.error.message));
+    const ownChk = await therapist.client.from('staff_checks').select('id').eq('staff_id', therapist.id);
+    ok(ownChk.data && ownChk.data.length === 1, 'A therapist could not see their own checks');
+    const otherChk = await other.client.from('staff_checks').select('id').eq('staff_id', therapist.id);
+    ok(otherChk.data && otherChk.data.length === 0, "Staff could see someone else's checks");
+    const selfChk = await therapist.client.from('staff_checks').insert({ staff_id: therapist.id, kind: 'police' });
+    ok(!!selfChk.error, 'A therapist could record a check without an administrator');
+
     /* Errors are logged through the safe function and read only by administrators and developers */
     await therapist.client.rpc('log_error', { p_ref: 'QA' + stamp.slice(-4).toUpperCase(), p_category: 'network', p_area: 'tests', p_operation: 'auth check', p_message: 'Test error', p_app_version: 'test', p_fingerprint: 'qa' + stamp });
     const thErrors = await therapist.client.from('error_events').select('id');
@@ -180,6 +225,11 @@ module.exports = async function auth(ctx) {
     failures.push('The check stopped: ' + error.message);
   } finally {
     /* Remove everything this run created. Audit records stay, by design. */
+    for (const id of made.templates) {
+      const { data: files } = await service.storage.from('templates').list(id);
+      if (files && files.length) await service.storage.from('templates').remove(files.map((f) => id + '/' + f.name));
+      await service.from('templates').delete().eq('id', id);
+    }
     for (const id of made.users) {
       await service.from('feedback').delete().eq('created_by', id);
       await service.from('tasks').delete().or('assigned_to.eq.' + id + ',created_by.eq.' + id);

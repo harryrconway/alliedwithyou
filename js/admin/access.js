@@ -21,6 +21,7 @@
     { key: 'reports', label: 'Clinical reports', icon: 'report', group: 'Clinical', state: 'locked' },
     { key: 'documents', label: 'Documents and consent', icon: 'folder', group: 'Records', state: 'locked' },
     { key: 'agreements', label: 'Service agreements', icon: 'signature', group: 'Records', state: 'locked' },
+    { key: 'templates', label: 'Templates', icon: 'clipboard', group: 'Records', state: 'open' },
     { key: 'funding', label: 'Funding and services', icon: 'wallet', group: 'Billing', state: 'locked' },
     { key: 'invoices', label: 'Invoices', icon: 'receipt', group: 'Billing', state: 'locked' },
     { key: 'incidents', label: 'Incidents and complaints', icon: 'alert', group: 'Practice', state: 'locked' },
@@ -40,18 +41,18 @@
     },
     therapist: {
       label: 'Occupational therapist',
-      summary: 'The calendar, tasks and the team list. Settings and fees can be viewed but not changed.',
-      sections: ['dashboard', 'clients', 'referrals', 'calendar', 'notes', 'assessments', 'goals', 'reports', 'documents', 'agreements', 'funding', 'tasks', 'staff', 'settings', 'feedback']
+      summary: 'The calendar, tasks, templates and the team list. Settings and fees can be viewed but not changed.',
+      sections: ['dashboard', 'clients', 'referrals', 'calendar', 'notes', 'assessments', 'goals', 'reports', 'documents', 'agreements', 'templates', 'funding', 'tasks', 'staff', 'settings', 'feedback']
     },
     reception: {
       label: 'Reception',
-      summary: 'The calendar, tasks and the team list. Settings and fees can be viewed but not changed.',
-      sections: ['dashboard', 'clients', 'referrals', 'calendar', 'documents', 'agreements', 'funding', 'invoices', 'tasks', 'staff', 'settings', 'feedback']
+      summary: 'The calendar, tasks, templates and the team list. Settings and fees can be viewed but not changed.',
+      sections: ['dashboard', 'clients', 'referrals', 'calendar', 'documents', 'agreements', 'templates', 'funding', 'invoices', 'tasks', 'staff', 'settings', 'feedback']
     },
     support: {
       label: 'Support staff',
-      summary: 'Their own calendar entries and tasks, and the team list.',
-      sections: ['dashboard', 'clients', 'calendar', 'notes', 'goals', 'tasks', 'staff', 'feedback']
+      summary: 'Their own calendar entries and tasks, templates and the team list.',
+      sections: ['dashboard', 'clients', 'calendar', 'notes', 'goals', 'templates', 'tasks', 'staff', 'feedback']
     },
     developer: {
       label: 'Developer',
@@ -67,6 +68,8 @@
     fees: ['administrator'],
     everyCalendar: ['administrator'],
     deleteAnyTask: ['administrator'],
+    manageTemplates: ['administrator'],
+    manageChecks: ['administrator'],
     reviewFeedback: ['administrator', 'developer'],
     viewErrors: ['administrator', 'developer']
   };
@@ -77,6 +80,8 @@
     fees: 'Change fees',
     everyCalendar: "Manage everyone's calendar entries",
     deleteAnyTask: "Delete other people's tasks",
+    manageTemplates: 'Add, update and approve templates',
+    manageChecks: "Record staff checks and registrations",
     reviewFeedback: 'Review feedback and reported issues',
     viewErrors: 'See error reports'
   };

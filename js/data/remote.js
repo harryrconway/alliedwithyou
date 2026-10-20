@@ -70,6 +70,21 @@
       columns: ['kind', 'title', 'description', 'area', 'expected', 'actual', 'error_ref', 'status', 'response', 'request_id'],
       nullable: ['request_id']
     },
+    templates: {
+      table: 'templates', order: 'title',
+      columns: ['title', 'category', 'funding', 'description', 'status', 'request_id'],
+      nullable: ['request_id']
+    },
+    templateVersions: {
+      table: 'template_versions', order: 'created_at', desc: true, limit: 1000,
+      columns: ['template_id', 'file_path', 'file_name', 'mime_type', 'size_bytes', 'note'],
+      nullable: []
+    },
+    staffChecks: {
+      table: 'staff_checks', order: 'expires_on',
+      columns: ['staff_id', 'kind', 'details', 'reference', 'issued_on', 'expires_on', 'sighted_on', 'notes', 'request_id'],
+      nullable: ['issued_on', 'expires_on', 'sighted_on', 'request_id']
+    },
     errorEvents: {
       table: 'error_events', order: 'created_at', desc: true, limit: 200,
       columns: [],
@@ -225,7 +240,7 @@
 
     /* Everything the open sections need, read in parallel */
     async snapshot() {
-      const names = ['staff', 'tasks', 'calendar', 'supportItems', 'feedback', 'errorEvents'];
+      const names = ['staff', 'tasks', 'calendar', 'supportItems', 'feedback', 'templates', 'templateVersions', 'staffChecks', 'errorEvents'];
       const results = await Promise.all(names.map((n) => list(n)).concat([readSettings()]));
       const db = {};
       names.forEach((n, i) => (db[n] = results[i]));
@@ -277,6 +292,66 @@
       if (!rows.length) throw missing();
       emit({ type: 'remove', table: name });
       return { removed: rows.length };
+    }
+  };
+
+  /* Files in private storage. Downloads use signed links that stop working after a few minutes. */
+
+  const FILE_TYPES = {
+    pdf: 'application/pdf',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    doc: 'application/msword',
+    xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    xls: 'application/vnd.ms-excel',
+    odt: 'application/vnd.oasis.opendocument.text',
+    txt: 'text/plain'
+  };
+  const MAX_FILE = 25 * 1024 * 1024;
+
+  function storageError(error) {
+    const status = Number(error.statusCode || error.status || 0);
+    const e = new StoreError(error.message || 'The file could not be saved', { code: String(error.error || ''), status: status });
+    const invalid = (friendly) => Object.assign(e, { category: 'validation', friendly: friendly, errors: { file: friendly } });
+    if (/failed to fetch|load failed|networkerror/i.test(error.message || '')) return Object.assign(e, { message: 'Failed to fetch' });
+    if (status === 413 || /too large|exceeded the maximum/i.test(error.message || '')) return invalid('That file is larger than 25 MB. Please choose a smaller one.');
+    if (status === 415 || /mime type/i.test(error.message || '')) return invalid('That type of file can\'t be uploaded. Please use PDF, Word, Excel or plain text.');
+    if (status === 403 || /row-level security|unauthori[sz]ed/i.test(error.message || '')) return Object.assign(e, { category: 'permission' });
+    return e;
+  }
+
+  const files = {
+    types: FILE_TYPES,
+    accept: Object.keys(FILE_TYPES).map((ext) => '.' + ext).join(','),
+
+    /* Checks a chosen file before anything is sent. Returns a message, or '' when it's fine. */
+    check(file) {
+      if (!file) return 'Please choose a file';
+      const ext = (file.name.split('.').pop() || '').toLowerCase();
+      if (!FILE_TYPES[ext]) return 'Please choose a PDF, Word, Excel or plain text file';
+      if (file.size > MAX_FILE) return 'That file is larger than 25 MB';
+      if (!file.size) return 'That file is empty';
+      return '';
+    },
+
+    async upload(bucket, path, file) {
+      const ext = (file.name.split('.').pop() || '').toLowerCase();
+      const { error } = await client.storage.from(bucket).upload(path, file, { contentType: FILE_TYPES[ext] || file.type, upsert: false });
+      if (error) throw storageError(error);
+    },
+
+    /* Clears up a file that never became part of a record, for example after a failed save */
+    async discard(bucket, path) {
+      try {
+        await client.storage.from(bucket).remove([path]);
+      } catch (error) {
+        /* nothing else to do */
+      }
+    },
+
+    async link(bucket, path, downloadName) {
+      const { data, error } = await client.storage.from(bucket).createSignedUrl(path, 120, { download: downloadName });
+      if (error) throw storageError(error);
+      return data.signedUrl;
     }
   };
 
@@ -372,4 +447,5 @@
   AWY.client = client;
   AWY.store = store;
   AWY.auth = auth;
+  AWY.files = files;
 })();

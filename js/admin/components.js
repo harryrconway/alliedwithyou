@@ -219,7 +219,8 @@
         def.type === 'number' && def.step ? 'step="' + def.step + '"' : '',
         def.autocomplete ? 'autocomplete="' + def.autocomplete + '"' : '',
         def.minlength ? 'minlength="' + def.minlength + '"' : '',
-        def.maxlength ? 'maxlength="' + def.maxlength + '"' : ''
+        def.maxlength ? 'maxlength="' + def.maxlength + '"' : '',
+        def.accept ? 'accept="' + def.accept + '"' : ''
       ].join(' ');
       return html`<div class="field${span}">${label}<input class="input" type="${type}" id="${id}" name="${def.name}" value="${v}" ${req} ${described} ${raw(extra)}>${hint}</div>`;
     },

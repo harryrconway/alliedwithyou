@@ -65,6 +65,14 @@ In the Supabase dashboard for the production project, open **Authentication**, t
 
 If a reserved address shows as **Reserved practice address** in the approvals list, someone created an account with it before the invitation was sent. Delete that user in **Authentication**, **Users**, then send the invitation.
 
+## Stored files
+
+Template files live in the private `templates` storage bucket. Nobody can open a file directly. The dashboard asks for a link that works for two minutes, and the database only gives one for an approved template, or to an administrator. Files that became a version can't be deleted, so the history stays complete.
+
+Files aren't included in database backups, even on a paid plan. Before anything important is stored only in the dashboard, arrange a separate copy, for example a regular download of the current templates.
+
+The nine starter templates were loaded as drafts on 20 October 2026. They were written for the practice and need reviewing before approval, with agreements and contracts checked by a lawyer.
+
 ## Errors and feedback
 
 Every failure in the dashboard shows the person a six character reference and is logged in `error_events` with only safe details: where it happened, what kind of failure, and a scrubbed message. Administrators and developers see these under **Feedback and issues**, then **Error reports**. When someone uses **Report an issue** straight after an error, the reference is attached, so the two can be matched.

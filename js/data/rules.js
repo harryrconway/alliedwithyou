@@ -54,6 +54,24 @@
       return item.effectiveFrom <= today && (!item.effectiveTo || item.effectiveTo >= today);
     },
 
+    /* Staff checks: renew within 60 days of expiry */
+    checkStatus(c, today) {
+      if (!c.expiresOn) return 'noexpiry';
+      if (c.expiresOn < today) return 'expired';
+      if (c.expiresOn <= D.addDays(today, 60)) return 'expiring';
+      return 'current';
+    },
+    checksDue(db, today, staffId) {
+      return db.staffChecks
+        .filter((c) => (!staffId || c.staffId === staffId) && ['expired', 'expiring'].includes(rules.checkStatus(c, today)))
+        .sort((a, b) => a.expiresOn.localeCompare(b.expiresOn));
+    },
+
+    /* Templates */
+    templateVersions(db, templateId) {
+      return db.templateVersions.filter((v) => v.templateId === templateId).sort((a, b) => b.versionNo - a.versionNo);
+    },
+
     /* Calendar entries. Each one happens at an exact moment, shown in the time zone it was booked in. */
     blockStart(b) {
       return new Date(b.startsAt).getTime();

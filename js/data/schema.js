@@ -92,6 +92,38 @@
       ['feature', 'An idea for something new'],
       ['suggestion', 'A way to improve something']
     ]),
+    templateCategory: opt([
+      ['agreement', 'Service agreements'],
+      ['consent', 'Consent forms'],
+      ['intake', 'Intake forms'],
+      ['form', 'Forms and checklists'],
+      ['letter', 'Letters'],
+      ['policy', 'Policies and notices'],
+      ['contract', 'Contracts'],
+      ['other', 'Other']
+    ]),
+    templateFunding: opt([
+      ['any', 'Any client'],
+      ['ndis', 'NDIS'],
+      ['sah', 'Support at Home'],
+      ['private', 'Private clients']
+    ]),
+    checkKind: opt([
+      ['ndis_screening', 'NDIS Worker Screening Check'],
+      ['wwcc_nsw', 'Working with Children Check (NSW)'],
+      ['blue_card', 'Blue card (Queensland)'],
+      ['police', 'National police check'],
+      ['ahpra', 'AHPRA registration'],
+      ['indemnity', 'Professional indemnity insurance'],
+      ['first_aid', 'First aid certificate'],
+      ['cpr', 'CPR certificate'],
+      ['ota', 'Occupational Therapy Australia membership'],
+      ['licence', "Driver's licence"],
+      ['car_insurance', 'Car insurance'],
+      ['vaccination', 'Vaccination record'],
+      ['training', 'Training'],
+      ['other', 'Other']
+    ]),
     errorCategory: opt([
       ['validation', 'Form check'],
       ['network', 'Connection dropped'],
@@ -120,6 +152,17 @@
       active: s('Active', 'success', 'checkCircle'),
       declined: s('Declined', 'neutral', 'minusCircle'),
       disabled: s('Switched off', 'neutral', 'lock')
+    },
+    template: {
+      draft: s('Draft', 'warning', 'edit'),
+      approved: s('Approved', 'success', 'checkCircle'),
+      retired: s('Retired', 'neutral', 'archive')
+    },
+    check: {
+      current: s('Current', 'success', 'checkCircle'),
+      expiring: s('Renew soon', 'warning', 'clock'),
+      expired: s('Expired', 'danger', 'alert'),
+      noexpiry: s('No expiry date', 'neutral', 'dot')
     },
     feedback: {
       submitted: s('Submitted', 'info', 'dot'),
@@ -178,6 +221,31 @@
         { name: 'rate', label: 'Rate', type: 'money', required: true },
         { name: 'effectiveFrom', label: 'Applies from', type: 'date', required: true },
         { name: 'notes', label: 'Notes', type: 'textarea', span: 'all' }
+      ]
+    },
+
+    templates: {
+      singular: 'template',
+      plural: 'templates',
+      fields: [
+        { name: 'title', label: 'Name', type: 'text', required: true, span: 'all', maxlength: 160 },
+        { name: 'category', label: 'Category', type: 'select', options: options.templateCategory, required: true },
+        { name: 'funding', label: 'For', type: 'select', options: options.templateFunding, required: true },
+        { name: 'description', label: 'What it is for', type: 'textarea', span: 'all', rows: 3, hint: 'A sentence or two, so the team knows when to use it.' }
+      ]
+    },
+
+    staffChecks: {
+      singular: 'check',
+      plural: 'checks',
+      fields: [
+        { name: 'kind', label: 'Check or document', type: 'select', options: options.checkKind, required: true, span: 'all' },
+        { name: 'details', label: 'Details', type: 'text', span: 'all', maxlength: 120, hint: 'For example the course name, insurer or licence class' },
+        { name: 'reference', label: 'Number or reference', type: 'text', maxlength: 60 },
+        { name: 'sightedOn', label: 'Original sighted on', type: 'date' },
+        { name: 'issuedOn', label: 'Issued on', type: 'date' },
+        { name: 'expiresOn', label: 'Expires on', type: 'date', hint: 'Leave blank if it does not expire' },
+        { name: 'notes', label: 'Notes', type: 'textarea', span: 'all', rows: 2 }
       ]
     },
 

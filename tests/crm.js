@@ -19,7 +19,7 @@ module.exports = async function crm(ctx) {
   const stamp = Date.now().toString(36);
   const password = 'Test' + Math.random().toString(36).slice(2) + 'Aa9!';
   const made = [];
-  const cleanup = { prices: [], reopen: [], allow: [] };
+  const cleanup = { prices: [], reopen: [], allow: [], templates: [] };
 
   async function makeUser(label, profile) {
     const email = 'qa.ui' + label + '.' + stamp + '@example.com';
@@ -199,6 +199,63 @@ module.exports = async function crm(ctx) {
     await p.goto(ctx.base + 'admin/#/feedback/errors');
     ok(await p.waitForSelector('td:has-text("Save not confirmed")', { timeout: 5000 }).then(() => true, () => false), 'The dropped connection was not in the error reports');
 
+    /* Templates: an administrator adds one as a draft, uploads a second version and approves it */
+    const tplName = 'QA template ' + stamp;
+    const fs = require('fs');
+    const path = require('path');
+    const os = require('os');
+    const fileOne = path.join(os.tmpdir(), 'qa' + stamp + 'one.txt');
+    const fileTwo = path.join(os.tmpdir(), 'qa' + stamp + 'two.txt');
+    fs.writeFileSync(fileOne, 'QA template, first version');
+    fs.writeFileSync(fileTwo, 'QA template, second version');
+    await p.goto(ctx.base + 'admin/#/templates');
+    await p.click('.page-head [data-new-template]');
+    await p.fill('dialog input[name="title"]', tplName);
+    await p.selectOption('dialog select[name="category"]', 'form');
+    await p.setInputFiles('dialog input[name="file"]', fileOne);
+    await p.click('dialog [type="submit"]');
+    ok(await toast(p, 'added as a draft'), 'An administrator could not add a template');
+    const { data: tplRows } = await service.from('templates').select('id, status, current_version_id').eq('title', tplName);
+    ok(tplRows && tplRows.length === 1 && tplRows[0].status === 'draft' && tplRows[0].current_version_id, 'The new template was not saved as a draft with its file');
+    cleanup.templates = (tplRows || []).map((t) => t.id);
+    await p.click('[data-open-template="' + tplRows[0].id + '"] >> nth=0');
+    await p.click('dialog [data-act="version"]');
+    await p.setInputFiles('dialog input[name="file"]', fileTwo);
+    await p.fill('dialog input[name="note"]', 'Second version from the browser check');
+    await p.click('dialog [type="submit"]');
+    ok(await toast(p, 'Version 2'), 'A new template version was not uploaded');
+    await p.click('[data-open-template="' + tplRows[0].id + '"] >> nth=0');
+    await p.click('dialog [data-act="approved"]');
+    await p.click('dialog [data-confirm]');
+    ok(await toast(p, 'is approved'), 'An administrator could not approve a template');
+
+    /* A check that's about to expire shows on the dashboard */
+    await p.goto(ctx.base + 'admin/#/staff/checks');
+    await p.click('[data-add-check="' + therapist.id + '"]');
+    await p.selectOption('dialog select[name="kind"]', 'first_aid');
+    const soon = new Date(Date.now() + 20 * 86400000).toISOString().slice(0, 10);
+    await p.fill('dialog input[name="expiresOn"]', soon);
+    await p.click('dialog [type="submit"]');
+    ok(await toast(p, 'First aid certificate added'), 'An administrator could not record a staff check');
+    await p.goto(ctx.base + 'admin/#/');
+    ok(await p.waitForSelector('h2:has-text("Checks to renew")', { timeout: 8000 }).then(() => true, () => false), 'A check due to expire was not flagged on the dashboard');
+
+    await signOut(p);
+
+    /* The therapist downloads the approved template, and sees their own check */
+    await signIn(p, therapist.email, password);
+    await p.waitForSelector('h1:has-text("Good")', { timeout: 10000 });
+    await p.goto(ctx.base + 'admin/#/templates');
+    await p.waitForSelector('[data-download="' + tplRows[0].id + '"]', { timeout: 8000 });
+    const [download] = await Promise.all([p.waitForEvent('download', { timeout: 10000 }), p.click('[data-download="' + tplRows[0].id + '"]')]);
+    const got = fs.readFileSync(await download.path(), 'utf8');
+    ok(got === 'QA template, second version' && /version 2/.test(download.suggestedFilename()), 'The therapist did not download the latest approved version');
+    ok(!(await p.isVisible('[data-new-template]')), 'A therapist was offered a new template');
+    await p.goto(ctx.base + 'admin/#/staff/checks');
+    ok(await p.waitForSelector('text=First aid certificate', { timeout: 8000 }).then(() => true, () => false), 'A therapist could not see their own check');
+    ok(!(await p.isVisible('[data-add-check]')), 'A therapist was offered to add checks');
+    fs.unlinkSync(fileOne);
+    fs.unlinkSync(fileTwo);
     await signOut(p);
 
     /* Accepting an invitation to a reserved address: choose a name and password, then straight in */
@@ -257,6 +314,11 @@ module.exports = async function crm(ctx) {
     failures.push('The check stopped: ' + error.message.split('\n')[0]);
   } finally {
     for (const pg of pages) await pg.close().catch(() => null);
+    for (const id of cleanup.templates) {
+      const { data: files } = await service.storage.from('templates').list(id);
+      if (files && files.length) await service.storage.from('templates').remove(files.map((f) => id + '/' + f.name));
+      await service.from('templates').delete().eq('id', id);
+    }
     if (cleanup.prices.length) await service.from('price_items').delete().in('id', cleanup.prices);
     if (cleanup.reopen.length) await service.from('price_items').update({ effective_to: null }).in('id', cleanup.reopen);
     for (const id of made) {
