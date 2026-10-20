@@ -8,7 +8,7 @@ const path = require('path');
 const serve = require('./serve');
 
 const ROOT = path.resolve(__dirname, '..');
-const ALL = ['syntax', 'links', 'text', 'auth', 'enquiry', 'site', 'crm', 'layout'];
+const ALL = ['syntax', 'links', 'text', 'auth', 'enquiry', 'notify', 'site', 'crm', 'layout'];
 const BROWSER = ['text', 'site', 'crm', 'layout'];
 
 (async () => {

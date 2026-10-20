@@ -31,7 +31,8 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | Developer tickets and dashboard | Missing | none | `dev_tickets`, `ticket_comments`, `ticket_events` | none | Stage 4. Feedback and error reports cover the first part |
 | Backups and recovery | Missing | none | none | none | Stage 3, skipped for now at the practice's request on 20 Oct 2026. Sensitive sections stay locked until it's done |
 | System administration and monitoring | Missing | none | `monitoring_config`, `job_runs` | none | Stage 6 |
-| Notifications and scheduled jobs | Missing | none | `notifications`, `job_runs` | none | Stage 6. For example, an email when someone is waiting for approval |
+| Email alerts | Complete and verified | `supabase/functions/notify`, `supabase/migrations` | `notifications`, `pg_cron` job `notify`, Vault | notify | Every 15 minutes: an email to administrators when a confirmed account is waiting for approval (with a warning for reserved addresses), and reminders 60, 30 and 7 days before a staff check expires and once after, to the person and as one list to administrators. Recorded before sending so nothing goes twice. Check type and date only, no reference numbers. On the test project everything goes to noreply@ |
+| Other notifications and scheduled jobs | Missing | none | `job_runs` | none | Stage 6, for example a weekly summary |
 | Privacy requests | Missing | none | `privacy_requests` | none | Stage 7 |
 | Automated tests in the repository | Complete and verified | `tests/` | none | all eight pass | Chromium only |
 
@@ -51,6 +52,7 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | 20 Oct 2026 | CRM | Templates library and staff checks and registrations, with their migration applied to both projects. Nine starter templates written and loaded into both projects as drafts for the practice to review | this change |
 | 20 Oct 2026 | Stage 2 | Two step sign in: set up and code screens, a Your account option, a practice setting to require it for everyone, team list badges, and database enforcement | this change |
 | 20 Oct 2026 | Stage 3 | Skipped for now at the practice's request. No backups on the free plan, so client records, clinical notes, invoices and copies of staff documents stay locked until it's done. The practice keeps its own copies of important files. Free projects can pause after about a week without use |  |
+| 20 Oct 2026 | Stage 6 | Email alerts for accounts waiting for approval and staff checks due for renewal, sent from noreply@ by a scheduled Edge Function, on both projects | this change |
 
 ## Database migrations
 
@@ -62,6 +64,7 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | `20261019030000_approvals.sql` | Copies the email confirmation time onto the profile. Approval needs it, and reserved addresses can't be approved by hand | 19 Oct 2026 | 19 Oct 2026 |
 | `20261020010000_templates.sql` | Templates and their versions, a private storage bucket with its own rules, and staff checks | 20 Oct 2026 | 20 Oct 2026 |
 | `20261020020000_twostep.sql` | Two step sign in enforced in the database for administrators, or everyone when the practice chooses, and recorded on each profile | 20 Oct 2026 | 20 Oct 2026 |
+| `20261020030000_notify.sql` | The notifications record and the 15 minute schedule that calls the notify function | 20 Oct 2026 | 20 Oct 2026 |
 
 ## Security findings
 

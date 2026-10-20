@@ -18,7 +18,8 @@ The test database only ever holds fictional records and throwaway test accounts.
 Secrets live in two places only, and never in the repository:
 
 * `.env` in the project folder on Harry's Mac. It's ignored by git and readable only by Harry's account. It holds the test database password, both projects' publishable and secret keys, and the noreply@ mailbox details.
-* Supabase function secrets on each project, set with `supabase secrets set`. These are `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `ENQUIRY_TO`, `FORM_SALT` and, on the test project only, `ALLOW_LOCAL`. When setting them from a file with `--env-file`, put each value in single quotes. Unquoted values with special characters are changed on the way in, which broke the production mail password on release day. `supabase secrets list` shows a fingerprint of each value, so a stored value can be checked against `.env` without revealing it.
+* Supabase function secrets on each project, set with `supabase secrets set`. These are `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `ENQUIRY_TO`, `FORM_SALT`, `NOTIFY_SECRET`, `DASHBOARD_URL` and, on the test project only, `ALLOW_LOCAL` and `NOTIFY_REDIRECT`.
+* Supabase Vault on each project holds `notify_url` and `notify_secret` for the scheduled alerts. `.env` keeps a copy of each project's notify secret. When setting them from a file with `--env-file`, put each value in single quotes. Unquoted values with special characters are changed on the way in, which broke the production mail password on release day. `supabase secrets list` shows a fingerprint of each value, so a stored value can be checked against `.env` without revealing it.
 
 The publishable keys are safe to include in the website, because Row Level Security decides what each signed in person can see. The secret keys bypass those rules, so they must never appear in website code.
 
@@ -44,6 +45,17 @@ Reverting website code doesn't undo database changes or bring back deleted recor
 * Apply: `npx supabase config push --project-ref <ref>` (it needs `SMTP_PASSWORD` in the environment)
 
 The `[remotes.staging]` block points the test project's links at localhost, so test emails never send people to the live site.
+
+## Email alerts
+
+`supabase/functions/notify` sends the dashboard's alerts from noreply@:
+
+* to every active administrator, when someone has created an account, confirmed their email and is waiting for approval
+* to a staff member, 60, 30 and 7 days before one of their checks expires and once after it has, and the same reminders to administrators as one list
+
+The database runs it every 15 minutes, through the `pg_cron` job named `notify`. The job reads the function's address and a shared secret from Supabase Vault (`notify_url` and `notify_secret`), and the function checks the secret against its own `NOTIFY_SECRET`. Each alert is recorded in the `notifications` table before it's sent, so it never goes twice, and a failed send is cleared to be tried again. On the test project, the `NOTIFY_REDIRECT` secret sends every alert to noreply@ instead.
+
+To pause the alerts, run `select cron.unschedule('notify');` in the SQL editor. The migration shows how to schedule it again. Recent runs are in `cron.job_run_details` and the function's replies in `net._http_response`.
 
 ## Edge Functions
 

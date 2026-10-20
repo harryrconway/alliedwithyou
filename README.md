@@ -23,6 +23,7 @@ Open sections: dashboard, calendar, tasks, templates, team and access (including
 * Any failure shows a short reference, and **Report an issue** sends it to the administrators with that reference attached.
 * Templates are versioned: administrators upload a new version with a note on what changed, and every earlier version stays available.
 * Checks and registrations record details and expiry dates only, never copies of documents.
+* Administrators get an email when someone is waiting for approval, and staff get reminders before their checks expire.
 
 ## Running it locally
 

@@ -64,3 +64,7 @@ additional_redirect_urls = ["http://localhost:8765/admin/", "http://localhost:87
 # The website's enquiry form calls this without a sign in. It checks every request itself.
 [functions.enquiry]
 verify_jwt = false
+
+# The database's scheduler calls this with a shared secret, which it checks itself.
+[functions.notify]
+verify_jwt = false
