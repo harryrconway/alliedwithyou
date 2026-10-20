@@ -1299,43 +1299,80 @@ a.figure:hover {
   margin-top: var(--space-2);
 }
 
-/* Two step sign in */
+/* Two step sign in: set up and code screens, centred to match the heading */
 
 .twostep-step {
   display: grid;
   gap: var(--space-2);
-  justify-items: start;
+  justify-items: center;
+  padding-block: var(--space-4);
+  border-top: var(--border);
+  text-align: center;
+}
+
+.twostep-step:first-of-type {
+  border-top: 0;
+}
+
+.entry-card .twostep-title {
+  margin: 0;
+  color: var(--color-deep);
+  font-size: var(--text-base);
 }
 
 .entry-card .twostep-step .small {
-  margin-top: 0;
+  max-width: 26rem;
+  margin: 0;
   color: var(--color-text-muted);
-  text-align: left;
+  text-align: center;
 }
 
 .twostep-qr {
   width: 200px;
   height: 200px;
+  margin-block: var(--space-2);
   padding: var(--space-2);
   border: var(--border);
   border-radius: var(--radius-sm);
   background: var(--color-white);
 }
 
+.twostep-keyrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  width: fit-content;
+  max-width: 100%;
+  padding: var(--space-2) var(--space-4) var(--space-1);
+  border-radius: var(--radius-sm);
+  background: var(--color-green-light);
+}
+
 .twostep-key {
-  display: block;
-  margin-top: var(--space-1);
   font-family: ui-monospace, Menlo, monospace;
   font-size: var(--text-sm);
   font-weight: var(--weight-semibold);
   color: var(--color-text);
   letter-spacing: 0.04em;
+  user-select: all;
+}
+
+.code-field {
+  justify-items: center;
+  text-align: center;
+}
+
+.entry-card .code-field > label {
+  color: var(--color-deep);
+  font-weight: var(--weight-bold);
 }
 
 .code-input {
-  max-width: 10rem;
-  font-size: var(--text-lg);
-  letter-spacing: 0.2em;
+  width: 11rem;
+  font-size: var(--text-xl);
+  letter-spacing: 0.25em;
+  text-align: center;
 }
 
 .tag-warning {

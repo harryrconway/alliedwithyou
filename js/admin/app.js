@@ -314,9 +314,9 @@
 
   const appsHint = 'An authenticator app such as Microsoft Authenticator or Google Authenticator. On an iPhone or Mac, the built in Passwords app works too.';
 
-  function codeField(id) {
-    return html`<div class="field">
-      <label for="${id}">Six digit code</label>
+  function codeField(id, label) {
+    return html`<div class="field code-field">
+      <label for="${id}">${label}</label>
       <input class="input code-input" id="${id}" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]*" maxlength="7" required data-error="Please enter the six digit code from your app">
     </div>`;
   }
@@ -335,18 +335,35 @@
         : 'Each time you sign in, you\'ll enter a code from your phone as well as your password.'}</p>
       <form class="form auth-form" id="twoStepSetupForm" data-operation="set up two step sign in" novalidate>
         <div class="form-summary"></div>
-        <div class="twostep-step"><strong>Get an app</strong><p class="small">${appsHint}</p></div>
-        <div class="twostep-step"><strong>Scan this code with the app</strong>
-          <img class="twostep-qr" src="${start.qr}" alt="QR code for setting up the authenticator app" width="200" height="200">
-          <p class="small">Can't scan it? Choose to enter a key in the app, and type this one:<span class="twostep-key" data-twostep-key="${start.secret}">${key}</span></p>
+        <div class="twostep-step">
+          <h2 class="twostep-title">Get an app</h2>
+          <p class="small">${appsHint}</p>
         </div>
-        <div class="twostep-step"><strong>Enter the code the app shows</strong>${codeField('setupCode')}</div>
+        <div class="twostep-step">
+          <h2 class="twostep-title">Scan this code with the app</h2>
+          <img class="twostep-qr" src="${start.qr}" alt="QR code for setting up the authenticator app" width="200" height="200">
+          <p class="small">Can't scan it? Choose to enter a key in the app, and use this one.</p>
+          <div class="twostep-keyrow">
+            <span class="twostep-key" data-twostep-key="${start.secret}">${key}</span>
+            <button type="button" class="btn btn-quiet btn-sm" data-copy-key>Copy</button>
+          </div>
+        </div>
+        <div class="twostep-step">${codeField('setupCode', 'Enter the six digit code the app shows')}</div>
         <button class="btn" type="submit">Turn on two step sign in</button>
         ${required ? '' : html`<button class="btn btn-quiet" type="button" data-not-now>Not now</button>`}
       </form>
       <p class="small"><button type="button" class="link-button small" data-signout>Sign out</button></p>`, 'Two step sign in');
     const form = AWY.$('#twoStepSetupForm');
     AWY.$('[data-signout]').addEventListener('click', () => signOut());
+    AWY.$('[data-copy-key]').addEventListener('click', async (event) => {
+      const button = event.currentTarget;
+      try {
+        await navigator.clipboard.writeText(start.secret);
+        button.textContent = 'Copied';
+      } catch (error) {
+        button.textContent = 'Select the key to copy it';
+      }
+    });
     const later = AWY.$('[data-not-now]');
     if (later) later.addEventListener('click', () => enter(profile));
     bindForm(form, async (v) => {
@@ -362,7 +379,7 @@
       <p>Open your authenticator app and enter the six digit code for Allied With You.</p>
       <form class="form auth-form" id="twoStepCodeForm" data-operation="two step sign in" novalidate>
         <div class="form-summary"></div>
-        ${codeField('signinCode')}
+        ${codeField('signinCode', 'Six digit code')}
         <button class="btn" type="submit">Continue</button>
       </form>
       <p class="small">Lost access to your app? Email <a href="mailto:${cfg.practiceEmail}">${cfg.practiceEmail}</a> and an administrator can reset it for you.</p>
