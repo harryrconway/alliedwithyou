@@ -174,7 +174,7 @@
   AWY.views.staff = {
     title: 'Team and access',
     render(ctx) {
-      const { db, user, today } = ctx;
+      const { db, user, today, query, state } = ctx;
       const manage = access.can('manageStaff');
       const tab = ctx.params.id === 'checks' ? 'checks' : 'team';
       const dueCount = rules.checksDue(db, today, access.can('manageChecks') ? '' : user.id).length;
@@ -259,6 +259,14 @@
       AWY.on(ctx.el, 'click', '[data-switch-on]', (event, btn) => setStatus(find(btn.dataset.switchOn), 'active'));
       AWY.on(ctx.el, 'click', '[data-edit-staff]', (event, btn) => editForm(find(btn.dataset.editStaff)));
       AWY.on(ctx.el, 'click', '[data-download-team]', () => AWY.exports.sheet('Team', AWY.exports.COLUMNS.staff(), team.concat(pending, inactive)));
+
+      /* Opened from search or another screen. Only administrators can edit a profile. */
+      if (query.open && state.openedFor !== query.open) {
+        state.openedFor = query.open;
+        AWY.router.replace(['staff']);
+        const s = manage ? find(query.open) : null;
+        if (s) editForm(s);
+      }
     }
   };
 })();

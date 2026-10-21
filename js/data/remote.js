@@ -114,6 +114,11 @@
       columns: [],
       nullable: [],
       roles: ['administrator', 'developer']
+    },
+    privacyRequests: {
+      table: 'privacy_requests', order: 'created_at', desc: true, limit: 300,
+      columns: ['kind', 'requester_name', 'requester_email', 'requester_phone', 'details', 'status', 'internal_notes', 'assigned_to', 'request_id'],
+      nullable: ['requester_email', 'requester_phone', 'details', 'internal_notes', 'assigned_to', 'request_id']
     }
   };
 
@@ -293,9 +298,18 @@
       return true;
     },
 
+    /* Searches the database itself, not just what's already loaded. Row Level Security
+       decides what comes back, the same as every other read. */
+    async globalSearch(q) {
+      const text = String(q || '').trim();
+      if (text.length < 2) return [];
+      const rows = await run('search', client.rpc('global_search', { q: text }));
+      return rows.map((r) => ({ kind: r.kind, id: r.id, ref: r.ref, title: r.title, subtitle: r.subtitle, createdAt: r.created_at }));
+    },
+
     /* Everything the open sections need, read in parallel */
     async snapshot() {
-      const names = ['staff', 'tasks', 'calendar', 'supportItems', 'feedback', 'feedbackNotes', 'feedbackEvents', 'templates', 'templateVersions', 'staffChecks', 'errorEvents', 'auditEvents', 'monitorChecks'];
+      const names = ['staff', 'tasks', 'calendar', 'supportItems', 'feedback', 'feedbackNotes', 'feedbackEvents', 'templates', 'templateVersions', 'staffChecks', 'errorEvents', 'auditEvents', 'monitorChecks', 'privacyRequests'];
       const results = await Promise.all(names.map((n) => list(n)).concat([readSettings()]));
       const db = {};
       names.forEach((n, i) => (db[n] = results[i]));

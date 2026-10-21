@@ -1,7 +1,9 @@
 // Sends the dashboard's email alerts:
 //   a new account waiting for approval, to every active administrator
 //   staff checks coming up for renewal, to the person and, as one list, to administrators
-//   a weekly summary for administrators, on Monday mornings
+//   privacy requests within 7 days of their 30 day deadline, or past it, to administrators
+//   a weekly summary for administrators, on Monday mornings, naming how long it has been
+//   since Download everything was last run, since that is the only backup on the free plan
 //   service checks: the website, staff sign in and the enquiry form, with an email to
 //   administrators and developers after two failures in a row, and when it's working again
 // The database's scheduler calls this every 15 minutes with a shared secret. Each alert is
@@ -25,6 +27,8 @@ const DASHBOARD = Deno.env.get('DASHBOARD_URL') ?? 'https://alliedwithyou.com.au
 // On the test project every email goes to this address instead, so nobody real is emailed
 const REDIRECT = Deno.env.get('NOTIFY_REDIRECT') ?? '';
 const ZONE = 'Australia/Brisbane';
+// How long between copies of Download everything before the weekly summary says so
+const BACKUP_DUE_DAYS = 14;
 
 const CHECK_LABELS: Record<string, string> = {
   ndis_screening: 'NDIS Worker Screening Check',
@@ -82,6 +86,14 @@ function stage(days: number): string | null {
   return null;
 }
 
+// A privacy request is due within 30 days of being received. A reminder goes out 7 days
+// before that, and once when it's overdue, for as long as it stays open.
+function privacyStage(daysLeft: number): string | null {
+  if (daysLeft < 0) return 'overdue';
+  if (daysLeft <= 7) return '7';
+  return null;
+}
+
 function checkLine(c: { kind: string; details: string; expires_on: string }, now: string): string {
   const label = CHECK_LABELS[c.kind] ?? 'Check';
   const what = c.details ? label + ', ' + c.details : label;
@@ -123,7 +135,7 @@ Deno.serve(async (req) => {
   const now = today();
   // The scheduler sends {}. A test can ask for one part, and on the test project can pretend a service is down.
   const body = await req.json().catch(() => ({}));
-  const parts: string[] = Array.isArray(body.only) ? body.only : ['signups', 'checks', 'weekly', 'monitor'];
+  const parts: string[] = Array.isArray(body.only) ? body.only : ['signups', 'checks', 'weekly', 'monitor', 'privacy'];
   const pretendDown: string[] = REDIRECT && Array.isArray(body.fail) ? body.fail : [];
 
   const { data: people, error: peopleError } = await db.from('profiles').select('id, email, full_name, status, role, created_at, email_confirmed_at');
@@ -176,6 +188,17 @@ Deno.serve(async (req) => {
   const due = (parts.includes('checks') ? checks ?? [] : [])
     .map((c: { id: string; staff_id: string; kind: string; details: string; expires_on: string }) => ({ ...c, stage: stage(daysUntil(now, c.expires_on)) }))
     .filter((c) => c.stage && byId.get(c.staff_id)?.status === 'active');
+
+  // Privacy requests still open, within 7 days of their 30 day deadline or past it
+  const { data: privacyRows, error: privacyError } = await db
+    .from('privacy_requests')
+    .select('id, ref, requester_name, status, created_at')
+    .in('status', ['received', 'in_progress']);
+  if (privacyError) return reply(500, { ok: false, error: 'read' });
+  const duePrivacy = (parts.includes('privacy') ? privacyRows ?? [] : [])
+    .map((p: { id: string; ref: string; requester_name: string; status: string; created_at: string }) => ({ ...p, due: addDays(p.created_at.slice(0, 10), 30) }))
+    .map((p) => ({ ...p, pstage: privacyStage(daysUntil(now, p.due)) }))
+    .filter((p) => p.pstage);
 
   // Service checks. An alert goes out after two failures in a row, and once more when it's working again.
   const watchers = (people as Person[]).filter((p) => (p.role === 'administrator' || p.role === 'developer') && p.status === 'active').map((p) => p.email);
@@ -232,6 +255,7 @@ Deno.serve(async (req) => {
     ...(weeklyDue ? [{ key: weekKey, kind: 'weekly' }] : []),
     ...mails.flatMap((m) => m.keys.map((key) => ({ key, kind: 'signup' }))),
     ...due.map((c) => ({ key: 'check:' + c.id + ':' + c.stage + ':' + c.expires_on, kind: 'check' })),
+    ...duePrivacy.map((p) => ({ key: 'privacy:' + p.id + ':' + p.pstage, kind: 'privacy' })),
   ];
   let claimed = new Set<string>();
   if (candidates.length) {
@@ -248,12 +272,13 @@ Deno.serve(async (req) => {
 
   if (weeklyDue && claimed.has(weekKey)) {
     const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
-    const [tasks, templates, tickets, errors, monitor] = await Promise.all([
+    const [tasks, templates, tickets, errors, monitor, backup] = await Promise.all([
       db.from('tasks').select('due_date').eq('status', 'open'),
       db.from('templates').select('id').eq('status', 'draft'),
       db.from('feedback').select('status, priority, created_at').in('status', ['submitted', 'under_review', 'planned', 'in_progress']),
       db.from('error_events').select('fingerprint').gte('created_at', weekAgo),
       db.from('monitor_checks').select('name, ok'),
+      db.from('audit_events').select('at').eq('action', 'download').ilike('summary', 'Downloaded a copy of everything%').order('at', { ascending: false }).limit(1),
     ]);
     const waiting = (people as (Person & { email_confirmed_at: string | null })[]).filter((p) => p.status === 'pending' && p.email_confirmed_at);
     const openTasks = tasks.data ?? [];
@@ -267,6 +292,12 @@ Deno.serve(async (req) => {
     const urgent = openTickets.filter((t: { priority: string }) => t.priority === 'urgent' || t.priority === 'high').length;
     const fresh = openTickets.filter((t: { created_at: string }) => t.created_at >= weekAgo).length;
     const errorCount = (errors.data ?? []).length;
+    const lastBackup = backup.data?.[0]?.at ?? null;
+    const backupDays = lastBackup ? daysUntil(lastBackup.slice(0, 10), now) : null;
+    const backupLine = backupDays === null
+      ? 'Download everything has never been run. It is the only backup while the database plan has none.'
+      : 'Download everything was last run ' + (backupDays <= 0 ? 'today' : backupDays === 1 ? '1 day ago' : backupDays + ' days ago')
+        + (backupDays >= BACKUP_DUE_DAYS ? '. It is the only backup while the database plan has none, and is worth running again soon' : '');
     sending.push({
       keys: [weekKey],
       to: adminEmails,
@@ -283,6 +314,7 @@ Deno.serve(async (req) => {
         '\u2022 ' + (openTickets.length === 0 ? 'No tickets are open' : count(openTickets.length, 'ticket is', 'tickets are') + ' open, ' + (urgent === 0 ? 'none' : urgent) + ' high priority or urgent, and ' + (fresh === 0 ? 'none' : fresh) + ' new this week'),
         '\u2022 ' + (errorCount === 0 ? 'No errors were recorded this week' : count(errorCount, 'error was', 'errors were') + ' recorded this week, across ' + (problems === 1 ? '1 problem' : problems + ' problems')),
         '\u2022 ' + (down.length ? 'Not working at the last check: ' + down.join(', ') : 'The website, sign in and enquiry forms were all working at the last check'),
+        '\u2022 ' + backupLine,
         '',
         'Open the dashboard:',
         DASHBOARD,
@@ -336,6 +368,28 @@ Deno.serve(async (req) => {
         '',
         'Record the new details in Team and access, under Checks and registrations:',
         DASHBOARD + '#/staff/checks',
+        '',
+        'Allied With You dashboard',
+      ].join('\n'),
+    });
+  }
+
+  // Privacy requests close to, or past, their 30 day deadline
+  const newPrivacy = duePrivacy.filter((p) => claimed.has('privacy:' + p.id + ':' + p.pstage));
+  if (newPrivacy.length && adminEmails.length) {
+    sending.push({
+      keys: [],
+      to: adminEmails,
+      subject: newPrivacy.some((p) => p.pstage === 'overdue') ? 'A privacy request is overdue' : 'A privacy request is due soon',
+      text: [
+        'Hello,',
+        '',
+        'These privacy requests are close to, or past, the 30 day deadline:',
+        '',
+        ...newPrivacy.map((p) => '• ' + p.requester_name + ', reference ' + p.ref + ', ' + (p.pstage === 'overdue' ? 'was due ' : 'due ') + longDate(p.due)),
+        '',
+        'Work them in Privacy requests:',
+        DASHBOARD + '#/privacy',
         '',
         'Allied With You dashboard',
       ].join('\n'),

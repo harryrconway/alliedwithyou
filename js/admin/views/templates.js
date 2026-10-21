@@ -185,7 +185,7 @@
   AWY.views.templates = {
     title: 'Templates',
     render(ctx) {
-      const { db, state } = ctx;
+      const { db, state, query } = ctx;
       const manage = access.can('manageTemplates');
       if (state.show === undefined) state.show = 'inuse';
       const counts = { inuse: 0, draft: 0, retired: 0 };
@@ -242,6 +242,13 @@
         const t = db.templates.find((x) => x.id === btn.dataset.download);
         download(t, current(db, t), btn);
       });
+
+      /* Opened from search or another screen */
+      if (query.open && state.openedFor !== query.open) {
+        state.openedFor = query.open;
+        AWY.router.replace(['templates']);
+        if (db.templates.some((t) => t.id === query.open)) openTemplate(query.open);
+      }
     }
   };
 })();

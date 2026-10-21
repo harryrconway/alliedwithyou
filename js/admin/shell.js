@@ -1,4 +1,4 @@
-/* The dashboard frame: sidebar, top bar and search across tasks, the team, templates and feedback. */
+/* The dashboard frame: sidebar, top bar and search of the database itself. */
 (function () {
   const AWY = (window.AWY = window.AWY || {});
   const html = AWY.html;
@@ -53,8 +53,8 @@
             <button type="button" class="btn btn-secondary btn-icon menu-btn" data-action="menu" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar">${icon('menu')}</button>
             <div class="search" role="search">
               ${icon('search')}
-              <label class="sr-only" for="globalSearch">Search tasks, the team, templates and feedback</label>
-              <input class="input" id="globalSearch" type="search" placeholder="Search tasks, the team, templates and feedback" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="searchResults" aria-autocomplete="list">
+              <label class="sr-only" for="globalSearch">Search the whole dashboard</label>
+              <input class="input" id="globalSearch" type="search" placeholder="Search the whole dashboard" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="searchResults" aria-autocomplete="list">
               <div class="search-results" id="searchResults" role="listbox" aria-label="Search results" hidden></div>
             </div>
             <div class="topbar-actions">
@@ -79,7 +79,8 @@
     const counts = {
       tasks: { n: rules.overdueTasks(db, today, user.id).length, alert: true },
       staff: { n: access.can('manageStaff') ? rules.pendingStaff(db).length : 0 },
-      feedback: { n: access.can('reviewFeedback') ? db.feedback.filter((f) => f.status === 'submitted').length : 0 }
+      feedback: { n: access.can('reviewFeedback') ? db.feedback.filter((f) => f.status === 'submitted').length : 0 },
+      privacy: { n: access.can('managePrivacy') ? db.privacyRequests.filter((p) => p.status === 'received' || p.status === 'in_progress').length : 0 }
     };
     AWY.$$('[data-count]').forEach((el) => {
       const c = counts[el.dataset.count];
@@ -99,36 +100,32 @@
     });
   }
 
-  /* Search across tasks, the team, templates and feedback. Each list already holds only
-     what this person may see, so nothing here needs its own visibility check beyond that. */
-  function searchResults(db, q) {
-    const query = q.trim().toLowerCase();
-    if (query.length < 2) return [];
-    const has = (...vals) => vals.some((v) => String(v || '').toLowerCase().includes(query));
+  /* Search reads the database itself through store.globalSearch, so it finds things the
+     dashboard hasn't already loaded, such as an older task. Row Level Security decides
+     what each search can find, the same as it decides what every other read can find. */
+  const SEARCH_KINDS = {
+    task: { label: 'Tasks', icon: 'tasks', href: (r) => '#/tasks?task=' + r.id, sub: (r) => 'Due ' + (r.meta1 ? AWY.fmt.date(r.meta1) : 'no date') + (r.meta2 ? ', ' + r.meta2 : '') },
+    staff: { label: 'Team', icon: 'user', href: (r) => '#/staff?open=' + r.id, sub: (r) => access.roleLabel(r.meta1) + (r.meta2 ? ', ' + r.meta2 : '') },
+    template: { label: 'Templates', icon: 'clipboard', href: (r) => '#/templates?open=' + r.id, sub: (r) => C.label('templateCategory', r.meta1) + (r.meta2 === 'draft' ? ', ' + schema.status('template', r.meta2).label.toLowerCase() : '') },
+    feedback: { label: 'Feedback and issues', icon: 'message', href: (r) => '#/feedback?open=' + r.id, sub: (r) => r.ref + ', ' + schema.status('feedback', r.meta2).label.toLowerCase() },
+    privacy: { label: 'Privacy requests', icon: 'lock', href: (r) => '#/privacy?open=' + r.id, sub: (r) => r.ref + ', ' + schema.status('privacyRequest', r.meta2).label.toLowerCase() }
+  };
+
+  function searchGroups(rows) {
     const groups = [];
-    if (access.canSee('tasks')) {
-      const tasks = db.tasks.filter((t) => t.status === 'open' && has(t.title, t.description)).slice(0, 6);
-      if (tasks.length) groups.push({ label: 'Tasks', icon: 'tasks', items: tasks.map((t) => ({ href: '#/tasks?task=' + t.id, title: t.title, sub: 'Due ' + AWY.fmt.date(t.dueDate) + ', ' + rules.staffName(db, t.assignedTo) })) });
-    }
-    if (access.canSee('staff')) {
-      const people = db.staff.filter((s) => s.status === 'active' && has(s.name, s.email, s.title)).slice(0, 6);
-      if (people.length) groups.push({ label: 'Team', icon: 'user', items: people.map((s) => ({ href: '#/staff', title: s.name || s.email, sub: access.roleLabel(s.role) + (s.title ? ', ' + s.title : '') })) });
-    }
-    if (access.canSee('templates')) {
-      const templates = db.templates.filter((t) => t.status !== 'retired' && has(t.title, t.description, C.label('templateCategory', t.category))).slice(0, 6);
-      if (templates.length) groups.push({ label: 'Templates', icon: 'clipboard', items: templates.map((t) => ({ href: '#/templates', title: t.title, sub: C.label('templateCategory', t.category) + (t.status === 'draft' ? ', ' + schema.status('template', t.status).label.toLowerCase() : '') })) });
-    }
-    if (access.canSee('feedback')) {
-      const reports = db.feedback.filter((f) => has(f.title, f.description, f.ref, C.label('feedbackKind', f.kind))).slice(0, 6);
-      if (reports.length) groups.push({ label: 'Feedback and issues', icon: 'message', items: reports.map((f) => ({ href: '#/feedback', title: f.title, sub: f.ref + ', ' + schema.status('feedback', f.status).label.toLowerCase() })) });
-    }
+    Object.keys(SEARCH_KINDS).forEach((kind) => {
+      const meta = SEARCH_KINDS[kind];
+      const items = rows.filter((r) => r.kind === kind).slice(0, 6);
+      if (items.length) groups.push({ label: meta.label, icon: meta.icon, items: items.map((r) => ({ href: meta.href(r), title: r.title, sub: meta.sub(r) })) });
+    });
     return groups;
   }
 
-  function bindSearch(getDb) {
+  function bindSearch() {
     const input = AWY.$('#globalSearch');
     const box = AWY.$('#searchResults');
     let active = -1;
+    let request = 0;
     const close = () => {
       box.hidden = true;
       input.setAttribute('aria-expanded', 'false');
@@ -143,18 +140,26 @@
       const current = links()[active];
       if (current) input.setAttribute('aria-activedescendant', current.id);
     };
-    input.addEventListener('input', AWY.debounce(() => {
-      const db = getDb();
-      if (!input.value.trim() || !db) return close();
-      const groups = searchResults(db, input.value);
+    input.addEventListener('input', AWY.debounce(async () => {
+      const q = input.value.trim();
+      if (!q) return close();
+      const mine = (request += 1);
+      let rows;
+      try {
+        rows = await AWY.store.globalSearch(q);
+      } catch (error) {
+        rows = [];
+      }
+      if (mine !== request || input.value.trim() !== q) return;
+      const groups = searchGroups(rows);
       let n = 0;
       box.innerHTML = String(groups.length
         ? html`${groups.map((g) => html`<div class="group">${g.label}</div>${g.items.map((it) => html`<a href="${it.href}" id="sr${n++}" role="option">${icon(g.icon)}<span>${it.title}<small>${it.sub}</small></span></a>`)}`)}`
-        : html`<p class="muted small" style="padding:0.75rem">No matches for "${input.value}"</p>`);
+        : html`<p class="muted small" style="padding:0.75rem">No matches for "${q}"</p>`);
       box.hidden = false;
       input.setAttribute('aria-expanded', 'true');
       active = -1;
-    }, 120));
+    }, 200));
     input.addEventListener('keydown', (event) => {
       const list = links();
       if (event.key === 'ArrowDown' && list.length) {

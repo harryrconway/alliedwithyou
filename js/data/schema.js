@@ -98,6 +98,12 @@
       ['feature', 'An idea for something new'],
       ['suggestion', 'A way to improve something']
     ]),
+    privacyKind: opt([
+      ['access', 'See what we hold about them'],
+      ['correction', 'Correct something that is wrong'],
+      ['deletion', 'Delete what we hold about them'],
+      ['other', 'Something else']
+    ]),
     templateCategory: opt([
       ['agreement', 'Service agreements'],
       ['consent', 'Consent forms'],
@@ -207,6 +213,12 @@
       in_progress: s('In progress', 'warning', 'refresh'),
       completed: s('Completed', 'success', 'checkCircle'),
       declined: s('Declined', 'neutral', 'minusCircle')
+    },
+    privacyRequest: {
+      received: s('Received', 'info', 'dot'),
+      in_progress: s('In progress', 'warning', 'refresh'),
+      completed: s('Completed', 'success', 'checkCircle'),
+      declined: s('Declined', 'neutral', 'minusCircle')
     }
   };
 
@@ -292,6 +304,18 @@
         { name: 'kind', label: 'What is it about?', type: 'select', options: options.feedbackKind, required: true, span: 'all' },
         { name: 'title', label: 'Short summary', type: 'text', required: true, span: 'all' },
         { name: 'description', label: 'What were you doing, and what happened?', type: 'textarea', span: 'all', rows: 5, hint: NO_CLIENT_DETAILS }
+      ]
+    },
+
+    privacyRequests: {
+      singular: 'request',
+      plural: 'requests',
+      fields: [
+        { name: 'kind', label: 'What are they asking for?', type: 'select', options: options.privacyKind, required: true, span: 'all' },
+        { name: 'requesterName', label: 'Their name', type: 'text', required: true, maxlength: 160 },
+        { name: 'requesterEmail', label: 'Their email', type: 'email', maxlength: 160 },
+        { name: 'requesterPhone', label: 'Their phone', type: 'tel', maxlength: 40 },
+        { name: 'details', label: 'What they asked, in their own words', type: 'textarea', span: 'all', rows: 4, hint: 'How they got in touch and when, and anything that will help answer it within 30 days.' }
       ]
     }
   };

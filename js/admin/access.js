@@ -29,7 +29,8 @@
     { key: 'statistics', label: 'Reports and downloads', icon: 'chart', group: 'Practice', state: 'open' },
     { key: 'history', label: 'Change history', icon: 'history', group: 'Practice', state: 'open' },
     { key: 'settings', label: 'Settings', icon: 'settings', group: 'Practice', state: 'open' },
-    { key: 'feedback', label: 'Feedback and issues', icon: 'message', group: 'Practice', state: 'open' }
+    { key: 'feedback', label: 'Feedback and issues', icon: 'message', group: 'Practice', state: 'open' },
+    { key: 'privacy', label: 'Privacy requests', icon: 'lock', group: 'Practice', state: 'open' }
   ];
 
   const ALL = SECTIONS.map((s) => s.key);
@@ -43,17 +44,17 @@
     therapist: {
       label: 'Occupational therapist',
       summary: 'The calendar, tasks, templates and the team list. Settings and fees can be viewed but not changed.',
-      sections: ['dashboard', 'clients', 'referrals', 'calendar', 'notes', 'assessments', 'goals', 'reports', 'documents', 'agreements', 'templates', 'funding', 'tasks', 'staff', 'settings', 'feedback']
+      sections: ['dashboard', 'clients', 'referrals', 'calendar', 'notes', 'assessments', 'goals', 'reports', 'documents', 'agreements', 'templates', 'funding', 'tasks', 'staff', 'settings', 'feedback', 'privacy']
     },
     reception: {
       label: 'Reception',
       summary: 'The calendar, tasks, templates and the team list. Settings and fees can be viewed but not changed.',
-      sections: ['dashboard', 'clients', 'referrals', 'calendar', 'documents', 'agreements', 'templates', 'funding', 'invoices', 'tasks', 'staff', 'settings', 'feedback']
+      sections: ['dashboard', 'clients', 'referrals', 'calendar', 'documents', 'agreements', 'templates', 'funding', 'invoices', 'tasks', 'staff', 'settings', 'feedback', 'privacy']
     },
     support: {
       label: 'Support staff',
       summary: 'Their own calendar entries and tasks, templates and the team list.',
-      sections: ['dashboard', 'clients', 'calendar', 'notes', 'goals', 'templates', 'tasks', 'staff', 'feedback']
+      sections: ['dashboard', 'clients', 'calendar', 'notes', 'goals', 'templates', 'tasks', 'staff', 'feedback', 'privacy']
     },
     developer: {
       label: 'Developer',
@@ -72,7 +73,8 @@
     manageTemplates: ['administrator'],
     manageChecks: ['administrator'],
     reviewFeedback: ['administrator', 'developer'],
-    viewErrors: ['administrator', 'developer']
+    viewErrors: ['administrator', 'developer'],
+    managePrivacy: ['administrator']
   };
 
   const CAPABILITY_LABELS = {
@@ -84,7 +86,8 @@
     manageTemplates: 'Add, update and approve templates',
     manageChecks: "Record staff checks and registrations",
     reviewFeedback: 'Review feedback and reported issues',
-    viewErrors: 'See error reports'
+    viewErrors: 'See error reports',
+    managePrivacy: 'Work privacy requests'
   };
 
   let user = null;
