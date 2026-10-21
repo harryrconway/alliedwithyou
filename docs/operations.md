@@ -121,7 +121,7 @@ Every failure in the dashboard shows the person a six character reference and is
 
 ## Tests
 
-`npm test` in `tests/` runs every check. `auth`, `enquiry` and `crm` use the test project's keys from `.env`, create throwaway `@example.com` accounts and remove them afterwards. They refuse to run if the test address matches production. `site` stands in for the enquiry function, so no email is sent.
+`npm test` in `tests/` runs every check. `auth`, `enquiry`, `notify` and `crm` use the test project's keys from `.env`, create throwaway `@example.com` accounts and remove them afterwards. They refuse to run if the test address matches production. `site` stands in for the enquiry function, so no email is sent. The browser checks (`text`, `site`, `crm`, `layout`) run under Chromium by default; set `BROWSER=firefox` or `BROWSER=webkit` to run them under another engine instead.
 
 ## The earlier demo
 

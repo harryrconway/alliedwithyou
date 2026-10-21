@@ -43,7 +43,7 @@ The checks live in `tests/`. The first time, run `npm install` and `npm run setu
 * the dashboard works end to end in a browser: sign in, invitations, password reset, locked sections, tasks, calendar, approvals, fees, feedback and dropped connections
 * pages fit 360, 768 and 1366 pixel widths, and the keyboard checks pass
 
-Run a single check with `npm test -- crm`. The database checks need the test project's keys in `.env`.
+Run a single check with `npm test -- crm`. The database checks need the test project's keys in `.env`. The browser checks run under Chromium by default; set `BROWSER=firefox` or `BROWSER=webkit` to run them under another engine instead.
 
 ## Project documents
 
