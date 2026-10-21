@@ -363,8 +363,9 @@
     gap: var(--space-6);
   }
 
+  /* On phones the medallion is left out, so the words and buttons come first */
   .hero-art {
-    width: min(15rem, 70%);
+    display: none;
   }
 
   .hero-glow-one {
