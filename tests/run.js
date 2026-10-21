@@ -2,6 +2,8 @@
   Runs every check, or the ones named on the command line:
     npm test
     npm test -- crm site
+  Browser checks use Chromium by default. Set BROWSER to run them under Firefox or WebKit instead:
+    BROWSER=firefox npm test -- text site layout
   Exits with an error code if anything fails.
 */
 const path = require('path');
@@ -10,14 +12,15 @@ const serve = require('./serve');
 const ROOT = path.resolve(__dirname, '..');
 const ALL = ['syntax', 'links', 'text', 'auth', 'enquiry', 'notify', 'site', 'crm', 'layout'];
 const BROWSER = ['text', 'site', 'crm', 'layout'];
+const ENGINES = { chromium: 'chromium', firefox: 'firefox', webkit: 'webkit' };
 
 (async () => {
   const names = process.argv.slice(2).length ? process.argv.slice(2) : ALL;
   const server = await serve(ROOT);
   let browser = null;
   if (names.some((n) => BROWSER.includes(n))) {
-    const { chromium } = require('playwright');
-    browser = await chromium.launch();
+    const engine = ENGINES[process.env.BROWSER] || 'chromium';
+    browser = await require('playwright')[engine].launch();
   }
   const ctx = { root: ROOT, base: server.url, browser };
   let failed = 0;

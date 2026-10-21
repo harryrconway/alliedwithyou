@@ -27,7 +27,7 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | Error handling and logging | Complete and verified | `js/core/errors.js`, `js/admin/components.js` | `error_events`, `log_error()` | auth, crm | Every failure shows a reference and a plain message. Diagnostics are scrubbed of personal details. Kept and sent later if logging is down |
 | Audit trail and change history | Complete and verified | `supabase/migrations`, `js/admin/views/history.js` | `audit_events` | auth, crm | Written by the database, can't be changed or deleted. Administrators see the latest 500 changes in Change history, with filters and a spreadsheet download. Every download is noted here too, through `log_download()` |
 | Reports and downloads | Complete and verified | `js/admin/views/statistics.js`, `js/admin/exports.js` | read only, `log_download()` | auth, crm | Administrators only. Booked time by person and by state or territory, tasks, checks and tickets for a chosen period, read in full from the database. Downloads: a spreadsheet beside each list, every record of each area, or one zip file with all of it and every template file |
-| Global search | Partially implemented | `js/admin/shell.js` | none | none | Tasks and the team only, from data already loaded |
+| Global search | Partially implemented | `js/admin/shell.js` | none | none | Tasks, the team, templates and feedback, all from data already loaded in the browser. Each result links to its section rather than opening the exact record, and there is still no search of the server for anything not already loaded |
 | Client records, intake, appointments, notes, assessments, goals, reports, documents, consent, agreements, funding, invoices, incidents, financial reports | Locked | none | none yet | crm (locked) | The demo versions were removed and are recoverable from commit `80da9d9`. Each returns with its own tables, rules and tests when the practice is ready |
 | Developer tickets | Complete and verified | `js/admin/views/feedback.js`, `supabase/migrations` | `feedback`, `feedback_notes`, `feedback_events` | auth, crm | Feedback and reported issues are tickets with a status, priority, assignee, private notes for administrators and developers, and a history written by the database. Error reports are grouped by problem with counts, and can become tickets |
 | Backups and recovery | Missing | none | none | none | Stage 3, skipped for now at the practice's request on 20 Oct 2026. Sensitive sections stay locked until it's done |
@@ -56,6 +56,7 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | 20 Oct 2026 | Stages 4, 5 and 6 | Developer tickets with notes and history, grouped error reports, Change history for administrators, a weekly summary email and service checks with alerts, on both projects | this change |
 | 20 Oct 2026 | Hosting | IPv6 (AAAA) records for GitHub Pages added in cPanel and confirmed on both name servers and public resolvers. Domain records written into `docs/operations.md` | this change |
 | 20 Oct 2026 | Stage 7 | Reports and downloads for administrators, and Download buttons on tasks, the calendar, the team, checks and fees. Every state and territory across the website forms, the calendar and staff checks, with telehealth anywhere in Australia on the website. Two migrations on both projects, and both functions deployed. The alerts function now sends a run's emails over one connection with time limits: on the test project a run with three emails hung until the platform stopped it, and those alerts were lost because they had already been marked as sent | this change |
+| 21 Oct 2026 | Tidy up | Global search now also covers templates and feedback, read from data already loaded in the browser. Browser checks can run under Firefox or WebKit as well as Chromium, which turned up two things to look into (see Known limitations). A stale limitation about nobody being told of a waiting account was removed, since the email alerts added in Stages 4, 5 and 6 already cover it | this change |
 
 ## Database migrations
 
@@ -91,9 +92,8 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 ## Known limitations
 
 * There are no backup codes for two step sign in. Someone who loses their phone asks for it to be reset (see `docs/operations.md`).
-* Nobody is told when a new account is waiting for approval. Administrators see it on the dashboard.
 * The calendar loads a window of about four months either side of what's on screen, and tasks completed more than 90 days ago aren't shown.
-* Browser tests run in Chromium only, not Safari or Firefox.
+* Browser checks default to Chromium. Set `BROWSER=firefox` or `BROWSER=webkit` to run the non database checks under another engine. Doing this on 21 Oct 2026 found two things that still need looking into, both in `tests/`, not the site itself: under Firefox, the `site` check's mocked enquiry request is not intercepted, so it reaches the real function and fails on cross origin grounds, meaning the enquiry form has not actually been proven to work in Firefox yet; under WebKit, the `layout` check's first tab stop assertion fails, which matches Safari's usual default of leaving links out of the tab order until Full Keyboard Access is turned on, so it may be the check that needs adjusting rather than the page
 * The Supabase free plan has no backups, and database backups never include stored files anyway. Acceptable for staff accounts, settings, tasks, availability and blank templates, not for client information or copies of staff documents.
 * Staff checks hold details only. Uploading copies of documents waits for backups and two step sign in for administrators.
 * Templates are edited on a computer and uploaded as a new version. There is no editing in the browser, and no filling in of client details yet.
@@ -101,4 +101,4 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 ## Outstanding work
 
 * Release checks still to do: send the three invitations when the practice is ready, and confirm the locked sections on a live sign in.
-* Later stages, as in `docs/audit.md`: backups, multi factor screens, the developer dashboard, documents and storage, notifications, privacy requests, and each locked section in turn.
+* Later stages, as in `docs/audit.md`: backups (skipped for now), documents and storage, paged search and reporting on the server, privacy requests, each locked clinical and client section in turn, and Stage 8 (integrations and AI assessment, privacy documentation and the production readiness report).

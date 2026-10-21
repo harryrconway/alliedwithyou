@@ -1,4 +1,4 @@
-/* The dashboard frame: sidebar, top bar and search across tasks and the team. */
+/* The dashboard frame: sidebar, top bar and search across tasks, the team, templates and feedback. */
 (function () {
   const AWY = (window.AWY = window.AWY || {});
   const html = AWY.html;
@@ -6,6 +6,8 @@
   const icon = (n) => raw(AWY.icon(n));
   const access = AWY.access;
   const rules = AWY.rules;
+  const C = AWY.c;
+  const schema = AWY.schema;
 
   /* Every section in the person's role is listed. Ones not switched on yet are greyed and can't be opened. */
   function nav() {
@@ -51,8 +53,8 @@
             <button type="button" class="btn btn-secondary btn-icon menu-btn" data-action="menu" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar">${icon('menu')}</button>
             <div class="search" role="search">
               ${icon('search')}
-              <label class="sr-only" for="globalSearch">Search tasks and the team</label>
-              <input class="input" id="globalSearch" type="search" placeholder="Search tasks and the team" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="searchResults" aria-autocomplete="list">
+              <label class="sr-only" for="globalSearch">Search tasks, the team, templates and feedback</label>
+              <input class="input" id="globalSearch" type="search" placeholder="Search tasks, the team, templates and feedback" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="searchResults" aria-autocomplete="list">
               <div class="search-results" id="searchResults" role="listbox" aria-label="Search results" hidden></div>
             </div>
             <div class="topbar-actions">
@@ -97,7 +99,8 @@
     });
   }
 
-  /* Search across tasks and the team */
+  /* Search across tasks, the team, templates and feedback. Each list already holds only
+     what this person may see, so nothing here needs its own visibility check beyond that. */
   function searchResults(db, q) {
     const query = q.trim().toLowerCase();
     if (query.length < 2) return [];
@@ -110,6 +113,14 @@
     if (access.canSee('staff')) {
       const people = db.staff.filter((s) => s.status === 'active' && has(s.name, s.email, s.title)).slice(0, 6);
       if (people.length) groups.push({ label: 'Team', icon: 'user', items: people.map((s) => ({ href: '#/staff', title: s.name || s.email, sub: access.roleLabel(s.role) + (s.title ? ', ' + s.title : '') })) });
+    }
+    if (access.canSee('templates')) {
+      const templates = db.templates.filter((t) => t.status !== 'retired' && has(t.title, t.description, C.label('templateCategory', t.category))).slice(0, 6);
+      if (templates.length) groups.push({ label: 'Templates', icon: 'clipboard', items: templates.map((t) => ({ href: '#/templates', title: t.title, sub: C.label('templateCategory', t.category) + (t.status === 'draft' ? ', ' + schema.status('template', t.status).label.toLowerCase() : '') })) });
+    }
+    if (access.canSee('feedback')) {
+      const reports = db.feedback.filter((f) => has(f.title, f.description, f.ref, C.label('feedbackKind', f.kind))).slice(0, 6);
+      if (reports.length) groups.push({ label: 'Feedback and issues', icon: 'message', items: reports.map((f) => ({ href: '#/feedback', title: f.title, sub: f.ref + ', ' + schema.status('feedback', f.status).label.toLowerCase() })) });
     }
     return groups;
   }
