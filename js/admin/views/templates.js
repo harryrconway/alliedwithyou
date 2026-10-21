@@ -244,11 +244,7 @@
       });
 
       /* Opened from search or another screen */
-      if (query.open && state.openedFor !== query.open) {
-        state.openedFor = query.open;
-        AWY.router.replace(['templates']);
-        if (db.templates.some((t) => t.id === query.open)) openTemplate(query.open);
-      }
+      C.openLinked(ctx, { path: ['templates'], list: db.templates, table: 'templates', open: (t) => openTemplate(t.id) });
     }
   };
 })();

@@ -257,7 +257,7 @@
 
   function downloads() {
     return html`
-      <div class="notice" style="margin-bottom:1rem">${icon('shield')}<div>These files include staff contact details and check numbers. Keep them somewhere private, such as the practice's own storage, and delete old copies you no longer need. Each download is noted in Change history.</div></div>
+      <div class="notice" style="margin-bottom:1rem">${icon('shield')}<div>These files include staff contact details, check numbers and the details of anyone who made a privacy request. Keep them somewhere private, such as the practice's own storage, and delete old copies you no longer need. Each download is noted in Change history.</div></div>
       <div class="stack-panels">
         <section class="panel" aria-labelledby="allTitle">
           <div class="panel-head">

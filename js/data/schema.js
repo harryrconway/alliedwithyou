@@ -158,6 +158,7 @@
       ['templates', 'Templates'],
       ['template_versions', 'Template versions'],
       ['staff_checks', 'Staff checks'],
+      ['privacy_requests', 'Privacy requests'],
       ['downloads', 'Downloads']
     ]),
     monitorCheck: opt([

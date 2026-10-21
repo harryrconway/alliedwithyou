@@ -272,12 +272,7 @@
       AWY.on(ctx.el, 'click', '[data-ticket-from]', (event, btn) => ticketFromError(db, errorGroups(db).find((g) => g.key === btn.dataset.ticketFrom)));
 
       /* Opened from the dashboard */
-      if (query.open && state.openedFor !== query.open) {
-        state.openedFor = query.open;
-        AWY.router.replace(['feedback']);
-        const f = db.feedback.find((x) => x.id === query.open);
-        if (f) (review ? openTicket : openOwn)(db, f);
-      }
+      C.openLinked(ctx, { path: ['feedback'], list: db.feedback, table: 'feedback', open: (f) => (review ? openTicket : openOwn)(db, f) });
     }
   };
 })();

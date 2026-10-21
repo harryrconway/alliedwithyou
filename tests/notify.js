@@ -84,10 +84,17 @@ module.exports = async function notify(ctx) {
     const id = (kind) => checks.find((c) => c.kind === kind).id;
     keys.push('signup:' + waiting.id, 'check:' + id('first_aid') + ':30:' + soon, 'check:' + id('car_insurance') + ':expired:' + gone);
 
+    /* A privacy request received 25 days ago, so due within the week */
+    const { data: request, error: requestError } = await service.from('privacy_requests')
+      .insert({ kind: 'access', requester_name: 'QA Alert requester', created_by: staff.id, created_at: new Date(Date.now() - 25 * 86400000).toISOString() })
+      .select('id').single();
+    if (requestError) throw new Error('Could not add a privacy request: ' + requestError.message);
+    keys.push('privacy:' + request.id + ':7');
+
     const first = await run({});
     ok(first.status === 200 && first.body.ok, 'The alerts function failed: ' + first.status + ' ' + JSON.stringify(first.body));
     const { data: recorded } = await service.from('notifications').select('key').in('key', keys);
-    ok(recorded && recorded.length === 3, 'Not every alert that was due was recorded: ' + (recorded || []).length + ' of 3');
+    ok(recorded && recorded.length === 4, 'Not every alert that was due was recorded: ' + (recorded || []).length + ' of 4');
     const { data: far } = await service.from('notifications').select('key').like('key', 'check:' + id('cpr') + ':%');
     ok(far && far.length === 0, 'A reminder was sent for a check that is not due yet');
 
@@ -117,16 +124,17 @@ module.exports = async function notify(ctx) {
 
     /* Every alert mentions the run's code: the waiting person's details, the redirected address or the staff name */
     let emails = 0;
-    for (let i = 0; i < 8 && emails < 6; i += 1) {
+    for (let i = 0; i < 8 && emails < 7; i += 1) {
       await new Promise((resolve) => setTimeout(resolve, 5000));
       emails = inbox(stamp, 'count');
     }
-    /* Approval alert, the staff member's reminder, the administrators' list, the weekly summary, not working, working again */
-    ok(emails === 6, 'Expected 6 alert emails, found ' + emails);
+    /* Approval alert, the staff member's reminder, the administrators' list, the privacy request reminder, the weekly summary, not working, working again */
+    ok(emails === 7, 'Expected 7 alert emails, found ' + emails);
   } catch (error) {
     failures.push('The check stopped: ' + error.message);
   } finally {
     for (const userId of made) await service.from('notifications').delete().like('key', '%' + userId + '%');
+    for (const userId of made) await service.from('privacy_requests').delete().eq('created_by', userId);
     if (keys.length) await service.from('notifications').delete().in('key', keys);
     for (const userId of made.slice().reverse()) await service.auth.admin.deleteUser(userId);
     try {

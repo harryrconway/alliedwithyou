@@ -53,13 +53,8 @@
       A.bindCommon(ctx);
       AWY.on(ctx.el, 'click', '[data-download]', () => AWY.exports.sheet('Tasks', AWY.exports.COLUMNS.tasks(db, today), base.slice().sort((a, b) => a.dueDate.localeCompare(b.dueDate))));
 
-      /* Opened from search */
-      if (query.task && state.openedFor !== query.task) {
-        state.openedFor = query.task;
-        AWY.router.replace(['tasks']);
-        const t = db.tasks.find((x) => x.id === query.task);
-        if (t && A.canEditTask(t)) A.taskForm(t);
-      }
+      /* Opened from search. Someone else's task opens to read. */
+      C.openLinked(ctx, { param: 'task', path: ['tasks'], list: db.tasks, table: 'tasks', open: (t) => (A.canEditTask(t) ? A.taskForm(t) : A.taskView(t)) });
     }
   };
 })();

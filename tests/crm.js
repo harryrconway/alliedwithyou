@@ -210,6 +210,14 @@ module.exports = async function crm(ctx) {
     await p.click('dialog [type="submit"]');
     ok(await toast(p, 'Its reference is'), 'An issue report was not sent');
 
+    /* Logging a privacy request with only a name */
+    await p.goto(ctx.base + 'admin/#/privacy');
+    await p.click('.page-head [data-log]');
+    await p.selectOption('dialog select[name="kind"]', 'access');
+    await p.fill('dialog input[name="requesterName"]', 'QA Requester ' + stamp);
+    await p.click('dialog [type="submit"]');
+    ok(await toast(p, 'Logged as'), 'A privacy request with only a name could not be logged');
+
     await signOut(p);
 
     /* An administrator must set up two step sign in before getting in */
@@ -261,6 +269,26 @@ module.exports = async function crm(ctx) {
     await p.goto(ctx.base + 'admin/#/history');
     ok(await p.waitForSelector('td:has-text("status pending to active")', { timeout: 8000 }).then(() => true, () => false), 'The change history did not show the approval');
 
+    /* Search: straight from the keyboard, each result with its details, sections to jump to, and opening what it found */
+    await p.goto(ctx.base + 'admin/#/');
+    await p.waitForSelector('h1:has-text("Good")', { timeout: 10000 });
+    await p.keyboard.press('Control+k');
+    ok(await p.evaluate(() => document.activeElement && document.activeElement.id === 'globalSearch'), 'Control K did not jump to search');
+    await p.keyboard.type('QA therapist');
+    const hit = await p.waitForSelector('#searchResults a:has-text("QA therapist")', { timeout: 8000 }).then((el) => el.textContent(), () => '');
+    ok(/Occupational therapist/.test(hit) && !/undefined/.test(hit), 'A team search result did not show the role: ' + hit.trim());
+    ok(await p.waitForSelector('#searchResults .search-status', { state: 'detached', timeout: 8000 }).then(() => true, () => false), 'The database search did not finish');
+    ok(!/undefined|Unknown/.test(await p.textContent('#searchResults')), 'A search result showed undefined or Unknown');
+    await p.fill('#globalSearch', 'fees');
+    ok(await p.waitForSelector('#searchResults a[href="#/settings"]', { timeout: 5000 }).then(() => true, () => false), 'Searching for fees did not offer Settings');
+    await p.fill('#globalSearch', 'QA Requester ' + stamp);
+    await p.waitForSelector('#searchResults a:has-text("QA Requester")', { timeout: 8000 });
+    await p.keyboard.press('Enter');
+    ok(await p.waitForSelector('dialog select[name="status"]', { timeout: 8000 }).then(() => true, () => false), 'Opening a privacy request from search did not open it');
+    await p.selectOption('dialog select[name="status"]', 'in_progress');
+    await p.click('dialog [type="submit"]');
+    ok(await toast(p, 'saved'), 'An administrator could not save a privacy request with no notes');
+
     /* Templates: an administrator adds one as a draft, uploads a second version and approves it */
     const tplName = 'QA template ' + stamp;
     const fileOne = path.join(os.tmpdir(), 'qa' + stamp + 'one.txt');
@@ -308,7 +336,7 @@ module.exports = async function crm(ctx) {
     ]);
     if (seeded.error) throw new Error('Could not add calendar entries for the reports: ' + seeded.error.message);
     await p.goto(ctx.base + 'admin/#/statistics');
-    ok(await p.waitForSelector('#statesTitle', { timeout: 15000 }).then(() => true, () => false), 'The reports did not load');
+    ok(await p.waitForSelector('section[aria-labelledby="statesTitle"] tbody tr', { timeout: 15000 }).then(() => true, () => false), 'The reports did not load the bookings');
     const rowsOf = (id) => p.$$eval('section[aria-labelledby="' + id + '"] tbody tr', (rows) => rows.map((r) => Array.from(r.cells).map((c) => c.textContent.replace(/\s+/g, ' ').trim()).join(' | ')));
     const stateRows = await rowsOf('statesTitle');
     ok(stateRows.some((r) => /^NSW/.test(r)) && stateRows.some((r) => /^WA/.test(r)), 'The report by state did not show the NSW and WA bookings: ' + stateRows.join(', '));
@@ -332,7 +360,7 @@ module.exports = async function crm(ctx) {
     }
     ok(zipOk, 'The zip file of everything did not open cleanly');
     const listing = zipOk ? execFileSync('unzip', ['-Z1', zipPath]).toString().split('\n') : [];
-    ok(['Read me.txt', 'Tasks.csv', 'Calendar.csv', 'Team.csv', 'Staff checks.csv', 'Fees.csv', 'Templates.csv', 'Tickets.csv', 'Change history.csv', 'Practice settings.csv'].every((n) => listing.includes(n)), 'The zip file was missing a spreadsheet: ' + listing.join(', '));
+    ok(['Read me.txt', 'Tasks.csv', 'Calendar.csv', 'Team.csv', 'Staff checks.csv', 'Fees.csv', 'Templates.csv', 'Tickets.csv', 'Privacy requests.csv', 'Change history.csv', 'Practice settings.csv'].every((n) => listing.includes(n)), 'The zip file was missing a spreadsheet: ' + listing.join(', '));
     ok(listing.some((n) => n.startsWith('Template files/' + tplName + '/Version 2, ')), 'The zip file did not include the template files');
     const zipCal = zipOk ? execFileSync('unzip', ['-p', zipPath, 'Calendar.csv']).toString() : '';
     ok(/"2:00 pm","3:00 pm","WA"/.test(zipCal), 'The full calendar copy did not keep the WA entry in its own time');
@@ -435,6 +463,7 @@ module.exports = async function crm(ctx) {
     if (cleanup.reopen.length) await service.from('price_items').update({ effective_to: null }).in('id', cleanup.reopen);
     for (const id of made) {
       await service.from('feedback').delete().eq('created_by', id);
+      await service.from('privacy_requests').delete().eq('created_by', id);
       await service.from('tasks').delete().or('assigned_to.eq.' + id + ',created_by.eq.' + id);
       await service.from('calendar_blocks').delete().eq('staff_id', id);
       await service.from('error_events').delete().eq('user_id', id);

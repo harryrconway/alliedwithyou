@@ -218,7 +218,7 @@
         ${approvals}
         <section class="panel" style="margin-bottom:1.5rem" aria-labelledby="teamTitle">
           <div class="panel-head"><h2 id="teamTitle">Team</h2></div>
-          <ul class="rows">${team.map((s) => html`<li>
+          <ul class="rows">${team.map((s) => html`<li data-person="${s.id}">
             <span class="avatar" aria-hidden="true">${fmt.initials(s.name || s.email)}</span>
             <div class="what"><strong>${s.name || s.email}${s.id === user.id ? html` <span class="tag">You</span>` : ''}</strong>${personMeta(s)}</div>
             <div class="end">${manage ? (s.mfaEnabled ? html`<span class="tag" title="Two step sign in is on">${icon('lock')}Two step on</span>` : html`<span class="tag tag-warning" title="Two step sign in is off">Two step off</span>`) : ''}<span class="badge tone-sage">${icon('shield')}${access.roleLabel(s.role)}</span>
@@ -260,13 +260,15 @@
       AWY.on(ctx.el, 'click', '[data-edit-staff]', (event, btn) => editForm(find(btn.dataset.editStaff)));
       AWY.on(ctx.el, 'click', '[data-download-team]', () => AWY.exports.sheet('Team', AWY.exports.COLUMNS.staff(), team.concat(pending, inactive)));
 
-      /* Opened from search or another screen. Only administrators can edit a profile. */
-      if (query.open && state.openedFor !== query.open) {
-        state.openedFor = query.open;
-        AWY.router.replace(['staff']);
-        const s = manage ? find(query.open) : null;
-        if (s) editForm(s);
-      }
+      /* Opened from search or another screen. Administrators get the edit form, and everyone else sees the person picked out in the list. */
+      C.openLinked(ctx, { path: ['staff'], list: db.staff, table: 'staff', open: (s) => {
+        if (manage) return editForm(s);
+        const row = ctx.el.querySelector('[data-person="' + s.id + '"]');
+        if (!row) return;
+        row.scrollIntoView({ block: 'center' });
+        row.classList.add('is-found');
+        setTimeout(() => row.classList.remove('is-found'), 2700);
+      } });
     }
   };
 })();

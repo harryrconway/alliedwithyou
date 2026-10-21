@@ -8,8 +8,9 @@
 //   administrators and developers after two failures in a row, and when it's working again
 // The database's scheduler calls this every 15 minutes with a shared secret. Each alert is
 // recorded in the notifications table before it's sent, so nothing goes out twice, and a
-// failed send is cleared so it's tried again next time. Emails name the type of check and
-// its date only, never reference numbers.
+// failed send is cleared so it's tried again next time. Check emails name the type of check
+// and its date only, never reference numbers. Privacy request emails give the request's own
+// reference and due date, never the person's name or what they asked.
 
 import nodemailer from 'npm:nodemailer@9.1.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
@@ -192,11 +193,11 @@ Deno.serve(async (req) => {
   // Privacy requests still open, within 7 days of their 30 day deadline or past it
   const { data: privacyRows, error: privacyError } = await db
     .from('privacy_requests')
-    .select('id, ref, requester_name, status, created_at')
+    .select('id, ref, status, created_at')
     .in('status', ['received', 'in_progress']);
   if (privacyError) return reply(500, { ok: false, error: 'read' });
   const duePrivacy = (parts.includes('privacy') ? privacyRows ?? [] : [])
-    .map((p: { id: string; ref: string; requester_name: string; status: string; created_at: string }) => ({ ...p, due: addDays(p.created_at.slice(0, 10), 30) }))
+    .map((p: { id: string; ref: string; status: string; created_at: string }) => ({ ...p, due: addDays(p.created_at.slice(0, 10), 30) }))
     .map((p) => ({ ...p, pstage: privacyStage(daysUntil(now, p.due)) }))
     .filter((p) => p.pstage);
 
@@ -378,7 +379,7 @@ Deno.serve(async (req) => {
   const newPrivacy = duePrivacy.filter((p) => claimed.has('privacy:' + p.id + ':' + p.pstage));
   if (newPrivacy.length && adminEmails.length) {
     sending.push({
-      keys: [],
+      keys: newPrivacy.map((p) => 'privacy:' + p.id + ':' + p.pstage),
       to: adminEmails,
       subject: newPrivacy.some((p) => p.pstage === 'overdue') ? 'A privacy request is overdue' : 'A privacy request is due soon',
       text: [
@@ -386,7 +387,7 @@ Deno.serve(async (req) => {
         '',
         'These privacy requests are close to, or past, the 30 day deadline:',
         '',
-        ...newPrivacy.map((p) => '• ' + p.requester_name + ', reference ' + p.ref + ', ' + (p.pstage === 'overdue' ? 'was due ' : 'due ') + longDate(p.due)),
+        ...newPrivacy.map((p) => '• Reference ' + p.ref + ', ' + (p.pstage === 'overdue' ? 'was due ' : 'due ') + longDate(p.due)),
         '',
         'Work them in Privacy requests:',
         DASHBOARD + '#/privacy',

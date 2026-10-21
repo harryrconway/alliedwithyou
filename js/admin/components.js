@@ -167,6 +167,27 @@
       </div>`;
     },
 
+    /*
+      Opens the record a link points to, such as a search result. The address is tidied
+      first, so it opens once. Anything older than the dashboard has loaded is read from the
+      database, and Row Level Security decides whether this person can see it.
+      opts: { param, path, list, table, open(record) }
+    */
+    openLinked(ctx, opts) {
+      const id = ctx.query[opts.param || 'open'];
+      if (!id) return;
+      AWY.router.replace(opts.path);
+      const found = (opts.list || []).find((x) => x.id === id);
+      if (found) return opts.open(found);
+      AWY.store.one(opts.table, id).then((record) => {
+        if (record) opts.open(record);
+        else AWY.ui.toast("That couldn't be opened. It may have been deleted, or your account can't see it.", { tone: 'error' });
+      }, (error) => {
+        const r = AWY.errors.capture(error, { area: opts.path[0], operation: 'open from a link' });
+        AWY.ui.toast(r.message, { tone: 'error' });
+      });
+    },
+
     /* Lets a click anywhere on a row follow its link, without breaking buttons inside it */
     bindRows(el) {
       AWY.on(el, 'click', 'tr[data-href]', (event, row) => {

@@ -226,6 +226,20 @@
       ['Added by', (n) => who(db, n.authorId)],
       ['Added', (n) => when(n.createdAt)]
     ],
+    privacyRequests: (db) => [
+      ['Reference', (p) => p.ref],
+      ['Asking for', (p) => C.label('privacyKind', p.kind)],
+      ['Name', (p) => p.requesterName],
+      ['Email', (p) => p.requesterEmail],
+      ['Phone', (p) => p.requesterPhone],
+      ['What they asked', (p) => p.details],
+      ['Status', (p) => AWY.schema.status('privacyRequest', p.status).label],
+      ['Working on it', (p) => who(db, p.assignedTo)],
+      ['Internal notes', (p) => p.internalNotes],
+      ['Logged', (p) => when(p.createdAt)],
+      ['Logged by', (p) => who(db, p.createdBy)],
+      ['Resolved', (p) => when(p.resolvedAt)]
+    ],
     auditEvents: (db) => [
       ['When', (e) => when(e.at)],
       ['Who', (e) => (e.actorId ? who(db, e.actorId) : 'Automatic')],
@@ -246,6 +260,7 @@
     { name: 'templateVersions', file: 'Template versions', label: 'Template versions' },
     { name: 'feedback', file: 'Tickets', label: 'Feedback and issues' },
     { name: 'feedbackNotes', file: 'Ticket notes', label: 'Private ticket notes' },
+    { name: 'privacyRequests', file: 'Privacy requests', label: 'Privacy requests' },
     { name: 'auditEvents', file: 'Change history', label: 'Change history' }
   ];
 
@@ -316,7 +331,7 @@
       '',
       counts.join('\r\n'),
       '',
-      'This file includes staff contact details and check numbers. Keep it somewhere private, such as the practice\'s own storage, and delete old copies you no longer need.'
+      'This file includes staff contact details, check numbers and the details of anyone who made a privacy request. Keep it somewhere private, such as the practice\'s own storage, and delete old copies you no longer need.'
     ].join('\r\n');
     files.unshift({ name: 'Read me.txt', data: encoder.encode(readme + '\r\n') });
 
