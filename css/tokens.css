@@ -105,6 +105,7 @@
   --z-drawer: 70;
   --z-modal: 90;
   --z-toast: 100;
+  --z-loader: 110;
 }
 
 @media (prefers-reduced-motion: reduce) {

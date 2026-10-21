@@ -1,5 +1,84 @@
 /* Public website layout. */
 
+/* Loading screen: the home page only, once a visit. Teal and sage grow from opposite
+   points of the ring and meet after two seconds, then the screen fades and the page
+   underneath, already there, is revealed. Never blocks clicks, even while it's showing. */
+
+.load-screen {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-loader);
+  display: grid;
+  place-items: center;
+  background: var(--color-cream);
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.6s var(--ease);
+}
+
+.load-screen.is-done {
+  opacity: 0;
+}
+
+.load-badge {
+  position: relative;
+  width: 7.5rem;
+  height: 7.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-white);
+  box-shadow: 0 20px 40px rgb(12 86 97 / 0.16);
+}
+
+.load-badge img {
+  width: 50%;
+  height: auto;
+}
+
+.load-ring {
+  position: absolute;
+  inset: -0.5rem;
+  width: calc(100% + 1rem);
+  height: calc(100% + 1rem);
+  transform: rotate(-90deg);
+}
+
+.load-arc {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 169.6 400;
+  stroke-dashoffset: 169.6;
+  animation: load-grow 2s var(--ease) forwards;
+}
+
+.load-arc-a {
+  stroke: var(--color-deep);
+}
+
+.load-arc-b {
+  stroke: var(--color-sage);
+  transform: rotate(180deg);
+  transform-origin: center;
+}
+
+@keyframes load-grow {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .load-screen {
+    transition: none;
+  }
+  .load-arc {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
 /* Header */
 
 .site-header {

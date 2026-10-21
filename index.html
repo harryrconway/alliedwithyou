@@ -17,8 +17,18 @@
   <script src="js/core/dom.js" defer></script>
   <script src="js/data/business.js" defer></script>
   <script src="js/site/layout.js" defer></script>
+  <script src="js/site/loader.js" defer></script>
 </head>
 <body data-page="home">
+  <div class="load-screen" id="loadScreen" aria-hidden="true">
+    <div class="load-badge">
+      <svg class="load-ring" viewBox="0 0 120 120">
+        <circle class="load-arc load-arc-a" cx="60" cy="60" r="54"></circle>
+        <circle class="load-arc load-arc-b" cx="60" cy="60" r="54"></circle>
+      </svg>
+      <img src="images/logomark.svg" alt="" width="60" height="60">
+    </div>
+  </div>
   <a class="skip" href="#main">Skip to main content</a>
   <header class="site-header" data-site-header></header>
 
