@@ -9,8 +9,17 @@
 // failed send is cleared so it's tried again next time. Emails name the type of check and
 // its date only, never reference numbers.
 
-import nodemailer from 'npm:nodemailer@6.9.16';
+import nodemailer from 'npm:nodemailer@9.1.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
+
+// Compares the whole secret rather than stopping at the first different character, so how
+// long the comparison takes can't be used to guess it one character at a time.
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i += 1) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
 
 const DASHBOARD = Deno.env.get('DASHBOARD_URL') ?? 'https://alliedwithyou.com.au/admin/';
 // On the test project every email goes to this address instead, so nobody real is emailed
@@ -105,7 +114,8 @@ Deno.serve(async (req) => {
   const started = Date.now();
   if (req.method !== 'POST') return reply(405, { ok: false });
   const secret = Deno.env.get('NOTIFY_SECRET');
-  if (!secret || req.headers.get('x-notify-secret') !== secret) return reply(401, { ok: false });
+  const given = req.headers.get('x-notify-secret');
+  if (!secret || !given || !timingSafeEqual(given, secret)) return reply(401, { ok: false });
 
   const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
   const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;

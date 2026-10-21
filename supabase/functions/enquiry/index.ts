@@ -2,7 +2,7 @@
 // Nothing from the enquiry is stored. The only record kept is a scrambled form of the
 // visitor's network address with a time, so each visitor is limited to five an hour.
 
-import nodemailer from 'npm:nodemailer@6.9.16';
+import nodemailer from 'npm:nodemailer@9.1.0';
 import { createClient } from 'npm:@supabase/supabase-js@2.118.0';
 
 const ALLOWED_ORIGINS = [
@@ -64,11 +64,12 @@ function reply(status: number, body: Record<string, unknown>, origin: string | n
   return new Response(JSON.stringify(body), { status, headers });
 }
 
-function clean(value: unknown, max: number): string {
-  return String(value ?? '')
-    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '')
-    .trim()
-    .slice(0, max);
+// multiline allows the line breaks a real message needs. Every other field is kept to one
+// line, so a line break can't be used to add a line that looks like a different field.
+function clean(value: unknown, max: number, multiline = false): string {
+  let text = String(value ?? '').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '');
+  if (!multiline) text = text.replace(/[\r\n]+/g, ' ');
+  return text.trim().slice(0, max);
 }
 
 async function sha256(text: string): Promise<string> {
@@ -112,7 +113,8 @@ Deno.serve(async (req) => {
   const rule = RULES[kind];
   const values: Record<string, string> = {};
   for (const field of rule.fields) {
-    values[field] = field === 'consent' ? (body.consent === true || body.consent === 'yes' ? 'Yes' : '') : clean(body[field], field === 'reason' || field === 'message' ? 1500 : 160);
+    const long = field === 'reason' || field === 'message';
+    values[field] = field === 'consent' ? (body.consent === true || body.consent === 'yes' ? 'Yes' : '') : clean(body[field], long ? 1500 : 160, long);
   }
   const missing = rule.required.filter((f) => !values[f]);
   const badEmail = ['email', 'referrerEmail'].some((f) => values[f] && !EMAIL.test(values[f]));
