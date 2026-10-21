@@ -118,7 +118,7 @@
     privacyRequests: {
       table: 'privacy_requests', order: 'created_at', desc: true, limit: 300,
       columns: ['kind', 'requester_name', 'requester_email', 'requester_phone', 'details', 'status', 'internal_notes', 'assigned_to', 'request_id'],
-      nullable: ['requester_email', 'requester_phone', 'details', 'internal_notes', 'assigned_to', 'request_id']
+      nullable: ['assigned_to', 'request_id']
     }
   };
 
@@ -304,7 +304,15 @@
       const text = String(q || '').trim();
       if (text.length < 2) return [];
       const rows = await run('search', client.rpc('global_search', { q: text }));
-      return rows.map((r) => ({ kind: r.kind, id: r.id, ref: r.ref, title: r.title, subtitle: r.subtitle, createdAt: r.created_at }));
+      return rows.map((r) => ({ kind: r.kind, id: r.id, ref: r.ref || '', title: r.title || '', meta1: r.meta1 || '', meta2: r.meta2 || '', status: r.status || '', createdAt: r.created_at }));
+    },
+
+    /* One record by id, for a link to something older than the dashboard has loaded. Null if it's gone or not allowed. */
+    async one(name, id) {
+      const def = TABLES[name];
+      if (!def || (def.roles && !(user && def.roles.includes(user.role)))) return null;
+      const row = await run(name, client.from(def.table).select('*').eq('id', id).maybeSingle());
+      return row ? fromRow(name, row) : null;
     },
 
     /* Everything the open sections need, read in parallel */

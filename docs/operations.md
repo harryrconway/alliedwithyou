@@ -107,6 +107,12 @@ If a reserved address shows as **Reserved practice address** in the approvals li
 
 Spreadsheet text that starts like a formula, for example with an equals sign, gets an apostrophe in front, so Excel never treats typing in a task or note as a formula.
 
+## Privacy requests and the weekly clean up
+
+Any active staff member can log a privacy request in **Privacy requests**, and administrators work it through to a reply within 30 days. Administrators get an email 7 days before the deadline and once it's passed. These emails give the request's reference and due date only, never the person's name or what they asked.
+
+Every Sunday night the `housekeeping` job deletes error reports and sent alert records older than 180 days. It doesn't touch the change history, which is kept until the practice decides how long to keep records. To change what it clears, add a migration that calls `cron.schedule('housekeeping', ...)` again with the new command.
+
 ## Stored files
 
 Template files live in the private `templates` storage bucket. Nobody can open a file directly. The dashboard asks for a link that works for two minutes, and the database only gives one for an approved template, or to an administrator. Files that became a version can't be deleted, so the history stays complete.

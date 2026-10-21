@@ -141,12 +141,7 @@
       });
 
       /* Opened from search or another screen */
-      if (query.open && state.openedFor !== query.open) {
-        state.openedFor = query.open;
-        AWY.router.replace(['privacy']);
-        const p = db.privacyRequests.find((x) => x.id === query.open);
-        if (p) (manage ? openManage : openOwn)(db, p);
-      }
+      C.openLinked(ctx, { path: ['privacy'], list: db.privacyRequests, table: 'privacyRequests', open: (p) => (manage ? openManage : openOwn)(db, p) });
     }
   };
 })();

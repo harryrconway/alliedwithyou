@@ -271,6 +271,42 @@ module.exports = async function auth(ctx) {
     const anonNote = await anon.rpc('log_download', { p_what: 'QA anon ' + stamp });
     ok(!!anonNote.error, 'A visitor who is not signed in could note a download');
 
+    /* Privacy requests: anyone active logs one, only they and administrators see it, only administrators work it */
+    const pr = await therapist.client.from('privacy_requests').insert({ kind: 'access', requester_name: 'QA Requester ' + stamp, requester_email: '', requester_phone: '', details: '' }).select('id, ref').single();
+    ok(!pr.error && pr.data.ref && pr.data.ref.length === 6, 'A privacy request with only a name could not be logged: ' + (pr.error && pr.error.message));
+    if (pr.data) {
+      const ownPr = await therapist.client.from('privacy_requests').select('id').eq('id', pr.data.id);
+      ok(ownPr.data && ownPr.data.length === 1, 'Whoever logged a privacy request could not see it');
+      const otherPr = await other.client.from('privacy_requests').select('id').eq('id', pr.data.id);
+      ok(otherPr.data && otherPr.data.length === 0, 'Another staff member could see a privacy request they did not log');
+      const workPr = await therapist.client.from('privacy_requests').update({ status: 'completed' }).eq('id', pr.data.id).select('id');
+      ok(!workPr.data || workPr.data.length === 0, 'A therapist could work a privacy request');
+      const adminPr = await admin.client.from('privacy_requests').update({ status: 'completed', internal_notes: '' }).eq('id', pr.data.id).select('status, resolved_at').single();
+      ok(!adminPr.error && adminPr.data.status === 'completed' && adminPr.data.resolved_at, 'An administrator could not complete a privacy request');
+
+      /* Search reads the database as the person searching */
+      const findTask = await therapist.client.rpc('global_search', { q: 'QA task' });
+      ok(!findTask.error && (findTask.data || []).some((r) => r.kind === 'task' && r.meta1 && r.status), 'Search did not find a task with its due date and status: ' + JSON.stringify((findTask.data || []).slice(0, 2)));
+      const pendingFinds = await pending.client.rpc('global_search', { q: 'QA' });
+      ok(!pendingFinds.error && (pendingFinds.data || []).every((r) => r.kind === 'staff' && r.id === pending.id), 'An account waiting for approval could search the practice');
+      const otherFindsPr = await other.client.rpc('global_search', { q: pr.data.ref });
+      ok((otherFindsPr.data || []).every((r) => r.kind !== 'privacy'), "Search showed another person's privacy request");
+      const adminFindsPr = await admin.client.rpc('global_search', { q: pr.data.ref });
+      ok((adminFindsPr.data || []).some((r) => r.kind === 'privacy' && r.status === 'completed'), 'An administrator could not find a privacy request by its reference');
+      const staffSees = await therapist.client.rpc('global_search', { q: 'qa.pending.' + stamp });
+      ok((staffSees.data || []).length === 0, 'Staff could find an account waiting for approval');
+      const adminSees = await admin.client.rpc('global_search', { q: 'qa.pending.' + stamp });
+      ok((adminSees.data || []).some((r) => r.kind === 'staff' && r.status === 'pending'), 'An administrator could not find an account waiting for approval');
+      const literal = await admin.client.rpc('global_search', { q: '%%' });
+      ok(!literal.error && (literal.data || []).length === 0, 'Typing % in search matched everything');
+
+      /* A switched off account loses sight of what it logged */
+      await service.from('profiles').update({ status: 'disabled' }).eq('id', therapist.id);
+      const offPr = await therapist.client.from('privacy_requests').select('id').eq('id', pr.data.id);
+      ok(offPr.data && offPr.data.length === 0, 'A switched off account could still read a privacy request it logged');
+      await service.from('profiles').update({ status: 'active' }).eq('id', therapist.id);
+    }
+
     /* Approvals: an administrator approves, and it's recorded in the audit trail */
     const approve = await admin.client.from('profiles').update({ status: 'active', role: 'therapist' }).eq('id', pending.id).select('status, approved_by');
     ok(!approve.error && approve.data[0].status === 'active' && approve.data[0].approved_by === admin.id, 'An administrator could not approve a sign up');
@@ -301,6 +337,7 @@ module.exports = async function auth(ctx) {
     }
     for (const id of made.users) {
       await service.from('feedback').delete().eq('created_by', id);
+      await service.from('privacy_requests').delete().eq('created_by', id);
       await service.from('tasks').delete().or('assigned_to.eq.' + id + ',created_by.eq.' + id);
       await service.from('calendar_blocks').delete().eq('staff_id', id);
     }

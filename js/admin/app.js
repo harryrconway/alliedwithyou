@@ -419,7 +419,7 @@
     app.states = {};
     touch();
     document.body.innerHTML = '<a class="skip" href="#main">Skip to main content</a>' + String(AWY.shell.render(profile));
-    AWY.shell.bindSearch();
+    AWY.shell.bindSearch(() => app.db);
     bindShell();
     if (!window.location.hash || window.location.hash === '#') history.replaceState(null, '', '#/');
     AWY.errors.flush();

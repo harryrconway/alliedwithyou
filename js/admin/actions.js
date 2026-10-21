@@ -87,6 +87,24 @@
     if (!saved && AWY.app.reload) AWY.app.reload();
   };
 
+  /* Someone else's task, opened from search to read */
+  A.taskView = function (t) {
+    const data = db();
+    AWY.ui.modal({
+      title: t.title,
+      subtitle: 'Only ' + rules.staffName(data, t.assignedTo) + ', whoever added it or an administrator can change this task.',
+      body: html`${C.kv([
+        ['Assigned to', rules.staffName(data, t.assignedTo)],
+        ['Due', fmt.date(t.dueDate)],
+        ['Priority', C.label('priority', t.priority)],
+        ['Status', C.badge('task', rules.taskStatus(t, D.today()))],
+        ['Completed', t.completedAt ? fmt.stamp(t.completedAt) + (t.completedBy ? ' by ' + rules.staffName(data, t.completedBy) : '') : ''],
+        ['Details', t.description]
+      ])}`,
+      footer: html`<button type="button" class="btn btn-secondary" data-close>Close</button>`
+    });
+  };
+
   /* Calendar entries */
 
   A.canEditBlock = function (b) {
