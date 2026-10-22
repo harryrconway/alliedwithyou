@@ -19,6 +19,14 @@ module.exports = async function links(ctx) {
     for (const m of src.matchAll(/(?:href|src)="([^"]+)"/g)) check(file, m[1]);
     for (const m of src.matchAll(/srcset="([^"]+)"/g)) m[1].split(',').forEach((part) => check(file, part.trim().split(' ')[0]));
   }
+  /* Everything _config.yml leaves out of the published site must exist, so a misspelt name can't leave a page published */
+  const config = path.join(ctx.root, '_config.yml');
+  if (fs.existsSync(config)) {
+    for (const m of fs.readFileSync(config, 'utf8').matchAll(/^\s*-\s+(\S+)\s*$/gm)) {
+      if (!fs.existsSync(path.join(ctx.root, m[1]))) failures.push('_config.yml leaves out ' + m[1] + ', which does not exist');
+    }
+  }
+
   /* Links the shared website header and footer generate */
   const layout = fs.readFileSync(path.join(ctx.root, 'js/site/layout.js'), 'utf8');
   for (const m of layout.matchAll(/href: '([^']+)'|\$\{root\}([a-z/]+\.(?:html|svg))/g)) {

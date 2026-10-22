@@ -1,5 +1,7 @@
 # Allied With You
 
+> **Under construction since 22 October 2026.** The public website shows `construction.html` in place of every page, and the staff dashboard works as normal. `docs/operations.md` has the steps to go live again.
+
 Website and staff dashboard for Allied With You, an occupational therapy practice working in person across the Northern Rivers and the Gold Coast, and by telehealth anywhere in Australia.
 
 The website is live at https://alliedwithyou.com.au. The staff dashboard lives at `/admin/` and runs on Supabase, with only the less sensitive sections switched on for now.

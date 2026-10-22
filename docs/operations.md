@@ -13,6 +13,19 @@ How the live site, the database and the supporting services fit together, and ho
 
 The test database only ever holds fictional records and throwaway test accounts. Real staff and practice information goes only into production.
 
+## Under construction
+
+Since 22 October 2026 the public website is under construction at the practice's request. Every address shows `construction.html` instead, and the staff dashboard at `/admin/` works as normal.
+
+How it works: GitHub Pages builds the site with Jekyll, and `_config.yml` lists the real pages under `exclude`, so they aren't published. `soon.html` publishes `construction.html` as the home page, and `missing.html` publishes it as the not found page, so old links land on it too. The real pages are untouched in the repository, so they can still be worked on and the automated checks still test them.
+
+To go live again:
+
+* In `_config.yml`, delete the group of real pages under `exclude`. Keep the last group, which keeps notes, database changes and tests off the website.
+* Delete `soon.html` and `missing.html`.
+* Keep or delete `construction.html`, `css/construction.css` and `js/site/construction.js`. They do nothing once the two files above are gone.
+* Push to `main`, then check https://alliedwithyou.com.au shows the real home page within a few minutes.
+
 ## Domain records
 
 The domain's records are in the cPanel Zone Editor. The website points at GitHub Pages:
