@@ -86,6 +86,24 @@ module.exports = async function search(ctx) {
     if (!first || !/fees\.html|faq\.html/.test(first)) failures.push('The first result for "cancel" is ' + first + ', not the fees or questions page');
     await p.keyboard.press('ArrowDown');
     if (!(await p.evaluate(() => /^siteResult/.test(document.querySelector('#siteSearchInput').getAttribute('aria-activedescendant') || '')))) failures.push('Arrow down does not move through the results');
+    /* The preview follows the result picked out, with a way to open it and the rest of its page */
+    await p.keyboard.press('ArrowDown');
+    const shown = await p.evaluate(() => {
+      const picked = document.getElementById(document.querySelector('#siteSearchInput').getAttribute('aria-activedescendant'));
+      const preview = document.querySelector('#siteSearchPreview');
+      const open = preview.querySelector('.preview-open');
+      return {
+        visible: preview.offsetWidth > 0,
+        title: (preview.querySelector('h2') || {}).textContent || '',
+        picked: picked ? picked.querySelector('.hit-title').textContent : '',
+        same: open && picked && open.getAttribute('href') === picked.getAttribute('href'),
+        more: preview.querySelectorAll('.preview-more a').length
+      };
+    });
+    if (!shown.visible) failures.push('The search preview does not show on a computer');
+    else if (shown.title !== shown.picked && !shown.title.includes(shown.picked)) failures.push('The preview shows "' + shown.title + '" while "' + shown.picked + '" is picked out');
+    if (shown.visible && !shown.same) failures.push('The preview\'s open button does not go where the picked result goes');
+    if (shown.visible && !shown.more) failures.push('The preview does not list the rest of the page');
     await p.keyboard.press('Escape');
     await p.keyboard.press('Escape');
     await p.waitForTimeout(150);

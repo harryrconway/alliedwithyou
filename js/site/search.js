@@ -45,6 +45,7 @@
 
   let index = null;
   let loading = null;
+  const pages = {};
   function load() {
     if (!loading) {
       loading = fetch(root + 'js/site/searchindex.json', { cache: 'no-cache' })
@@ -54,6 +55,7 @@
         })
         .then((data) => {
           index = [];
+          data.pages.forEach((page) => { pages[page.url] = page; });
           data.pages.forEach((page) => page.sections.forEach((s) => {
             index.push({
               page: page,
@@ -100,6 +102,12 @@
     return PLACES.filter((p) => ts.every((t) => (' ' + lower(p.label) + ' ' + p.words).includes(' ' + t))).slice(0, 3);
   }
 
+  /* A page's own entry, with its introduction, for "Go to" and popular pages */
+  function placeItem(p) {
+    const page = pages[p.url];
+    return { href: root + p.url, title: p.label, sub: page ? page.sections[0].text : '', icon: p.icon, page: page, section: page ? page.sections[0] : null };
+  }
+
   /* Sections that have every word, or if none do, those that have most of them. Grouped by page. */
   function search(typed) {
     const ts = terms(typed);
@@ -110,18 +118,22 @@
     hits = all.length ? all : hits.filter((h) => h.found >= Math.ceil(ts.length / 2));
     hits.sort((a, b) => b.n - a.n);
 
+    /* A page already offered under Go to isn't listed again under its own name */
+    const places = placeMatches(ts);
+    const offered = new Set(places.map((p) => p.url));
     const byPage = new Map();
     hits.forEach((h) => {
       const key = h.e.page.url;
+      if (h.e.section.kind === 'page' && offered.has(key)) return;
       if (!byPage.has(key)) byPage.set(key, { page: h.e.page, best: h.n, hits: [] });
       byPage.get(key).hits.push(h);
     });
     const groups = [];
-    const places = placeMatches(ts);
-    if (places.length) groups.push({ label: 'Go to', best: Infinity, total: places.length, items: places.map((p) => ({ href: root + p.url, title: p.label, sub: '', icon: p.icon })) });
+    if (places.length) groups.push({ label: 'Go to', icon: 'arrowRight', best: Infinity, total: places.length, items: places.map(placeItem) });
     Array.from(byPage.values()).sort((a, b) => b.best - a.best).slice(0, 6).forEach((g) => {
       groups.push({
         label: g.page.title,
+        icon: PAGE_ICON[g.page.url] || 'note',
         best: g.best,
         total: g.hits.length,
         items: g.hits.slice(0, 4).map((h) => {
@@ -130,12 +142,36 @@
             href: root + g.page.url + (s.id ? '#' + s.id : ''),
             title: s.kind === 'page' ? g.page.title : s.title,
             sub: snippet(s.text, ts),
-            icon: s.kind === 'question' ? 'message' : s.kind === 'page' ? PAGE_ICON[g.page.url] || 'note' : 'arrowRight'
+            icon: s.kind === 'question' ? 'message' : s.kind === 'page' ? PAGE_ICON[g.page.url] || 'note' : 'arrowRight',
+            page: g.page,
+            section: s
           };
         })
       });
     });
     return { groups: groups, total: hits.length, ts: ts };
+  }
+
+  /* A longer piece for the preview: whole sentences, up to about a paragraph, starting near the first match */
+  function excerpt(text, ts, max) {
+    const t = String(text || '');
+    if (t.length <= max) return t;
+    const low = lower(t);
+    let at = -1;
+    (ts || []).some((w) => {
+      at = low.indexOf(w);
+      return at >= 0;
+    });
+    let start = 0;
+    if (at > max * 0.6) {
+      const stop = Math.max(t.lastIndexOf('. ', at), t.lastIndexOf('? ', at));
+      start = stop > 0 ? stop + 2 : t.indexOf(' ', at - 80) + 1;
+    }
+    let end = start + max;
+    if (end >= t.length) return (start ? '…' : '') + t.slice(start);
+    const sentence = Math.max(t.lastIndexOf('. ', end), t.lastIndexOf('? ', end));
+    end = sentence > start + max * 0.5 ? sentence + 1 : t.lastIndexOf(' ', end);
+    return (start ? '…' : '') + t.slice(start, end) + (sentence > start + max * 0.5 ? '' : '…');
   }
 
   /* A short piece of the text around the first word that matched */
@@ -148,8 +184,9 @@
       at = low.indexOf(w);
       return at >= 0;
     });
-    if (at < 0 || at < 60) return t.length > 130 ? t.slice(0, t.lastIndexOf(' ', 125)) + '…' : t;
-    const start = t.indexOf(' ', at - 50) + 1;
+    if (at < 0 || at < 40) return t.length > 130 ? t.slice(0, t.lastIndexOf(' ', 125)) + '…' : t;
+    /* Starts a few words before the match, so the match shows even on one line */
+    const start = t.indexOf(' ', at - 24) + 1;
     const end = t.length > start + 130 ? t.lastIndexOf(' ', start + 125) : t.length;
     return '…' + t.slice(start, end) + (end < t.length ? '…' : '');
   }
@@ -167,8 +204,11 @@
     spans.sort((a, b) => a[0] - b[0]);
     const out = [];
     let pos = 0;
-    spans.forEach(([a, b]) => {
+    spans.forEach(([a, end]) => {
+      let b = end;
       if (a < pos) return;
+      /* The whole word that matched, so "cancel" lights up all of "cancellations" */
+      while (b < s.length && /[A-Za-z0-9’']/.test(s[b])) b += 1;
       out.push(s.slice(pos, a), html`<mark>${s.slice(a, b)}</mark>`);
       pos = b;
     });
@@ -176,7 +216,7 @@
     return out;
   }
 
-  /* The search box itself */
+  /* The search box itself: results on the left, a preview of the one picked out on the right */
   const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
   const dialog = document.createElement('dialog');
   dialog.className = 'site-search';
@@ -185,20 +225,28 @@
   dialog.innerHTML = String(html`<div class="search" role="search">
       ${icon('search')}
       <label class="sr-only" for="siteSearchInput">Search this website</label>
-      <input class="input" id="siteSearchInput" type="search" placeholder="Search services, fees, NDIS and more" autocomplete="off" spellcheck="false" enterkeyhint="go" role="combobox" aria-expanded="false" aria-controls="siteSearchResults" aria-autocomplete="list">
-      <button class="search-close" type="button" aria-label="Close search">${icon('close')}</button>
+      <input class="input" id="siteSearchInput" type="search" placeholder="Search the website" autocomplete="off" spellcheck="false" enterkeyhint="go" role="combobox" aria-expanded="false" aria-controls="siteSearchResults" aria-autocomplete="list">
+      <button class="search-close" type="button" aria-label="Close search"><kbd aria-hidden="true">Esc</kbd>${icon('close')}</button>
     </div>
-    <div class="search-results" id="siteSearchResults" role="listbox" aria-label="Search results"></div>
+    <div class="search-body">
+      <div class="search-results" id="siteSearchResults" role="listbox" aria-label="Search results"></div>
+      <section class="search-preview" id="siteSearchPreview" aria-label="Preview"></section>
+    </div>
+    <p class="search-keys" aria-hidden="true"><span><kbd>↑</kbd><kbd>↓</kbd> move</span><span><kbd>Enter</kbd> open</span><span><kbd>Esc</kbd> close</span></p>
     <p class="sr-only" role="status" id="siteSearchStatus"></p>`);
   document.body.appendChild(dialog);
 
   const input = dialog.querySelector('#siteSearchInput');
   const box = dialog.querySelector('#siteSearchResults');
+  const preview = dialog.querySelector('#siteSearchPreview');
   const status = dialog.querySelector('#siteSearchStatus');
   const button = document.getElementById('siteSearchButton');
   let active = -1;
   let opener = null;
-  const links = () => Array.from(box.querySelectorAll('a'));
+  let shown = [];
+  let shownTerms = [];
+  let previewed = null;
+  const links = () => Array.from(box.querySelectorAll('a[role="option"]'));
 
   const hint = button && button.querySelector('kbd');
   if (hint) hint.textContent = isMac ? '⌘K' : 'Ctrl K';
@@ -215,21 +263,64 @@
     } else {
       input.removeAttribute('aria-activedescendant');
     }
+    showPreview(shown[active >= 0 ? active : 0]);
   }
 
   function renderGroups(groups, ts) {
     let n = 0;
+    shown = [];
     return groups.map((g, gi) => html`<div role="group" aria-labelledby="siteGroup${gi}">
-      <div class="group" id="siteGroup${gi}"><span>${g.label}</span>${g.total > g.items.length ? html`<span class="n">${g.items.length} of ${g.total}</span>` : ''}</div>
-      ${g.items.map((it) => html`<a href="${it.href}" id="siteResult${n++}" role="option" aria-selected="false">${icon(it.icon)}<span class="hit"><span class="hit-title">${mark(it.title, ts)}</span>${it.sub ? html`<small>${mark(it.sub, ts)}</small>` : ''}</span></a>`)}
+      <div class="group" id="siteGroup${gi}"><span class="group-name">${icon(g.icon)}${g.label}</span>${g.total > g.items.length ? html`<span class="n">${g.items.length} of ${g.total}</span>` : ''}</div>
+      ${g.items.map((it) => {
+        shown.push(it);
+        return html`<a href="${it.href}" id="siteResult${n++}" role="option" aria-selected="false">${icon(it.icon)}<span class="hit"><span class="hit-title">${mark(it.title, ts)}</span>${it.sub ? html`<small>${mark(snippet(it.sub, ts), ts)}</small>` : ''}</span>${icon('chevronRight')}</a>`;
+      })}
     </div>`);
   }
 
-  const KEYS = html`<p class="search-keys" aria-hidden="true"><span><kbd>↑</kbd><kbd>↓</kbd> move</span><span><kbd>Enter</kbd> open</span><span><kbd>Esc</kbd> close</span></p>`;
+  const KIND = { page: 'Page', section: 'Section', question: 'Question' };
+
+  /* The preview: the whole section in full, then the rest of that page to jump to */
+  function showPreview(item) {
+    if (item === previewed) return;
+    previewed = item;
+    if (!item || !item.page) {
+      preview.innerHTML = String(html`<div class="preview-welcome">
+        <span class="preview-badge">${icon('search')}</span>
+        <h2>Search the whole website</h2>
+        <p>Try a word or a question, such as <em>home visit</em>, <em>cost</em>, <em>NDIS plan</em> or <em>how long is an appointment</em>. Pick a result to see it here first.</p>
+      </div>`);
+      return;
+    }
+    const ts = shownTerms;
+    const page = item.page;
+    const sec = item.section || page.sections[0];
+    const isPage = sec.kind === 'page';
+    const url = root + page.url;
+    const others = page.sections.filter((x) => x !== sec && x.kind !== 'page' && x.id);
+    const hasMatch = (x) => ts.length && ts.some((t) => lower(x.title + ' ' + x.text).includes(t));
+    others.sort((x, y) => Number(hasMatch(y)) - Number(hasMatch(x)));
+    const more = others.length - 6;
+    preview.innerHTML = String(html`<div class="preview-inner">
+      <p class="preview-crumbs">${icon(PAGE_ICON[page.url] || 'note')}<span>${page.title}</span>${sec.under && !isPage ? html`${icon('chevronRight')}<span>${sec.under}</span>` : ''}</p>
+      <span class="preview-kind is-${sec.kind}">${KIND[sec.kind]}</span>
+      <h2>${mark(isPage ? page.heading || page.title : sec.title, ts)}</h2>
+      ${sec.text ? html`<p class="preview-text">${mark(excerpt(sec.text, ts, isPage ? 420 : 640), ts)}</p>` : ''}
+      <a class="btn preview-open" href="${item.href}">${isPage ? 'Open this page' : sec.kind === 'question' ? 'Open this answer' : 'Open this section'}${icon('arrowRight')}</a>
+      ${others.length ? html`<div class="preview-more">
+        <h3>${isPage ? 'On this page' : 'Also on this page'}</h3>
+        <ul>${others.slice(0, 6).map((x) => html`<li><a href="${url}#${x.id}">${icon(x.kind === 'question' ? 'message' : 'arrowRight')}<span>${mark(x.title, ts)}</span>${hasMatch(x) ? html`<span class="has-match">Mentions your search</span>` : ''}</a></li>`)}</ul>
+        ${more > 0 ? html`<a class="preview-all" href="${url}">and ${more} more on ${page.title}</a>` : ''}
+      </div>` : ''}
+    </div>`);
+    preview.scrollTop = 0;
+  }
 
   function showPopular() {
-    const items = POPULAR.map((url) => PLACES.find((p) => p.url === url)).map((p) => ({ href: root + p.url, title: p.label, sub: '', icon: p.icon }));
-    box.innerHTML = String(html`${renderGroups([{ label: 'Popular', total: items.length, items: items }], [])}${KEYS}`);
+    const items = POPULAR.map((url) => placeItem(PLACES.find((p) => p.url === url)));
+    shownTerms = [];
+    previewed = false;
+    box.innerHTML = String(renderGroups([{ label: 'Popular', icon: 'zap', total: items.length, items: items }], []));
     status.textContent = '';
     input.setAttribute('aria-expanded', 'true');
     active = -1;
@@ -238,29 +329,34 @@
 
   async function update() {
     const typed = input.value.trim();
-    if (terms(typed).length === 0 || typed.length < 2) return showPopular();
     if (!index) {
-      box.innerHTML = String(html`<p class="search-status">${icon('refresh')}<span>Getting search ready</span></p>`);
+      if (typed.length >= 2) box.innerHTML = String(html`<p class="search-status">${icon('refresh')}<span>Getting search ready</span></p>`);
       try {
         await load();
       } catch (error) {
         box.innerHTML = String(html`<p class="search-status is-problem">${icon('alertCircle')}<span>Search couldn't load just now. Check your connection and try again, or use the menu to find your way.</span></p>`);
+        preview.innerHTML = '';
         status.textContent = 'Search could not load';
         return;
       }
       if (input.value.trim() !== typed) return;
     }
+    if (terms(typed).length === 0 || typed.length < 2) return showPopular();
     const keep = active >= 0 && links()[active] ? links()[active].getAttribute('href') : '';
     const result = search(typed);
+    shownTerms = result.ts;
+    previewed = false;
     const empty = !result.groups.length
       ? html`<p class="search-empty"><strong>No matches for “${typed}”</strong>Try another word, such as fees, NDIS or home visits, or <a class="text-link" href="${root}contact.html">ask us directly</a>.</p>`
       : '';
-    box.innerHTML = String(html`${renderGroups(result.groups, result.ts)}${empty}${result.groups.length ? KEYS : ''}`);
+    box.innerHTML = String(html`${renderGroups(result.groups, result.ts)}${empty}`);
+    dialog.classList.toggle('is-empty', !result.groups.length);
     const count = links().length;
     status.textContent = count ? count + (count === 1 ? ' result' : ' results') + '. Use the arrow keys to move through them.' : 'No matches';
     input.setAttribute('aria-expanded', String(!!count));
     active = keep ? links().findIndex((a) => a.getAttribute('href') === keep) : -1;
     highlight();
+    box.scrollTop = active >= 0 ? box.scrollTop : 0;
   }
 
   function openSearch() {
@@ -277,7 +373,6 @@
     input.focus();
     input.select();
     update();
-    load().catch(() => {});
     if (button) button.setAttribute('aria-expanded', 'true');
   }
 
@@ -348,7 +443,14 @@
     if (i >= 0 && i !== active) {
       active = i;
       links().forEach((x, j) => x.classList.toggle('is-active', j === active));
+      showPreview(shown[active]);
     }
+  });
+  preview.addEventListener('click', (event) => {
+    const a = event.target.closest('a');
+    if (!a || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    event.preventDefault();
+    go(a);
   });
   box.addEventListener('click', (event) => {
     const a = event.target.closest('a');

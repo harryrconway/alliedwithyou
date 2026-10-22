@@ -40,6 +40,7 @@
           <a class="btn" href="${root}referrals.html" ${here('referrals')}>Make a referral</a>
           <a class="btn btn-secondary nav-only" href="${root}contact.html">Make an enquiry</a>
         </div>
+        <div class="nav-mark nav-only" aria-hidden="true"><span><img src="${root}images/logomark.svg" alt="" width="120" height="120"></span></div>
         <ul class="nav-info nav-only" aria-label="About the practice">
           <li>${icon('mail')}<a href="mailto:${biz.email}">${biz.email}</a></li>
           <li>${icon('pin')}<span>Home visits across the ${biz.areas[0]} and ${biz.areas[1]}</span></li>
