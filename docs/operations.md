@@ -24,7 +24,9 @@ To go live again:
 * In `_config.yml`, delete the group of real pages under `exclude`. Keep the last group, which keeps notes, database changes and tests off the website.
 * Delete `soon.html` and `missing.html`.
 * Keep or delete `construction.html`, `css/construction.css` and `js/site/construction.js`. They do nothing once the two files above are gone.
+* In `tests/`, run `npm run build` and then `npm test`, so the search index, sitemap and structured data match the pages.
 * Push to `main`, then check https://alliedwithyou.com.au shows the real home page within a few minutes.
+* Then, once only: add the site to Google Search Console and Bing Webmaster Tools, verified through the domain's records in cPanel, and submit https://alliedwithyou.com.au/sitemap.xml to each.
 
 ## Domain records
 

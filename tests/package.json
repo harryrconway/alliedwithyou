@@ -4,6 +4,9 @@
   "description": "Automated checks for the Allied With You website and dashboard",
   "scripts": {
     "test": "node run.js",
+    "search": "node search.js",
+    "seo": "node seo.js",
+    "build": "node search.js && node seo.js",
     "setup": "npx playwright install chromium firefox webkit"
   },
   "devDependencies": {
