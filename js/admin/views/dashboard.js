@@ -50,7 +50,7 @@
       const myOpen = tasksOn ? rules.openTasks(db, user.id).sort((a, b) => a.dueDate.localeCompare(b.dueDate)) : [];
       const myOverdue = myOpen.filter((t) => t.dueDate < today);
       const myWeek = calendarOn ? rules.blocksBetween(db, today, weekEnd, user.id) : [];
-      const pending = approvals ? rules.pendingStaff(db).filter((s) => s.emailConfirmedAt) : [];
+      const pending = approvals ? rules.approvableStaff(db, AWY.auth.isReserved) : [];
       const newFeedback = review ? db.feedback.filter((f) => f.status === 'submitted') : [];
       const myFeedback = db.feedback.filter((f) => f.createdBy === user.id);
       const checksAll = access.can('manageChecks');

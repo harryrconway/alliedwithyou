@@ -79,7 +79,7 @@
     const user = access.user();
     const counts = {
       tasks: { n: rules.overdueTasks(db, today, user.id).length, alert: true },
-      staff: { n: access.can('manageStaff') ? rules.pendingStaff(db).length : 0 },
+      staff: { n: access.can('manageStaff') ? rules.approvableStaff(db, AWY.auth.isReserved).length : 0 },
       feedback: { n: access.can('reviewFeedback') ? db.feedback.filter((f) => f.status === 'submitted').length : 0 },
       privacy: { n: access.can('managePrivacy') ? db.privacyRequests.filter((p) => p.status === 'received' || p.status === 'in_progress').length : 0 }
     };
