@@ -815,3 +815,90 @@ fieldset > legend {
 .toast-action:hover {
   background: rgb(255 255 255 / 0.12);
 }
+
+/* Website forms: the note about keeping what's typed, and a button that reads as a link */
+
+.form-draft:empty {
+  display: none;
+}
+
+.form-draft {
+  margin: 0 0 var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+}
+
+.link-btn {
+  display: inline-block;
+  min-height: 1.5rem;
+  padding: 0.15rem 0;
+  border: 0;
+  background: none;
+  color: var(--color-link);
+  font: inherit;
+  font-weight: var(--weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+}
+
+/* Email suggestions under an email field */
+
+.field.has-hints {
+  position: relative;
+}
+
+.email-hints {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  top: calc(100% + 0.3rem);
+  margin: 0;
+  padding: var(--space-1);
+  list-style: none;
+  max-height: 16.5rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-white);
+  box-shadow: var(--shadow);
+}
+
+.email-hints [role="option"] {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.email-hints [role="option"] span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.email-hints [role="option"] strong {
+  flex: none;
+  color: var(--color-deep);
+  font-weight: var(--weight-bold);
+}
+
+.email-hints [role="option"]:hover,
+.email-hints [role="option"].is-active {
+  background: var(--color-green-light);
+}
+
+.email-hints-note {
+  padding: 0.35rem 0.75rem 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+}

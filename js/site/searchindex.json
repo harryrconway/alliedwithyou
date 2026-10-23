@@ -615,7 +615,7 @@
      "id": "paperworkKeptSimple",
      "title": "Paperwork, kept simple",
      "kind": "section",
-     "text": "Before the first appointment we send a short service agreement and consent form. They explain what we'll do, what it costs and how your information is handled. Questions are always welcome."
+     "text": "Before the first appointment we send a short service agreement and consent form. They explain what we'll do, what it costs and how your information is handled. Questions are always welcome. See your first appointment for what to have ready."
     },
     {
      "id": "assessment",
@@ -792,7 +792,7 @@
      "id": "",
      "title": "Fees and cancellations",
      "kind": "page",
-     "text": "What our services cost, how billing works and what happens if you need to cancel. We'll always confirm costs with you before we start. Fees, billing arrangements and cancellation terms for Allied With You occupational therapy services."
+     "text": "What our services cost, how billing works and what happens if you need to cancel. We'll always confirm costs with you before we start. Not sure how you'd pay? Which funding fits me Fees, billing arrangements and cancellation terms for Allied With You occupational therapy services."
     },
     {
      "id": "privateFees",
@@ -841,6 +841,197 @@
      "title": "Questions about fees?",
      "kind": "section",
      "text": "If you're unsure how your sessions will be funded, get in touch and we'll talk it through before anything is booked."
+    }
+   ]
+  },
+  {
+   "url": "funding.html",
+   "title": "Which funding fits me?",
+   "heading": "Which funding fits me?",
+   "sections": [
+    {
+     "id": "",
+     "title": "Which funding fits me?",
+     "kind": "page",
+     "text": "Answer a few quick questions and we'll show the ways you could pay for occupational therapy with us. Nothing you choose here is sent anywhere. Answer a few quick questions to see how you could pay for occupational therapy: NDIS, Support at Home, a Medicare GP plan, private health insurance or privately."
+    },
+    {
+     "id": "fitsTitle",
+     "title": "What could work for you",
+     "kind": "section",
+     "text": "Answer the questions and the options that fit will show here."
+    },
+    {
+     "id": "allWays",
+     "title": "All the ways to pay",
+     "kind": "section",
+     "text": "Not sure where you fit? Get in touch and we'll talk it through before anything is booked. NDIS participants Self managed and plan managed plans Support at Home Through My Aged Care Medicare GP plan A rebate when your GP refers you Private health insurance Claim from your extras cover Paying privately Our fees, and what's included"
+    }
+   ]
+  },
+  {
+   "url": "firstvisit.html",
+   "title": "Your first appointment",
+   "heading": "Your first appointment",
+   "sections": [
+    {
+     "id": "",
+     "title": "Your first appointment",
+     "kind": "page",
+     "text": "What happens at a first appointment, who can be there, and what to have ready, so there are no surprises. What to expect at your first occupational therapy appointment with Allied With You, and a checklist of what to have ready."
+    },
+    {
+     "id": "beforeMeet",
+     "title": "Before we meet",
+     "kind": "section",
+     "text": "Before the first appointment we send a short service agreement and consent form. They explain what we'll do, what it costs and how your information is handled. Questions are always welcome."
+    },
+    {
+     "id": "onTheDay",
+     "title": "On the day",
+     "kind": "section",
+     "text": "At the first appointment we get to know you and how things are going day to day. We look at what's working, what isn't, and what you'd like to be different. At home, we may ask to see how you manage the everyday things you'd like help with, in the places you actually do them, like the bathroom, the kitchen or the front steps. Assessments take longer than therapy sessions and are sometimes spread over two visits. A private initial assessment is up to two hours, including a short summary of recommendations. We'll let you know what to expect before the appointment."
+    },
+    {
+     "id": "whoCanBeThere",
+     "title": "Who can be there",
+     "kind": "section",
+     "text": "A family member, carer or support worker is welcome, and it often helps. Let us know who you'd like involved and we'll make sure we have your consent to talk with them."
+    },
+    {
+     "id": "telehealthAppointments",
+     "title": "If your appointment is by telehealth",
+     "kind": "section",
+     "text": "Use a phone, tablet or computer with a camera and microphone, and a steady internet connection Find somewhere quiet, with good light on your face Have the space you'd like to talk about nearby, if you can, so you can show us Keep your phone handy, in case the video drops out"
+    },
+    {
+     "id": "ifYouNeedToCancel",
+     "title": "If you need to cancel",
+     "kind": "section",
+     "text": "Please let us know as early as you can, so we can offer the time to someone else. For private clients, cancellations with less than 24 hours notice may be charged. For NDIS participants, short notice cancellations are charged as set out in your service agreement. See fees and cancellations ."
+    },
+    {
+     "id": "checklistTitle",
+     "title": "What to have ready",
+     "kind": "section",
+     "text": "Tick things off as you go. Only what applies to you. Your signed service agreement and consent form, if you haven't sent them back yet Using the NDIS: your plan, and your plan manager's or support coordinator's details Using Support at Home: your provider's details Using a Medicare GP plan: the referral from your GP Claiming from a health fund: your membership card, to claim afterwards Any equipment you use now, so we can see how it's working for you Letters or reports you'd like us to see, on paper or on your phone The things you'd most like help with, and any questions you have"
+    }
+   ]
+  },
+  {
+   "url": "referrers.html",
+   "title": "Information for referrers",
+   "heading": "Information for referrers",
+   "sections": [
+    {
+     "id": "",
+     "title": "Information for referrers",
+     "kind": "page",
+     "text": "For GPs, support coordinators, plan managers, aged care providers, hospitals and other health professionals. Everything you need to refer someone to us, on one page you can print. For GPs, support coordinators, plan managers, aged care providers and health professionals: how to refer to Allied With You, what to include and what happens next."
+    },
+    {
+     "id": "howToRefer",
+     "title": "How to refer",
+     "kind": "section",
+     "text": "Use the online referral form , or email admin@alliedwithyou.com.au . Please make sure the person knows about the referral and is happy for us to contact them. For NDIS participants, let us know how their plan is managed."
+    },
+    {
+     "id": "whatToInclude",
+     "title": "What to include",
+     "kind": "section",
+     "text": "Only what we need to get in touch and understand the request: contact details, a sentence or two about why you're referring, and how therapy will be funded. Please leave out detailed medical history. If you have reports, plans or letters to share, we'll send you a secure way to provide them once we've made contact. Please don't attach them to an ordinary email."
+    },
+    {
+     "id": "whatHappensNext",
+     "title": "What happens next",
+     "kind": "section",
+     "text": "We'll contact the person, or their representative, to talk about their needs, how sessions will be funded and when we can start. We'll let you know once we've made contact. If there's a wait to start, we'll say so. If we can't help, for example because of where they live or how their plan is managed, we'll tell you and suggest other options."
+    },
+    {
+     "id": "fundingWeWorkWith",
+     "title": "Funding we work with",
+     "kind": "section",
+     "text": "NDIS plans that are self managed or plan managed Support at Home, invoiced to the provider at the rate agreed with them Medicare GP plans: a GP referral under a chronic condition management plan is needed for the rebate Private clients, including those claiming from a health fund"
+    },
+    {
+     "id": "reportsForReferrers",
+     "title": "Reports",
+     "kind": "section",
+     "text": "If a funding body, doctor or other professional needs information from us, we write it up clearly and check it with the person before it's sent. With their consent, we can send you a copy."
+    },
+    {
+     "id": "summaryTitle",
+     "title": "Practice summary",
+     "kind": "section",
+     "text": "Practice Allied With You, occupational therapy Occupational therapists Jake and Chelsie, principal occupational therapists Where Home and community visits across the Northern Rivers (NSW) and the Gold Coast (Qld). Telehealth anywhere in Australia. Services Functional capacity assessments, daily living and independence, home safety and access, assistive technology and equipment, goal focused therapy, reports and recommendations Funding NDIS (self and plan managed), Support at Home, Medicare GP plans, private and health fund Referrals alliedwithyou.com.au/referrals.html or admin@alliedwithyou.com.au"
+    }
+   ]
+  },
+  {
+   "url": "easyread.html",
+   "title": "Easy Read",
+   "heading": "Easy Read",
+   "sections": [
+    {
+     "id": "",
+     "title": "Easy Read",
+     "kind": "page",
+     "text": "This page tells you about Allied With You in an easy way. An Easy Read guide to Allied With You: who we are, what we help with, where we see you, how to pay and how to get in touch."
+    },
+    {
+     "id": "erWhoWeAre",
+     "title": "Who we are",
+     "kind": "section",
+     "text": "We are Allied With You . We are occupational therapists . We help people do everyday things ."
+    },
+    {
+     "id": "erWhatWeHelp",
+     "title": "What we help with",
+     "kind": "section",
+     "text": "Getting showered and dressed. Moving around your home safely. Cooking, shopping and getting out in your community. Finding equipment that makes things easier, like a shower chair. Writing reports for the NDIS or aged care."
+    },
+    {
+     "id": "erWhereWeSee",
+     "title": "Where we see you",
+     "kind": "section",
+     "text": "At your home . Out in your community . On a video call . This is called telehealth. We visit people in the Northern Rivers and on the Gold Coast . We can do video calls with people anywhere in Australia ."
+    },
+    {
+     "id": "erWhoYouSee",
+     "title": "Who you will see",
+     "kind": "section",
+     "text": "You will see Jake or Chelsie . Jake and Chelsie own Allied With You. You can tell us who you would like to see."
+    },
+    {
+     "id": "erPaying",
+     "title": "Paying",
+     "kind": "section",
+     "text": "You can pay yourself . You can use your NDIS plan if it is self managed or plan managed. You can use Support at Home from My Aged Care. You might get some money back from Medicare or your health fund . We will tell you the cost before we start."
+    },
+    {
+     "id": "erHowToStart",
+     "title": "How to start",
+     "kind": "section",
+     "text": "Send us an email: admin@alliedwithyou.com.au Or fill in the form on our website . Someone can contact us for you , like your family, your doctor or your support coordinator. You do not need a letter from your doctor if you pay yourself."
+    },
+    {
+     "id": "erHelpToTalk",
+     "title": "Help to talk with us",
+     "kind": "section",
+     "text": "We can get an interpreter for you. Tell us your language. You can bring a support person . We can give you information in big print ."
+    }
+   ]
+  },
+  {
+   "url": "glossary.html",
+   "title": "Words we use",
+   "heading": "Words we use",
+   "sections": [
+    {
+     "id": "",
+     "title": "Words we use",
+     "kind": "page",
+     "text": "Plain English explanations of the words that come up in occupational therapy, the NDIS, aged care and Medicare. Across the website, words with a dotted line under them open a short explanation too. Occupational therapy Help to do the everyday things you need and want to do, like looking after yourself, getting around, running a household, working and taking part in your community. Assistive technology Equipment and devices that make everyday tasks easier or safer, such as a shower chair, walking frame or wheelchair. Often shortened to AT. Home modifications Changes to a home that make it safer or easier to use, like grab rails, ramps, a step free shower or wider doorways. Functional capacity assessment A thorough look at how you manage personal care, household tasks, getting around and taking part in your community, written up with clear recommendations. Often used to support NDIS funding. Telehealth An appointment by video call, so we don't need to be in the same place. Service agreement A short document that sets out what we'll provide, the rates, how invoicing works and our cancellation terms. Consent Your permission. We ask for it before collecting or sharing your information, for example with your GP or plan manager. Referral A request from someone, like your GP or support coordinator, for us to see you. You don't need one to see us privately. NDIS The National Disability Insurance Scheme, which funds supports for eligible people with a permanent and significant disability. NDIS plan The document that sets out a participant's goals and the funding they have for supports. Capacity Building The part of an NDIS plan that funds supports to build skills and independence. Occupational therapy usually comes from Improved Daily Living within it. Improved Daily Living The Capacity Building category that usually covers occupational therapy assessments, therapy sessions, report writing and related travel. Capital budget The part of an NDIS plan that funds assistive technology and home modifications. Plan managed A plan manager pays providers from your NDIS plan for you. We send our invoices to them. Self managed You manage your own NDIS funds, pay providers and claim through the my NDIS portal or app. Support coordinator Someone funded through an NDIS plan to help a participant understand and use their plan, and connect with providers. Plan reassessment When the NDIS reviews a plan and decides on new funding. Reports from therapists can help show what support is needed. My Aged Care The Australian Government's starting point for aged care, where you apply for an assessment and look for providers. Aged care assessment A free assessment, usually in your home, to work out what aged care help you're eligible for. Support at Home The government program that funds most aged care help at home. It began on 1 November 2025. Assistive Technology and Home Modifications scheme Funds equipment and home modifications for people on Support at Home, separately from their quarterly budget. Home modifications must be prescribed by an occupational therapist. Restorative Care Pathway A short burst of intensive allied health or nursing through Support at Home, usually up to 16 weeks, to help you regain function after a change in your health. Chronic condition management plan A plan from your GP that lets you claim a Medicare rebate towards up to five allied health sessions a year, shared across all the allied health professionals you see. Extras cover Private health insurance that can pay part of the cost of services like occupational therapy, depending on your policy. Ahpra The Australian Health Practitioner Regulation Agency. It keeps the public register of registered health practitioners, including occupational therapists. Plain English explanations of the words that come up in occupational therapy, the NDIS, aged care and Medicare, from Capacity Building to Support at Home."
     }
    ]
   },
@@ -985,7 +1176,7 @@
      "id": "",
      "title": "Make a referral",
      "kind": "page",
-     "text": "For GPs, support coordinators, allied health professionals and anyone referring on behalf of someone else. Referral information and an online referral form for GPs, support coordinators, allied health professionals and families."
+     "text": "For GPs, support coordinators, allied health professionals and anyone referring on behalf of someone else. Information for referrers, and a practice summary to print Referral information and an online referral form for GPs, support coordinators, allied health professionals and families."
     },
     {
      "id": "happensNext",
@@ -1022,7 +1213,7 @@
      "id": "",
      "title": "Contact us",
      "kind": "page",
-     "text": "Questions about therapy, fees or whether we can help? Get in touch and we'll get back to you. Email admin@alliedwithyou.com.au Where we work In person across the Northern Rivers in New South Wales and the Gold Coast in Queensland, and by telehealth anywhere in Australia. Contact Allied With You about occupational therapy in the Northern Rivers and Gold Coast, or by telehealth anywhere in Australia."
+     "text": "Questions about therapy, fees or whether we can help? Get in touch and we'll get back to you. Email admin@alliedwithyou.com.au Where we work In person across the Northern Rivers in New South Wales and the Gold Coast in Queensland, and by telehealth anywhere in Australia. Need an interpreter? Tell us your language in your message and we'll arrange an interpreter through the Translating and Interpreting Service (TIS National) for our conversations. Deaf, or have a hearing or speech impairment? Email or the form on this page work well. If you'd like us to call you through the National Relay Service , say so in your message. Prefer things simple? Read our Easy Read page , or ask for information in large print. Contact Allied With You about occupational therapy in the Northern Rivers and Gold Coast, or by telehealth anywhere in Australia."
     },
     {
      "id": "sendUsMessage",
@@ -1083,7 +1274,7 @@
      "id": "thisWebsite",
      "title": "This website",
      "kind": "section",
-     "text": "This website doesn't use analytics or tracking cookies. When you contact us through the website, your message is sent to our practice email and isn't stored on the website."
+     "text": "This website doesn't use analytics or tracking cookies. When you contact us through the website, your message is sent to our practice email and isn't stored on the website. If you start filling in a form, what you type is kept in that browser tab until you send it or close the tab, so it isn't lost if the page reloads. It stays on your device and isn't sent anywhere until you choose to send it. If you change the text size or contrast, that choice is remembered in your browser for next time."
     },
     {
      "id": "questionsComplaints",
@@ -1151,7 +1342,7 @@
      "id": "thisWebsite",
      "title": "This website",
      "kind": "section",
-     "text": "We're aiming for this website to meet the Web Content Accessibility Guidelines 2.2 at level AA. That includes: Working with a keyboard alone, with a clear outline showing where you are on the page Text that can be enlarged without breaking the layout Colours with strong contrast, and information that never relies on colour alone Plain language, clear headings and descriptive links Forms with clear labels and helpful error messages A search on every page that works with a keyboard and with screen readers If you find something that doesn't work well for you, please let us know and we'll fix it."
+     "text": "We're aiming for this website to meet the Web Content Accessibility Guidelines 2.2 at level AA. That includes: Working with a keyboard alone, with a clear outline showing where you are on the page Text that can be enlarged without breaking the layout Colours with strong contrast, and information that never relies on colour alone Plain language, clear headings and descriptive links Forms with clear labels and helpful error messages A search on every page that works with a keyboard and with screen readers A text size and contrast button at the top of every page, which your browser remembers An Easy Read page, and a page of words we use , explained in plain English If you find something that doesn't work well for you, please let us know and we'll fix it."
     },
     {
      "id": "informationAnotherFormat",
@@ -1163,7 +1354,7 @@
      "id": "interpretersCommunicationSupport",
      "title": "Interpreters and communication support",
      "kind": "section",
-     "text": "If you'd like an interpreter, we can arrange one through the Translating and Interpreting Service. If you're deaf, or have a hearing or speech impairment, you can contact us through the National Relay Service."
+     "text": "If you'd like an interpreter, we can arrange one through the Translating and Interpreting Service. If you're deaf, or have a hearing or speech impairment, you can reach us by email or through the form on our website, and we can call you through the National Relay Service if you'd like. Just say so in your message."
     },
     {
      "id": "appointments",

@@ -11,7 +11,7 @@ const path = require('path');
 const PAGES = [
   'index.html', 'about.html', 'team.html', 'services.html', 'services/assessments.html', 'services/independence.html', 'services/home.html',
   'services/technology.html', 'services/therapy.html', 'services/reports.html', 'ndis.html', 'myagedcare.html', 'process.html',
-  'northernrivers.html', 'goldcoast.html', 'fees.html', 'faq.html', 'referrals.html', 'contact.html', 'privacy.html', 'complaints.html', 'accessibility.html'
+  'northernrivers.html', 'goldcoast.html', 'fees.html', 'funding.html', 'firstvisit.html', 'referrers.html', 'easyread.html', 'glossary.html', 'faq.html', 'referrals.html', 'contact.html', 'privacy.html', 'complaints.html', 'accessibility.html'
 ];
 const OUT = 'js/site/searchindex.json';
 
@@ -58,6 +58,19 @@ function pageEntry(root, rel, failures) {
   return page;
 }
 
+/* The glossary page's words, for the explanations that open where they appear (js/site/terms.js) */
+const GLOSSARY_OUT = 'js/site/glossary.json';
+function glossary(root) {
+  const src = fs.readFileSync(path.join(root, 'glossary.html'), 'utf8');
+  const terms = Array.from(src.matchAll(/<div id="([^"]+)"(?: data-match="([^"]*)")?>\s*<dt>([\s\S]*?)<\/dt>\s*<dd>([\s\S]*?)<\/dd>/g)).map((m) => ({
+    id: m[1],
+    term: tidy(m[3]),
+    def: tidy(m[4]),
+    match: m[2] ? m[2].split('|').map((x) => x.trim()).filter(Boolean) : []
+  }));
+  return JSON.stringify(terms, null, 1) + '\n';
+}
+
 function build(root) {
   const failures = [];
   const pages = PAGES.map((rel) => pageEntry(root, rel, failures));
@@ -70,6 +83,8 @@ module.exports = async function search(ctx) {
   const file = path.join(ctx.root, OUT);
   if (!fs.existsSync(file)) failures.push(OUT + ' is missing. Run npm run search in tests/');
   else if (fs.readFileSync(file, 'utf8') !== json) failures.push(OUT + ' is out of date with the pages. Run npm run search in tests/');
+  const gfile = path.join(ctx.root, GLOSSARY_OUT);
+  if (!fs.existsSync(gfile) || fs.readFileSync(gfile, 'utf8') !== glossary(ctx.root)) failures.push(GLOSSARY_OUT + ' is out of date with glossary.html. Run npm run search in tests/');
   const missing = fs.readdirSync(path.join(ctx.root, 'services')).map((f) => 'services/' + f).filter((f) => !PAGES.includes(f));
   missing.forEach((f) => failures.push(f + ' is not in the search index. Add it to PAGES in tests/search.js'));
 
@@ -145,6 +160,7 @@ if (require.main === module) {
   const { json, failures } = build(root);
   failures.forEach((f) => console.log('Problem: ' + f));
   fs.writeFileSync(path.join(root, OUT), json);
+  fs.writeFileSync(path.join(root, GLOSSARY_OUT), glossary(root));
   const data = JSON.parse(json);
   console.log('Wrote ' + OUT + ': ' + data.pages.length + ' pages, ' + data.pages.reduce((n, p) => n + p.sections.length, 0) + ' sections, ' + Math.round(json.length / 1024) + ' KB');
   process.exit(failures.length ? 1 : 0);

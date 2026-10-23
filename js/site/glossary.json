@@ -1,0 +1,191 @@
+[
+ {
+  "id": "occupationalTherapy",
+  "term": "Occupational therapy",
+  "def": "Help to do the everyday things you need and want to do, like looking after yourself, getting around, running a household, working and taking part in your community.",
+  "match": []
+ },
+ {
+  "id": "assistiveTechnology",
+  "term": "Assistive technology",
+  "def": "Equipment and devices that make everyday tasks easier or safer, such as a shower chair, walking frame or wheelchair. Often shortened to AT.",
+  "match": [
+   "assistive technology"
+  ]
+ },
+ {
+  "id": "homeModifications",
+  "term": "Home modifications",
+  "def": "Changes to a home that make it safer or easier to use, like grab rails, ramps, a step free shower or wider doorways.",
+  "match": [
+   "home modification",
+   "home modifications"
+  ]
+ },
+ {
+  "id": "functionalCapacityAssessment",
+  "term": "Functional capacity assessment",
+  "def": "A thorough look at how you manage personal care, household tasks, getting around and taking part in your community, written up with clear recommendations. Often used to support NDIS funding.",
+  "match": [
+   "functional capacity assessment",
+   "functional capacity assessments"
+  ]
+ },
+ {
+  "id": "telehealth",
+  "term": "Telehealth",
+  "def": "An appointment by video call, so we don't need to be in the same place.",
+  "match": []
+ },
+ {
+  "id": "serviceAgreement",
+  "term": "Service agreement",
+  "def": "A short document that sets out what we'll provide, the rates, how invoicing works and our cancellation terms.",
+  "match": [
+   "service agreement"
+  ]
+ },
+ {
+  "id": "consent",
+  "term": "Consent",
+  "def": "Your permission. We ask for it before collecting or sharing your information, for example with your GP or plan manager.",
+  "match": []
+ },
+ {
+  "id": "referral",
+  "term": "Referral",
+  "def": "A request from someone, like your GP or support coordinator, for us to see you. You don't need one to see us privately.",
+  "match": []
+ },
+ {
+  "id": "ndis",
+  "term": "NDIS",
+  "def": "The National Disability Insurance Scheme, which funds supports for eligible people with a permanent and significant disability.",
+  "match": []
+ },
+ {
+  "id": "ndisPlan",
+  "term": "NDIS plan",
+  "def": "The document that sets out a participant's goals and the funding they have for supports.",
+  "match": []
+ },
+ {
+  "id": "capacityBuilding",
+  "term": "Capacity Building",
+  "def": "The part of an NDIS plan that funds supports to build skills and independence. Occupational therapy usually comes from Improved Daily Living within it.",
+  "match": [
+   "Capacity Building"
+  ]
+ },
+ {
+  "id": "improvedDailyLiving",
+  "term": "Improved Daily Living",
+  "def": "The Capacity Building category that usually covers occupational therapy assessments, therapy sessions, report writing and related travel.",
+  "match": [
+   "Improved Daily Living"
+  ]
+ },
+ {
+  "id": "capitalBudget",
+  "term": "Capital budget",
+  "def": "The part of an NDIS plan that funds assistive technology and home modifications.",
+  "match": [
+   "Capital budget"
+  ]
+ },
+ {
+  "id": "planManaged",
+  "term": "Plan managed",
+  "def": "A plan manager pays providers from your NDIS plan for you. We send our invoices to them.",
+  "match": [
+   "plan managed"
+  ]
+ },
+ {
+  "id": "selfManaged",
+  "term": "Self managed",
+  "def": "You manage your own NDIS funds, pay providers and claim through the my NDIS portal or app.",
+  "match": [
+   "self managed",
+   "self manage"
+  ]
+ },
+ {
+  "id": "supportCoordinator",
+  "term": "Support coordinator",
+  "def": "Someone funded through an NDIS plan to help a participant understand and use their plan, and connect with providers.",
+  "match": [
+   "support coordinator"
+  ]
+ },
+ {
+  "id": "planReassessment",
+  "term": "Plan reassessment",
+  "def": "When the NDIS reviews a plan and decides on new funding. Reports from therapists can help show what support is needed.",
+  "match": [
+   "plan reassessment"
+  ]
+ },
+ {
+  "id": "myAgedCare",
+  "term": "My Aged Care",
+  "def": "The Australian Government's starting point for aged care, where you apply for an assessment and look for providers.",
+  "match": []
+ },
+ {
+  "id": "agedCareAssessment",
+  "term": "Aged care assessment",
+  "def": "A free assessment, usually in your home, to work out what aged care help you're eligible for.",
+  "match": [
+   "aged care assessment"
+  ]
+ },
+ {
+  "id": "supportAtHome",
+  "term": "Support at Home",
+  "def": "The government program that funds most aged care help at home. It began on 1 November 2025.",
+  "match": [
+   "Support at Home"
+  ]
+ },
+ {
+  "id": "assistiveTechnologyHomeModificationsScheme",
+  "term": "Assistive Technology and Home Modifications scheme",
+  "def": "Funds equipment and home modifications for people on Support at Home, separately from their quarterly budget. Home modifications must be prescribed by an occupational therapist.",
+  "match": [
+   "Assistive Technology and Home Modifications scheme"
+  ]
+ },
+ {
+  "id": "restorativeCarePathway",
+  "term": "Restorative Care Pathway",
+  "def": "A short burst of intensive allied health or nursing through Support at Home, usually up to 16 weeks, to help you regain function after a change in your health.",
+  "match": [
+   "Restorative Care Pathway"
+  ]
+ },
+ {
+  "id": "chronicConditionManagementPlan",
+  "term": "Chronic condition management plan",
+  "def": "A plan from your GP that lets you claim a Medicare rebate towards up to five allied health sessions a year, shared across all the allied health professionals you see.",
+  "match": [
+   "chronic condition management plan"
+  ]
+ },
+ {
+  "id": "extrasCover",
+  "term": "Extras cover",
+  "def": "Private health insurance that can pay part of the cost of services like occupational therapy, depending on your policy.",
+  "match": [
+   "extras cover"
+  ]
+ },
+ {
+  "id": "ahpra",
+  "term": "Ahpra",
+  "def": "The Australian Health Practitioner Regulation Agency. It keeps the public register of registered health practitioners, including occupational therapists.",
+  "match": [
+   "Ahpra"
+  ]
+ }
+]
