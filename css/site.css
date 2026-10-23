@@ -1407,9 +1407,15 @@ html.is-held .site-header {
   padding-block: var(--space-8) var(--space-7);
 }
 
-@media (min-width: 900px) {
+@media (min-width: 640px) {
   .footer-main {
-    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1000px) {
+  .footer-main {
+    grid-template-columns: 1.4fr repeat(4, minmax(0, 1fr));
   }
 }
 
@@ -1593,6 +1599,7 @@ html.is-held .site-header {
 
 .site-search::backdrop {
   background: rgb(18 40 42 / 0.5);
+  -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
 }
 
@@ -2222,4 +2229,96 @@ main .is-found {
   .site-header .wrap {
     gap: var(--space-2);
   }
+}
+
+/* About page: the occupational therapists */
+
+.team {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: var(--space-4);
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.team-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--color-white);
+  box-shadow: var(--shadow-sm);
+}
+
+.team-mark {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  background: var(--color-deep);
+  color: var(--color-white);
+  font-size: 1.75rem;
+  font-weight: var(--weight-bold);
+  box-shadow: 0 0 0 0.4rem var(--color-green-light);
+}
+
+.team-mark.is-sage {
+  background: #5f7d58;
+}
+
+.team-card h3 {
+  margin: 0;
+  color: var(--color-deep);
+  font-size: var(--text-xl);
+}
+
+.team-role {
+  margin: 0.15rem 0 0;
+  color: var(--color-text-muted);
+  font-weight: var(--weight-semibold);
+}
+
+.team-note {
+  max-width: var(--width-text);
+  margin: var(--space-5) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+/* Area pages: the place above the heading, and the link to the other area */
+
+.area-place {
+  display: inline-flex;
+  margin-bottom: var(--space-4);
+}
+
+.area-other {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: var(--border);
+  font-size: var(--text-sm);
+}
+
+/* When search has put a typo right, it says what it looked for instead */
+.site-search .search-fixed {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-2) var(--space-3) 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-blue-pale);
+  color: var(--color-blue-dark);
+  font-size: var(--text-xs);
+}
+
+.site-search .search-fixed .icon {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
 }

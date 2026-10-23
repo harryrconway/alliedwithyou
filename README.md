@@ -91,6 +91,6 @@ sitemap.xml, robots.txt                  for search engines (rebuilt by npm run 
 
 ## Still to come
 
-* The therapist's details on the About page.
+* Jake's and Chelsie's qualifications, photos and Ahpra registration numbers on the About page.
 * Before any client information goes in: backups on a paid Supabase plan with a tested restore, multi factor sign in required for everyone, private document storage, and a review against the Privacy Act 1988, the Health Records and Information Privacy Act 2002 (NSW), Queensland requirements and NDIS obligations.
 * The remaining stages are listed in `docs/audit.md` and tracked in `docs/register.md`.

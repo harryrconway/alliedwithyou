@@ -21,6 +21,8 @@ exclude:
   - privacy.html
   - complaints.html
   - accessibility.html
+  - northernrivers.html
+  - goldcoast.html
   - 404.html
   - js/site/searchindex.json
   - sitemap.xml

@@ -80,6 +80,14 @@
           </ul>
         </div>
         <div>
+          <h2>Where we work</h2>
+          <ul>
+            <li><a href="${root}northernrivers.html">Northern Rivers</a></li>
+            <li><a href="${root}goldcoast.html">Gold Coast</a></li>
+            <li><a href="${root}process.html#byTelehealth">Telehealth across Australia</a></li>
+          </ul>
+        </div>
+        <div>
           <h2>For referrers</h2>
           <ul>
             <li><a href="${root}referrals.html">Make a referral</a></li>
@@ -143,7 +151,6 @@
     const toggle = head.querySelector('.nav-toggle');
     const label = toggle.querySelector('.nav-toggle-label');
     const nav = head.querySelector('.nav');
-    const wide = window.matchMedia('(width > 1140px)');
     const behind = () => Array.from(document.body.children).filter((el) => el !== head && el.tagName !== 'SCRIPT' && el.tagName !== 'DIALOG');
     let open = false;
 
@@ -179,8 +186,8 @@
       }
     });
     /* Turning a tablet or widening the window past the menu's width puts everything back */
-    wide.addEventListener('change', (event) => {
-      if (event.matches) setOpen(false, false);
+    window.addEventListener('resize', () => {
+      if (open && window.innerWidth > 1140) setOpen(false, false);
     });
     /* Coming back to a page from the browser's history never finds the menu still open */
     window.addEventListener('pageshow', () => setOpen(false, false));

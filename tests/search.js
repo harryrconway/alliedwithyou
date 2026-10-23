@@ -11,7 +11,7 @@ const path = require('path');
 const PAGES = [
   'index.html', 'about.html', 'services.html', 'services/assessments.html', 'services/independence.html', 'services/home.html',
   'services/technology.html', 'services/therapy.html', 'services/reports.html', 'ndis.html', 'myagedcare.html', 'process.html',
-  'fees.html', 'faq.html', 'referrals.html', 'contact.html', 'privacy.html', 'complaints.html', 'accessibility.html'
+  'northernrivers.html', 'goldcoast.html', 'fees.html', 'faq.html', 'referrals.html', 'contact.html', 'privacy.html', 'complaints.html', 'accessibility.html'
 ];
 const OUT = 'js/site/searchindex.json';
 
@@ -118,6 +118,17 @@ module.exports = async function search(ctx) {
     await p.waitForURL(/faq\.html#faq/, { timeout: 4000 }).catch(() => failures.push('Choosing a question does not open the questions page at that question'));
     await p.waitForTimeout(300);
     if (!(await p.evaluate(() => { const d = document.querySelector(location.hash); return d && d.open; }))) failures.push('The question search found is not opened on arrival');
+
+    /* Typos are put right, and everyday words find the website's own */
+    for (const [typed, want] of [['cancelation', /fees\.html/], ['wheelchiar', /technology|myagedcare/], ['zoom', /process|index|faq/], ['how much does it cost', /fees|faq/]]) {
+      await p.evaluate(() => { if (!document.querySelector('#siteSearch').open) AWY.siteSearch.open(); });
+      await p.fill('#siteSearchInput', typed);
+      await p.waitForTimeout(250);
+      const first = await p.evaluate(() => { const a = document.querySelector('#siteSearchResults a[role="option"]'); return a ? a.getAttribute('href') : ''; });
+      if (!want.test(first)) failures.push('Searching "' + typed + '" first finds ' + (first || 'nothing'));
+    }
+    await p.keyboard.press('Escape');
+    await p.keyboard.press('Escape');
 
     await p.goto(ctx.base + 'contact.html', { waitUntil: 'networkidle' });
     await p.click('#siteSearchButton');

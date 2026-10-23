@@ -27,6 +27,8 @@
     { url: 'privacy.html', label: 'Privacy', icon: 'lock', words: 'privacy personal information data' },
     { url: 'complaints.html', label: 'Complaints and feedback', icon: 'alertCircle', words: 'complaint complaints feedback unhappy concern' },
     { url: 'accessibility.html', label: 'Accessibility', icon: 'eye', words: 'accessibility accessible interpreter interpreters auslan large print' },
+    { url: 'northernrivers.html', label: 'Northern Rivers', icon: 'pin', words: 'northern rivers nsw new south wales lismore ballina byron bay tweed heads casino kyogle murwillumbah evans head near me local area areas' },
+    { url: 'goldcoast.html', label: 'Gold Coast', icon: 'pin', words: 'gold coast qld queensland southport robina coolangatta burleigh nerang coomera near me local area areas' },
     { url: 'index.html', label: 'Home', icon: 'home', words: 'home start' }
   ];
   const POPULAR = ['fees.html', 'ndis.html', 'myagedcare.html', 'referrals.html', 'contact.html'];
@@ -43,9 +45,35 @@
     return (useful.length ? useful : words).map((w) => (w.length > 4 && w.endsWith('s') ? w.slice(0, -1) : w));
   }
 
+  /*
+    Everyday words for what the website calls something else. Each one also looks for the
+    website's own words, so "price" finds fees and "zoom" finds telehealth. Only words that
+    really mean the same thing belong here: a topic the website doesn't cover should find
+    nothing, so people are pointed to ask us instead.
+  */
+  const SAME = {
+    ot: ['occupational'],
+    price: ['fee', 'cost'], pricing: ['fee', 'cost'], charge: ['fee', 'cost'], rate: ['fee'], expensive: ['fee', 'cost'], afford: ['fee', 'cost'], much: ['fee', 'cost'],
+    money: ['pay', 'fee'], payment: ['pay', 'invoice'], paying: ['pay'], bill: ['invoice', 'pay'], receipt: ['invoice'],
+    elderly: ['older', 'aged'], senior: ['older', 'aged'], pensioner: ['older', 'aged'], old: ['older', 'aged'],
+    doctor: ['gp'], physio: ['physiotherap'],
+    mum: ['family', 'carer'], dad: ['family', 'carer'], parent: ['family', 'carer'], relative: ['family', 'carer'], son: ['family'], daughter: ['family'],
+    online: ['telehealth', 'video'], zoom: ['telehealth', 'video'], virtual: ['telehealth', 'video'], remote: ['telehealth', 'video'],
+    house: ['home'], unit: ['home'],
+    booking: ['appointment'], book: ['appointment'], session: ['appointment', 'session'],
+    walker: ['walking frame', 'equipment'], rollator: ['walking frame', 'equipment'], wheelchair: ['wheelchair', 'equipment'],
+    handrail: ['rail'], grabrail: ['grab rail'], step: ['step', 'stair', 'ramp'],
+    trip: ['fall'], renovation: ['modification'], renovate: ['modification'], modify: ['modification'],
+    reschedule: ['cancel', 'move an appointment'], postpone: ['cancel'],
+    hcp: ['support at home', 'package'], homecare: ['support at home', 'package'],
+    waitlist: ['wait'], accident: ['injury']
+  };
+
   let index = null;
   let loading = null;
   const pages = {};
+  let vocab = null;
+  let everything = '';
   function load() {
     if (!loading) {
       loading = fetch(root + 'js/site/searchindex.json', { cache: 'no-cache' })
@@ -65,6 +93,11 @@
               text: lower(s.text)
             });
           }));
+          /* Every word on the website, for putting typos right */
+          everything = index.map((e) => e.head + ' ' + e.text).join(' ');
+          const counts = new Map();
+          (everything.match(/[a-z]{4,}/g) || []).forEach((w) => counts.set(w, (counts.get(w) || 0) + 1));
+          vocab = Array.from(counts.entries());
           return index;
         })
         .catch((error) => {
@@ -77,29 +110,84 @@
 
   const startsWord = (hay, t) => hay.startsWith(t) || hay.includes(' ' + t);
 
+  /* How many single letter changes turn one word into another, a swapped pair counting as one */
+  function distance(a, b, limit) {
+    if (Math.abs(a.length - b.length) > limit) return limit + 1;
+    let prev2 = null;
+    let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+    for (let i = 1; i <= a.length; i++) {
+      const row = [i];
+      let best = i;
+      for (let j = 1; j <= b.length; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        let v = Math.min(prev[j] + 1, row[j - 1] + 1, prev[j - 1] + cost);
+        if (prev2 && i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) v = Math.min(v, prev2[j - 2] + 1);
+        row.push(v);
+        best = Math.min(best, v);
+      }
+      if (best > limit) return limit + 1;
+      prev2 = prev;
+      prev = row;
+    }
+    return prev[b.length];
+  }
+
+  /* The website's closest word to one it doesn't have: "ocupational" becomes "occupational" */
+  function correct(t) {
+    if (t.length < 4 || everything.includes(t)) return null;
+    const limit = t.length >= 7 ? 2 : 1;
+    let best = null;
+    vocab.forEach(([w, n]) => {
+      const stem = w.length > t.length + 1 ? w.slice(0, t.length + 1) : w;
+      const d = Math.min(distance(t, w, limit), distance(t, stem, limit));
+      if (d <= limit && (!best || d < best.d || (d === best.d && n > best.n))) best = { w: d === distance(t, w, limit) ? w : stem, d: d, n: n };
+    });
+    return best ? best.w.replace(/s$/, '') : null;
+  }
+
+  /* Each word typed, with the other ways the website might say it */
+  function expand(ts) {
+    const fixed = [];
+    const groups = ts.map((t) => {
+      const fix = SAME[t] ? null : correct(t);
+      if (fix) fixed.push(fix);
+      const base = fix || t;
+      return Array.from(new Set([base].concat(SAME[base] || SAME[t] || [])));
+    });
+    return { groups: groups, fixed: fixed };
+  }
+
   /* Best first: the whole phrase in a heading, then every word in a heading, then words in the text */
-  function score(entry, ts, phrase) {
+  function score(entry, groups, phrase) {
     let n = 0;
     let found = 0;
-    ts.forEach((t) => {
-      const inTitle = entry.title.includes(t);
-      const inHead = entry.head.includes(t);
-      const inText = entry.text.includes(t);
-      if (inTitle || inHead || inText) found += 1;
-      if (inTitle) n += startsWord(entry.title, t) ? 5 : 3;
-      else if (inHead) n += 2;
-      if (inText) n += startsWord(entry.text, t) ? 1.5 : 1;
+    groups.forEach((variants) => {
+      let best = 0;
+      variants.forEach((t, i) => {
+        let v = 0;
+        const inTitle = entry.title.includes(t);
+        const inHead = entry.head.includes(t);
+        const inText = entry.text.includes(t);
+        if (inTitle) v += startsWord(entry.title, t) ? 5 : 3;
+        else if (inHead) v += 2;
+        if (inText) v += startsWord(entry.text, t) ? 1.5 : 1;
+        /* The word as typed counts a little more than another way of saying it */
+        if (i > 0) v *= 0.85;
+        best = Math.max(best, v);
+      });
+      if (best > 0) found += 1;
+      n += best;
     });
     if (!found) return { n: 0, found: 0 };
     if (phrase.length > 2 && entry.title.includes(phrase)) n += 10;
     else if (phrase.length > 2 && entry.text.includes(phrase)) n += 4;
     if (entry.section.kind === 'question') n += 1;
-    if (entry.section.kind === 'page' && found === ts.length) n += 1;
+    if (entry.section.kind === 'page' && found === groups.length) n += 1;
     return { n: n, found: found };
   }
 
-  function placeMatches(ts) {
-    return PLACES.filter((p) => ts.every((t) => (' ' + lower(p.label) + ' ' + p.words).includes(' ' + t))).slice(0, 3);
+  function placeMatches(groups) {
+    return PLACES.filter((p) => groups.every((variants) => variants.some((t) => (' ' + lower(p.label) + ' ' + p.words).includes(' ' + t)))).slice(0, 3);
   }
 
   /* A page's own entry, with its introduction, for "Go to" and popular pages */
@@ -110,16 +198,18 @@
 
   /* Sections that have every word, or if none do, those that have most of them. Grouped by page. */
   function search(typed) {
-    const ts = terms(typed);
-    const phrase = lower(typed).trim();
-    if (!ts.length) return { groups: [], total: 0 };
-    let hits = index.map((e) => Object.assign({ e: e }, score(e, ts, phrase))).filter((h) => h.n > 0);
-    const all = hits.filter((h) => h.found === ts.length);
-    hits = all.length ? all : hits.filter((h) => h.found >= Math.ceil(ts.length / 2));
+    const typedTerms = terms(typed);
+    if (!typedTerms.length) return { groups: [], total: 0 };
+    const { groups: wanted, fixed } = expand(typedTerms);
+    const ts = Array.from(new Set([].concat.apply([], wanted)));
+    const phrase = fixed.length ? '' : lower(typed).trim();
+    let hits = index.map((e) => Object.assign({ e: e }, score(e, wanted, phrase))).filter((h) => h.n > 0);
+    const all = hits.filter((h) => h.found === wanted.length);
+    hits = all.length ? all : hits.filter((h) => h.found >= Math.ceil(wanted.length / 2));
     hits.sort((a, b) => b.n - a.n);
 
     /* A page already offered under Go to isn't listed again under its own name */
-    const places = placeMatches(ts);
+    const places = placeMatches(wanted);
     const offered = new Set(places.map((p) => p.url));
     const byPage = new Map();
     hits.forEach((h) => {
@@ -149,7 +239,7 @@
         })
       });
     });
-    return { groups: groups, total: hits.length, ts: ts };
+    return { groups: groups, total: hits.length, ts: ts, fixed: fixed };
   }
 
   /* A longer piece for the preview: whole sentences, up to about a paragraph, starting near the first match */
@@ -349,7 +439,10 @@
     const empty = !result.groups.length
       ? html`<p class="search-empty"><strong>No matches for “${typed}”</strong>Try another word, such as fees, NDIS or home visits, or <a class="text-link" href="${root}contact.html">ask us directly</a>.</p>`
       : '';
-    box.innerHTML = String(html`${renderGroups(result.groups, result.ts)}${empty}`);
+    const note = result.fixed && result.fixed.length && result.groups.length
+      ? html`<p class="search-fixed">${icon('info')}<span>Showing results for <strong>${result.fixed.join(', ')}</strong></span></p>`
+      : '';
+    box.innerHTML = String(html`${note}${renderGroups(result.groups, result.ts)}${empty}`);
     dialog.classList.toggle('is-empty', !result.groups.length);
     const count = links().length;
     status.textContent = count ? count + (count === 1 ? ' result' : ' results') + '. Use the arrow keys to move through them.' : 'No matches';
