@@ -37,52 +37,74 @@
   <header class="site-header" data-site-header></header>
 
   <main id="main">
-    <div class="page-intro">
-      <div class="wrap">
-        <h1>About Allied With You</h1>
-        <p class="lead">A small, local occupational therapy practice that works alongside the people we see, their families and the professionals around them.</p>
-      </div>
-    </div>
-
-    <section class="section-tight">
-      <div class="wrap split">
-        <div class="portrait" aria-hidden="true">
-          <img src="images/logomark.svg" alt="" width="200" height="200" style="margin-inline:auto">
+    <section class="about-hero" aria-labelledby="aboutTitle">
+      <div class="wrap about-hero-grid">
+        <div>
+          <h1 id="aboutTitle">About Allied With You</h1>
+          <p class="lead">A small, local occupational therapy practice that works alongside the people we see, their families and the professionals around them.</p>
         </div>
-        <div class="stack-lg">
-          <div class="stack">
-            <h2 id="whoAre">Who we are</h2>
-            <p class="lead">Allied With You is an occupational therapy practice working with people across the <a href="northernrivers.html">Northern Rivers</a> and the <a href="goldcoast.html">Gold Coast</a>, and by telehealth anywhere in Australia.</p>
-            <p>We help people manage everyday tasks, stay safe at home and keep doing the things that matter to them. That might mean building skills after an illness or injury, finding the right equipment, making changes around the home, or writing a clear report so the right support can be funded.</p>
-            <p>Most of our work happens where life happens: in your home, out in your community, or by telehealth when that suits better.</p>
-          </div>
-          <div class="stack">
-            <h2 id="whoWork">Who we work with</h2>
-            <p>We see people paying privately, people using a health fund, Medicare GP plan or Support at Home package, and NDIS participants. Family members, carers, GPs and support coordinators are welcome to get in touch on someone's behalf.</p>
-          </div>
-        </div>
+        <ul class="about-ways" aria-label="Where we see people">
+          <li>
+            <span data-icon="home"></span>
+            <div><strong>At home</strong><span>Across the <a href="northernrivers.html">Northern Rivers</a> and the <a href="goldcoast.html">Gold Coast</a></span></div>
+          </li>
+          <li>
+            <span data-icon="users"></span>
+            <div><strong>In the community</strong><span>At the shops, on the bus, at work, wherever it happens</span></div>
+          </li>
+          <li>
+            <span data-icon="video"></span>
+            <div><strong>By telehealth</strong><span>Anywhere in Australia, when that suits better</span></div>
+          </li>
+        </ul>
       </div>
     </section>
 
-    <section class="section-tight" aria-labelledby="teamTitle">
-      <div class="wrap">
-        <div class="team-teaser">
-          <div class="team-marks" aria-hidden="true"><span class="team-mark">J</span><span class="team-mark is-sage">C</span></div>
-          <div>
-            <h2 id="teamTitle">Owned and run by Jake and Chelsie</h2>
-            <p>Our two principal occupational therapists. Meet them, and choose who you'd like to see.</p>
-          </div>
-          <a class="btn" href="team.html">Meet our team</a>
+    <section class="section-tight about-who" aria-labelledby="whoAre">
+      <div class="wrap about-who-grid">
+        <div class="about-who-text">
+          <h2 id="whoAre">Who we are</h2>
+          <p class="lead">Allied With You is an occupational therapy practice working with people across the <a href="northernrivers.html">Northern Rivers</a> and the <a href="goldcoast.html">Gold Coast</a>, and by telehealth anywhere in Australia.</p>
+          <p>We help people manage everyday tasks, stay safe at home and keep doing the things that matter to them. That might mean building skills after an illness or injury, finding the right equipment, making changes around the home, or writing a clear report so the right support can be funded.</p>
+          <p>Most of our work happens where life happens: in your home, out in your community, or by telehealth when that suits better.</p>
         </div>
+
+        <aside class="about-team" aria-labelledby="teamTitle">
+          <h2 id="teamTitle">Owned and run by Jake and Chelsie</h2>
+          <p>Our two principal occupational therapists. When you work with us, you work with one of them.</p>
+          <ul class="about-team-people">
+            <li><strong>Jake</strong><span>Principal Occupational Therapist</span></li>
+            <li><strong>Chelsie</strong><span>Principal Occupational Therapist</span></li>
+          </ul>
+          <a class="btn about-team-btn" href="team.html">Meet the team</a>
+        </aside>
       </div>
     </section>
 
-    <section class="section band-white" aria-labelledby="approachTitle">
-      <div class="wrap split">
-        <div class="stack">
+    <section class="section band-white" aria-labelledby="whoWork">
+      <div class="wrap about-work-grid">
+        <div class="about-work-head">
+          <h2 id="whoWork">Who we work with</h2>
+          <p>We see people paying privately, people using a health fund, Medicare GP plan or Support at Home package, and NDIS participants.</p>
+          <p>Family members, carers, GPs and support coordinators are welcome to get in touch on someone's behalf. <a href="referrals.html">Make a referral</a>.</p>
+        </div>
+        <ul class="about-funding">
+          <li><a href="fees.html#privateFees"><span data-icon="wallet"></span><span><strong>Paying privately</strong>Our fees, and what's included</span></a></li>
+          <li><a href="fees.html#privateHealthInsurance"><span data-icon="shield"></span><span><strong>Private health insurance</strong>Claim from your extras cover</span></a></li>
+          <li><a href="fees.html#medicareGpPlans"><span data-icon="clipboard"></span><span><strong>Medicare GP plan</strong>A rebate when your GP refers you</span></a></li>
+          <li><a href="myagedcare.html"><span data-icon="heart"></span><span><strong>Support at Home</strong>Through My Aged Care</span></a></li>
+          <li><a href="ndis.html"><span data-icon="target"></span><span><strong>NDIS participants</strong>Self managed and plan managed</span></a></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="approachTitle">
+      <div class="wrap about-approach-grid">
+        <div class="about-approach-head">
           <h2 id="approachTitle">How we work</h2>
+          <p>Five things you can expect from us, whoever you see and wherever we meet.</p>
         </div>
-        <dl class="facts">
+        <dl class="about-approach">
           <div>
             <dt>We listen first</dt>
             <dd>The first part of any work together is understanding your life: your routines, the people around you, what you enjoy and what's become difficult. Goals are set in your words, not ours.</dd>
@@ -107,7 +129,7 @@
       </div>
     </section>
 
-    <section class="section-tight">
+    <section class="section-tight" style="padding-top:0">
       <div class="wrap">
         <div class="cta">
           <div>

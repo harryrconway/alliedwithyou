@@ -364,7 +364,6 @@ html.is-held .site-header {
     background: var(--color-sage-soft);
     border-color: var(--color-sage);
     color: var(--color-deep);
-    box-shadow: inset 3px 0 0 var(--color-deep);
   }
 
   .nav-actions {
@@ -1529,7 +1528,7 @@ html.is-held .site-header {
     justify-content: center;
     width: 2.75rem;
     padding: 0;
-    margin-left: calc(var(--space-3) * -1);
+    margin-left: var(--space-3);
   }
 
   .search-btn-label,
@@ -1806,10 +1805,6 @@ html.is-held .site-header {
 .site-search .search-results a[role="option"]:hover,
 .site-search .search-results a.is-active {
   background: var(--color-green-light);
-}
-
-.site-search .search-results a.is-active {
-  box-shadow: inset 3px 0 0 var(--color-deep);
 }
 
 .site-search .search-results a:hover > .icon:first-child,
@@ -2238,57 +2233,7 @@ main .is-found {
   }
 }
 
-/* About page: the occupational therapists */
-
-.team {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
-  gap: var(--space-4);
-  margin: var(--space-5) 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.team-card {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-5);
-  border: var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--color-white);
-  box-shadow: var(--shadow-sm);
-}
-
-.team-mark {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 4.5rem;
-  height: 4.5rem;
-  border-radius: 50%;
-  background: var(--color-deep);
-  color: var(--color-white);
-  font-size: 1.75rem;
-  font-weight: var(--weight-bold);
-  box-shadow: 0 0 0 0.4rem var(--color-green-light);
-}
-
-.team-mark.is-sage {
-  background: #5f7d58;
-}
-
-.team-card h3 {
-  margin: 0;
-  color: var(--color-deep);
-  font-size: var(--text-xl);
-}
-
-.team-role {
-  margin: 0.15rem 0 0;
-  color: var(--color-text-muted);
-  font-weight: var(--weight-semibold);
-}
+/* Team page: the note about the Ahpra register */
 
 .team-note {
   max-width: var(--width-text);
@@ -2330,99 +2275,438 @@ main .is-found {
   height: 1rem;
 }
 
-/* Team page: a card for each therapist, and the About page's link to it */
+/*
+  About page. The team panel is the one bold piece; the rest stays quiet and readable.
+*/
 
-.team-full {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
-  margin-top: 0;
+.about-hero {
+  padding-block: clamp(3rem, 2rem + 4vw, 5.5rem) clamp(2.5rem, 1.5rem + 3vw, 4rem);
 }
 
-.team-card-full {
-  align-items: flex-start;
-  gap: var(--space-5);
-  padding: var(--space-6);
+.about-hero-grid {
+  display: grid;
+  gap: var(--space-6);
+  align-items: end;
 }
 
-.team-card-full .team-mark {
-  width: 5.5rem;
-  height: 5.5rem;
-  font-size: 2.1rem;
+.about-hero h1 {
+  max-width: 14ch;
+  font-size: var(--text-3xl);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
 }
 
-.team-body h2 {
-  margin: 0;
-  color: var(--color-deep);
-  font-size: var(--text-2xl);
-}
-
-.team-body > p:not(.team-role) {
-  margin: var(--space-3) 0 0;
-}
-
-.team-body .btn {
+.about-hero .lead {
+  max-width: 34rem;
   margin-top: var(--space-5);
 }
 
-@media (max-width: 480px) {
-  .team-card-full {
-    flex-direction: column;
+.about-ways {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-line-strong);
+}
+
+.about-ways li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  padding-block: var(--space-4);
+  border-bottom: 1px solid var(--color-line-strong);
+}
+
+.about-ways li > .icon {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: 0.1rem;
+  color: var(--color-deep);
+}
+
+.about-ways strong {
+  display: block;
+  color: var(--color-deep);
+  font-size: var(--text-lg);
+}
+
+.about-ways span span,
+.about-ways div > span {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+@media (min-width: 900px) {
+  .about-hero-grid {
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    gap: var(--space-8);
   }
 }
 
-.team-teaser {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-5);
-  padding: var(--space-6);
-  border: var(--border);
+/* Who we are, with the people beside it */
+
+.about-who {
+  padding-top: 0;
+}
+
+.about-who-grid {
+  display: grid;
+  gap: var(--space-7);
+  align-items: start;
+}
+
+.about-who-text {
+  max-width: var(--width-text);
+}
+
+.about-who-text h2 {
+  margin-bottom: var(--space-4);
+}
+
+.about-who-text p + p {
+  margin-top: var(--space-4);
+}
+
+.about-team {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1.75rem, 1.25rem + 2vw, 2.75rem);
   border-radius: var(--radius-lg);
-  background: var(--color-white);
-  box-shadow: var(--shadow-sm);
+  background: var(--color-deep);
+  color: #dcebe5;
+  isolation: isolate;
 }
 
-.team-teaser > div:nth-child(2) {
-  flex: 1 1 18rem;
+/* The brand mark, large and faint, behind the people */
+.about-team::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: -4.5rem;
+  bottom: -5rem;
+  width: 17rem;
+  height: 17rem;
+  background: url("../images/logomark.svg") center / contain no-repeat;
+  opacity: 0.09;
+  filter: grayscale(1) brightness(3);
 }
 
-.team-teaser h2 {
-  margin: 0;
+.about-team h2 {
+  max-width: 16ch;
+  color: var(--color-white);
+  font-size: var(--text-2xl);
+  line-height: 1.1;
+}
+
+.about-team > p {
+  margin: var(--space-3) 0 0;
+  max-width: 28rem;
+}
+
+.about-team-people {
+  display: grid;
+  gap: 0;
+  margin: var(--space-6) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.about-team-people li {
+  padding-block: var(--space-4);
+  border-top: 1px solid rgb(255 255 255 / 0.16);
+}
+
+.about-team-people li:last-child {
+  border-bottom: 1px solid rgb(255 255 255 / 0.16);
+}
+
+.about-team-people strong {
+  display: block;
+  color: var(--color-white);
   font-size: var(--text-xl);
+  line-height: 1.2;
 }
 
-.team-teaser p {
-  margin: var(--space-2) 0 0;
+.about-team-people span {
+  display: block;
+  margin-top: 0.15rem;
+  color: #b9d2c8;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+}
+
+.about-team .about-team-btn {
+  margin-top: var(--space-6);
+  background: var(--color-white);
+  color: var(--color-deep);
+}
+
+.about-team .about-team-btn:hover {
+  background: var(--color-green-light);
+  color: var(--color-deep);
+}
+
+@media (min-width: 960px) {
+  .about-who-grid {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: var(--space-8);
+  }
+}
+
+/* Who we work with: each way of paying leads to the page about it */
+
+.about-work-grid {
+  display: grid;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+.about-work-head h2 {
+  margin-bottom: var(--space-4);
+}
+
+.about-work-head p {
+  max-width: 30rem;
+}
+
+.about-work-head p + p {
+  margin-top: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.about-funding {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: var(--border);
+}
+
+.about-funding a {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-2);
+  border-bottom: var(--border);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: background var(--speed) var(--ease);
+}
+
+.about-funding a:hover {
+  background: var(--color-green-light);
+}
+
+.about-funding a > .icon {
+  flex: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.6rem;
+  border-radius: 50%;
+  background: var(--color-green-light);
+  color: var(--color-deep);
+}
+
+.about-funding a:hover > .icon {
+  background: var(--color-white);
+}
+
+.about-funding strong {
+  display: block;
+  color: var(--color-deep);
+  font-size: var(--text-base);
+}
+
+.about-funding a > span:last-child {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+@media (min-width: 900px) {
+  .about-work-grid {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: var(--space-8);
+  }
+}
+
+/*
+  How we work: five commitments, not steps, so no numbers. The heading takes the first
+  place in the grid so the five panels fill it evenly, each marked with an arrow.
+*/
+
+.about-approach-grid {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.about-approach-head {
+  padding: var(--space-2) var(--space-4) var(--space-4) 0;
+}
+
+.about-approach-head p {
+  margin: var(--space-3) 0 0;
+  max-width: 22rem;
   color: var(--color-text-muted);
 }
 
-.team-marks {
+.about-approach {
+  display: contents;
+  margin: 0;
+}
+
+.about-approach div {
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--color-white);
+  box-shadow: 0 1px 2px rgb(20 45 45 / 0.04), 0 8px 24px rgb(20 50 50 / 0.05);
+}
+
+.about-approach dt {
+  color: var(--color-deep);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-bold);
+  line-height: var(--leading-snug);
+}
+
+/* An arrow badge: moving forward together, the way the logo's two figures lean in */
+.about-approach dt::before {
+  content: "";
+  display: block;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-bottom: var(--space-4);
+  border-radius: 50%;
+  background: var(--color-sage-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230c5661' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E") center / 1.25rem no-repeat;
+}
+
+.about-approach dd {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text);
+}
+
+@media (min-width: 720px) {
+  .about-approach-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .about-approach-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-5);
+  }
+
+  .about-approach-head {
+    align-self: center;
+  }
+}
+
+/*
+  Team page. Each person gets a portrait area that a photo can replace later, then their
+  name, title and a way to ask for them.
+*/
+
+.members {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.member {
   display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--color-white);
 }
 
-.team-marks .team-mark {
-  width: 3.75rem;
-  height: 3.75rem;
-  font-size: 1.4rem;
+.member-photo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: linear-gradient(160deg, #13707c, var(--color-deep) 70%);
+  isolation: isolate;
 }
 
-.team-marks .team-mark + .team-mark {
-  margin-left: -0.6rem;
+.member-photo.is-sage {
+  background: linear-gradient(160deg, #7e9a76, #556f4f 75%);
 }
 
-/* Nine pages in the menu: on wider screens the links sit a little closer so they clear the logo */
-@media (min-width: 1241px) and (max-width: 1440px) {
-  .nav a {
-    padding-inline: 0.55rem;
-  }
+/* Until there's a photo: the brand mark, faint, behind a large initial */
+.member-photo::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: -8%;
+  bottom: -30%;
+  width: 52%;
+  aspect-ratio: 1;
+  background: url("../images/logomark.svg") center / contain no-repeat;
+  opacity: 0.08;
+  filter: grayscale(1) brightness(3);
+}
 
-  .nav .btn {
-    margin-left: var(--space-2);
-    padding-inline: 1rem;
-  }
+.member-photo span {
+  color: rgb(255 255 255 / 0.95);
+  font-size: clamp(4rem, 3rem + 4vw, 6rem);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
 
-  .site-header .wrap {
-    gap: var(--space-4);
-  }
+.member-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.member-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: clamp(1.5rem, 1.1rem + 1.5vw, 2.25rem);
+}
+
+.member-body h2 {
+  margin: 0;
+  color: var(--color-deep);
+  font-size: var(--text-2xl);
+  line-height: 1.1;
+}
+
+.member-title {
+  margin: var(--space-2) 0 0;
+  color: var(--color-charcoal);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+}
+
+.member-owner {
+  margin: 0.1rem 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+
+.member-body > p:not(.member-title):not(.member-owner) {
+  margin: var(--space-4) 0 var(--space-6);
+  padding-top: var(--space-4);
+  border-top: var(--border);
+}
+
+/* Buttons line up along the bottom, however long each bio is */
+.member-body .btn {
+  margin-top: auto;
 }
 
 /* The phone menu: an odd tile out at the end spans the full width rather than leave a gap */
@@ -2430,4 +2714,64 @@ main .is-found {
   .nav-links a:last-child:nth-child(odd) {
     grid-column: 1 / -1;
   }
+}
+
+/*
+  Desktop menu: the links spread evenly across the space between the logo and the
+  referral button, rather than bunching up at the right.
+*/
+@media (min-width: 1241px) {
+  .site-header .wrap {
+    gap: var(--space-3);
+  }
+
+  .nav {
+    flex: 1;
+    margin-left: clamp(1.5rem, 4vw - 2rem, 4rem);
+    gap: clamp(1rem, 3vw - 1.5rem, 2.5rem);
+  }
+
+  .nav-links {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 52rem;
+    margin-inline: auto;
+  }
+
+  .nav-actions {
+    display: flex;
+    align-items: center;
+  }
+
+  .nav a {
+    padding-inline: clamp(0.55rem, 0.9vw - 0.3rem, 0.9rem);
+  }
+
+  .nav .btn {
+    margin-left: 0;
+    padding-inline: 1.15rem;
+  }
+}
+
+/* Footer: the brand mark, large and faint, tucked into the corner like the team panel */
+.site-footer {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.site-footer::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: clamp(-9rem, -6rem - 3vw, -4rem);
+  bottom: clamp(-10rem, -7rem - 3vw, -5rem);
+  width: clamp(20rem, 14rem + 20vw, 34rem);
+  aspect-ratio: 1;
+  background: url("../images/logomark.svg") center / contain no-repeat;
+  opacity: 0.07;
+  filter: grayscale(1) brightness(3);
+  pointer-events: none;
 }
