@@ -104,10 +104,10 @@ module.exports = async function search(ctx) {
     else if (shown.title !== shown.picked && !shown.title.includes(shown.picked)) failures.push('The preview shows "' + shown.title + '" while "' + shown.picked + '" is picked out');
     if (shown.visible && !shown.same) failures.push('The preview\'s open button does not go where the picked result goes');
     if (shown.visible && !shown.more) failures.push('The preview does not list the rest of the page');
-    await p.keyboard.press('Escape');
+    /* One press of Escape closes search, even with something typed */
     await p.keyboard.press('Escape');
     await p.waitForTimeout(150);
-    if (await p.evaluate(() => !!document.querySelector('#siteSearch[open]'))) failures.push('Escape does not close search');
+    if (await p.evaluate(() => !!document.querySelector('#siteSearch[open]'))) failures.push('One press of Escape does not close search when something is typed');
     if (await p.evaluate(() => document.activeElement.id !== 'siteSearchButton')) failures.push('Closing search does not return focus to the search button');
 
     await p.goto(ctx.base + 'index.html', { waitUntil: 'networkidle' });
@@ -127,7 +127,6 @@ module.exports = async function search(ctx) {
       const first = await p.evaluate(() => { const a = document.querySelector('#siteSearchResults a[role="option"]'); return a ? a.getAttribute('href') : ''; });
       if (!want.test(first)) failures.push('Searching "' + typed + '" first finds ' + (first || 'nothing'));
     }
-    await p.keyboard.press('Escape');
     await p.keyboard.press('Escape');
 
     await p.goto(ctx.base + 'contact.html', { waitUntil: 'networkidle' });

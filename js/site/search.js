@@ -523,12 +523,22 @@
     } else if (event.key === 'Enter' && list[active >= 0 ? active : 0]) {
       event.preventDefault();
       go(list[active >= 0 ? active : 0]);
-    } else if (event.key === 'Escape' && input.value) {
-      /* Esc clears first, then a second Esc closes, the same as the dashboard */
-      event.preventDefault();
-      input.value = '';
-      update();
     }
+  });
+  /*
+    One press of Escape closes search, wherever focus is inside it. Handled here rather than
+    left to the browser, since a search box's own Escape only clears what was typed. What
+    was typed stays, selected, for the next time search opens.
+  */
+  dialog.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    event.stopPropagation();
+    closeSearch();
+  });
+  dialog.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    closeSearch();
   });
   box.addEventListener('mousemove', (event) => {
     const a = event.target.closest('a[role="option"]');
