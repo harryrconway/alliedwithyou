@@ -44,10 +44,11 @@ The checks live in `tests/`. The first time, run `npm install` and `npm run setu
 * the website forms send readable details and explain failures
 * the dashboard works end to end in a browser: sign in, invitations, password reset, locked sections, tasks, calendar, approvals, fees, feedback and dropped connections
 * the website search finds and opens sections and questions, from the keyboard too, and its index matches the pages
+* email suggestions, forms that keep what's typed, the preferred therapist and how did you hear questions, the funding helper, words explained where they appear, and the text size and contrast choices all work
 * every public page has a canonical address, share details, a sensible title and description, and the sitemap and structured data match the pages
 * pages fit 360, 768 and 1366 pixel widths, the mobile menu fits on screen at every size and holds the page still, and the keyboard checks pass
 
-After changing any public page, run `npm run build` there to rebuild the search index, the sitemap and the questions page's structured data. Run a single check with `npm test -- crm`. The database checks need the test project's keys in `.env`. The browser checks run under Chromium by default; set `BROWSER=firefox` or `BROWSER=webkit` to run them under another engine instead.
+After changing any public page, run `npm run build` there to rebuild the search index, the glossary list, the sitemap and the questions page's structured data. Run a single check with `npm test -- crm`. The database checks need the test project's keys in `.env`. The browser checks run under Chromium by default; set `BROWSER=firefox` or `BROWSER=webkit` to run them under another engine instead.
 
 ## Project documents
 
@@ -68,7 +69,7 @@ js/config.js                             which Supabase project to use, and publ
 js/vendor/                               supabase-js, copied unchanged
 js/core/                                 icons, formatting, form checking, dialogs, error handling
 js/data/                                 field definitions, business rules and the Supabase data layer
-js/site/                                 website header, footer, mobile menu, search and forms
+js/site/                                 website header, footer, menu, search, forms, funding helper and word explanations
 js/admin/                                dashboard sign in, frame, routing and shared actions
 js/admin/views/                          one file per dashboard screen
 supabase/                                migrations, sign in settings, email templates, Edge Function
@@ -85,6 +86,8 @@ sitemap.xml, robots.txt                  for search engines (rebuilt by npm run 
 * Contact details shown on the website: `js/data/business.js`
 * Website navigation, mobile menu and footer: `js/site/layout.js`
 * Website search, and the everyday words that lead to each page: `js/site/search.js`
+* Explanations of words like plan managed: `glossary.html`, then `npm run build`
+* Email providers suggested in forms: `DOMAINS` in `js/site/forms.js`
 * Fields, options and statuses in the dashboard: `js/data/schema.js`
 * Which sections are switched on, and what each role can do: `js/admin/access.js`, plus the matching rules in a new migration
 * Practice details, services and fees: the dashboard's Settings screen

@@ -30,6 +30,11 @@
     { url: 'accessibility.html', label: 'Accessibility', icon: 'eye', words: 'accessibility accessible interpreter interpreters auslan large print' },
     { url: 'northernrivers.html', label: 'Northern Rivers', icon: 'pin', words: 'northern rivers nsw new south wales lismore ballina byron bay tweed heads casino kyogle murwillumbah evans head near me local area areas' },
     { url: 'goldcoast.html', label: 'Gold Coast', icon: 'pin', words: 'gold coast qld queensland southport robina coolangatta burleigh nerang coomera near me local area areas' },
+    { url: 'funding.html', label: 'Which funding fits me?', icon: 'wallet', words: 'funding which fits how pay paying payment ndis medicare health fund insurance support at home help choose options' },
+    { url: 'firstvisit.html', label: 'Your first appointment', icon: 'calendar', words: 'first appointment visit prepare preparing checklist bring expect what happens initial assessment' },
+    { url: 'referrers.html', label: 'Information for referrers', icon: 'send', words: 'referrer referrers gp doctor coordinator plan manager provider hospital practice summary refer' },
+    { url: 'easyread.html', label: 'Easy Read', icon: 'eye', words: 'easy read simple plain english' },
+    { url: 'glossary.html', label: 'Words we use', icon: 'note', words: 'glossary words terms meaning mean jargon explain explained definition' },
     { url: 'index.html', label: 'Home', icon: 'home', words: 'home start' }
   ];
   const POPULAR = ['fees.html', 'ndis.html', 'myagedcare.html', 'referrals.html', 'contact.html'];

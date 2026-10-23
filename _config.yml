@@ -24,6 +24,12 @@ exclude:
   - accessibility.html
   - northernrivers.html
   - goldcoast.html
+  - funding.html
+  - firstvisit.html
+  - referrers.html
+  - easyread.html
+  - glossary.html
+  - js/site/glossary.json
   - 404.html
   - js/site/searchindex.json
   - sitemap.xml

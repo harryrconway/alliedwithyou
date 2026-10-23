@@ -44,6 +44,7 @@
       <div class="wrap">
         <h1>Make a referral</h1>
         <p class="lead">For GPs, support coordinators, allied health professionals and anyone referring on behalf of someone else.</p>
+        <p><a class="text-link" href="referrers.html">Information for referrers, and a practice summary to print <span data-icon="arrowRight"></span></a></p>
       </div>
     </div>
 
@@ -71,6 +72,7 @@
           <p>Fields marked optional can be left blank. You can also email referrals to <a href="mailto:admin@alliedwithyou.com.au?subject=Referral">admin@alliedwithyou.com.au</a>.</p>
           <form class="form" data-enquiry="referral" novalidate>
             <div class="form-summary"></div>
+            <p class="form-draft" data-draft-note></p>
             <div class="trap" aria-hidden="true">
               <label for="rWebsite">Leave this empty</label>
               <input id="rWebsite" name="website" type="text" tabindex="-1" autocomplete="off">
@@ -173,6 +175,27 @@
                   <label for="reason">Reason for referral</label>
                   <textarea class="textarea" id="reason" name="reason" maxlength="600" required aria-describedby="reasonHint"></textarea>
                   <p class="hint" id="reasonHint">A sentence or two is enough. Please leave out detailed medical history.</p>
+                </div>
+                <div class="field">
+                  <label for="rTherapist">Preferred therapist <span class="optional">(optional)</span></label>
+                  <select class="select" id="rTherapist" name="therapist">
+                    <option value="">No preference</option>
+                    <option value="jake">Jake</option>
+                    <option value="chelsie">Chelsie</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="rHeard">How did you hear about us? <span class="optional">(optional)</span></label>
+                  <select class="select" id="rHeard" name="heardFrom">
+                    <option value="">Choose one</option>
+                    <option value="search">Google or another search</option>
+                    <option value="health">A GP or health professional</option>
+                    <option value="coordinator">A support coordinator or plan manager</option>
+                    <option value="agedcare">My Aged Care or an aged care provider</option>
+                    <option value="friend">A friend or family member</option>
+                    <option value="social">Social media</option>
+                    <option value="other">Something else</option>
+                  </select>
                 </div>
               </div>
             </fieldset>

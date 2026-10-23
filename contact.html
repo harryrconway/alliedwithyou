@@ -53,6 +53,9 @@
           <ul class="contact-list">
             <li><span data-icon="mail"></span><div><strong>Email</strong><a href="mailto:admin@alliedwithyou.com.au">admin@alliedwithyou.com.au</a></div></li>
             <li><span data-icon="pin"></span><div><strong>Where we work</strong>In person across the Northern Rivers in New South Wales and the Gold Coast in Queensland, and by telehealth anywhere in Australia.</div></li>
+            <li><span data-icon="message"></span><div><strong>Need an interpreter?</strong>Tell us your language in your message and we'll arrange an interpreter through the Translating and Interpreting Service (TIS National) for our conversations.</div></li>
+            <li><span data-icon="users"></span><div><strong>Deaf, or have a hearing or speech impairment?</strong>Email or the form on this page work well. If you'd like us to call you through the <a href="https://www.accesshub.gov.au/about-the-nrs" rel="noopener">National Relay Service</a>, say so in your message.</div></li>
+            <li><span data-icon="eye"></span><div><strong>Prefer things simple?</strong>Read our <a href="easyread.html">Easy Read page</a>, or ask for information in large print.</div></li>
           </ul>
           <div class="notice notice-danger">
             <span data-icon="alertCircle"></span>
@@ -65,6 +68,7 @@
           <p>We'll get back to you by your preferred method. You can also email <a href="mailto:admin@alliedwithyou.com.au">admin@alliedwithyou.com.au</a>.</p>
           <form class="form" data-enquiry="contact" novalidate>
             <div class="form-summary"></div>
+            <p class="form-draft" data-draft-note></p>
             <div class="trap" aria-hidden="true">
               <label for="cWebsite">Leave this empty</label>
               <input id="cWebsite" name="website" type="text" tabindex="-1" autocomplete="off">
@@ -108,6 +112,27 @@
                 <label for="cMessage">Message</label>
                 <textarea class="textarea" id="cMessage" name="message" maxlength="1200" required aria-describedby="cMessageHint"></textarea>
                 <p class="hint" id="cMessageHint">Please don't include detailed health information. We can talk about that once we're in touch.</p>
+              </div>
+              <div class="field">
+                <label for="cTherapist">Who would you like to see? <span class="optional">(optional)</span></label>
+                <select class="select" id="cTherapist" name="therapist">
+                  <option value="">No preference</option>
+                  <option value="jake">Jake</option>
+                  <option value="chelsie">Chelsie</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="cHeard">How did you hear about us? <span class="optional">(optional)</span></label>
+                <select class="select" id="cHeard" name="heardFrom">
+                  <option value="">Choose one</option>
+                  <option value="search">Google or another search</option>
+                  <option value="health">A GP or health professional</option>
+                  <option value="coordinator">A support coordinator or plan manager</option>
+                  <option value="agedcare">My Aged Care or an aged care provider</option>
+                  <option value="friend">A friend or family member</option>
+                  <option value="social">Social media</option>
+                  <option value="other">Something else</option>
+                </select>
               </div>
               <fieldset class="field span-all">
                 <legend>Best way to reply</legend>

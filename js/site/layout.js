@@ -7,6 +7,28 @@
   const root = document.body.dataset.root || '';
   const current = document.body.dataset.page || '';
 
+  /*
+    Text size and contrast, chosen from the header and remembered in this browser. Applied
+    first, before anything is drawn, so the page doesn't jump.
+  */
+  const SIZES = { standard: '', large: 'text-large', larger: 'text-larger' };
+  function readDisplay() {
+    try {
+      const saved = JSON.parse(localStorage.getItem('awy.display') || '{}');
+      return { size: SIZES[saved.size] !== undefined ? saved.size : 'standard', contrast: saved.contrast === 'high' ? 'high' : 'standard' };
+    } catch (error) {
+      return { size: 'standard', contrast: 'standard' };
+    }
+  }
+  function applyDisplay(d) {
+    const el = document.documentElement;
+    el.classList.remove('text-large', 'text-larger', 'contrast-high');
+    if (SIZES[d.size]) el.classList.add(SIZES[d.size]);
+    if (d.contrast === 'high') el.classList.add('contrast-high');
+  }
+  let display = readDisplay();
+  applyDisplay(display);
+
   const NAV = [
     { key: 'about', href: 'about.html', label: 'About', icon: 'info' },
     { key: 'team', href: 'team.html', label: 'Our team', icon: 'users' },
@@ -20,6 +42,14 @@
   ];
 
   const icon = (name) => AWY.raw(AWY.icon(name));
+
+  /* The choices themselves, the same in the header panel and the phone menu */
+  function displayChoices(prefix) {
+    const size = (value, label, cls) => html`<label class="display-choice ${cls}"><input type="radio" name="${prefix}Size" value="${value}" ${AWY.raw(display.size === value ? 'checked' : '')}><span aria-hidden="true">A</span><span class="sr-only">${label}</span></label>`;
+    const contrast = (value, label) => html`<label class="display-choice is-word"><input type="radio" name="${prefix}Contrast" value="${value}" ${AWY.raw(display.contrast === value ? 'checked' : '')}><span>${label}</span></label>`;
+    return html`<fieldset class="display-group"><legend>Text size</legend><div class="display-row">${size('standard', 'Standard text', 'is-a1')}${size('large', 'Large text', 'is-a2')}${size('larger', 'Larger text', 'is-a3')}</div></fieldset>
+      <fieldset class="display-group"><legend>Contrast</legend><div class="display-row">${contrast('standard', 'Standard')}${contrast('high', 'High')}</div></fieldset>`;
+  }
   const here = (key) => AWY.raw(key === current ? 'aria-current="page"' : '');
 
   /*
@@ -42,12 +72,20 @@
           <a class="btn btn-secondary nav-only" href="${root}contact.html">Make an enquiry</a>
         </div>
         <div class="nav-mark nav-only" aria-hidden="true"><span><img src="${root}images/logomark.svg" alt="" width="120" height="120"></span></div>
+        <div class="nav-display nav-only">${displayChoices('menu')}</div>
         <ul class="nav-info nav-only" aria-label="About the practice">
           <li>${icon('mail')}<a href="mailto:${biz.email}">${biz.email}</a></li>
           <li>${icon('pin')}<span>Home visits across the ${biz.areas[0]} and ${biz.areas[1]}</span></li>
           <li>${icon('video')}<span>Telehealth anywhere in Australia</span></li>
         </ul>
       </nav>
+      <div class="display-wrap">
+        <button class="display-btn" id="displayButton" type="button" aria-expanded="false" aria-controls="displayPanel"><span aria-hidden="true">Aa</span><span class="sr-only">Text size and contrast</span></button>
+        <div class="display-panel" id="displayPanel" role="group" aria-label="Text size and contrast" hidden>
+          ${displayChoices('panel')}
+          <a class="display-easy" href="${root}easyread.html">Read this website in Easy Read</a>
+        </div>
+      </div>
       <button class="search-btn" id="siteSearchButton" type="button" aria-haspopup="dialog" aria-expanded="false" aria-keyshortcuts="Control+K Meta+K /">${icon('search')}<span class="search-btn-label">Search</span><kbd aria-hidden="true">Ctrl K</kbd></button>
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteNav"><span class="nav-toggle-icon" aria-hidden="true"><span></span><span></span><span></span></span><span class="nav-toggle-label">Menu</span></button>
     </div>`;
@@ -79,6 +117,10 @@
             <li><a href="${root}process.html">How it works</a></li>
             <li><a href="${root}fees.html">Fees and cancellations</a></li>
             <li><a href="${root}faq.html">Questions people ask</a></li>
+            <li><a href="${root}funding.html">Which funding fits me?</a></li>
+            <li><a href="${root}firstvisit.html">Your first appointment</a></li>
+            <li><a href="${root}glossary.html">Words we use</a></li>
+            <li><a href="${root}easyread.html">Easy Read</a></li>
           </ul>
         </div>
         <div>
@@ -93,6 +135,7 @@
           <h2>For referrers</h2>
           <ul>
             <li><a href="${root}referrals.html">Make a referral</a></li>
+            <li><a href="${root}referrers.html">Information for referrers</a></li>
             <li><a href="${root}privacy.html">Privacy</a></li>
             <li><a href="${root}complaints.html">Complaints and feedback</a></li>
             <li><a href="${root}accessibility.html">Accessibility</a></li>
@@ -117,11 +160,74 @@
   mount('[data-site-footer]', footer);
   AWY.hydrateIcons();
 
+  /* Text size and contrast: both sets of choices stay in step, and the choice is remembered */
+  if (head) {
+    const syncChoices = () => {
+      AWY.$$('input[name$="Size"]', head).forEach((r) => { r.checked = r.value === display.size; });
+      AWY.$$('input[name$="Contrast"]', head).forEach((r) => { r.checked = r.value === display.contrast; });
+    };
+    head.addEventListener('change', (event) => {
+      const r = event.target;
+      if (!r.name || !/(Size|Contrast)$/.test(r.name)) return;
+      display = Object.assign({}, display, /Size$/.test(r.name) ? { size: r.value } : { contrast: r.value });
+      applyDisplay(display);
+      syncChoices();
+      try {
+        localStorage.setItem('awy.display', JSON.stringify(display));
+      } catch (error) {
+        /* storage blocked: the choice still applies to this page */
+      }
+    });
+    const btn = head.querySelector('#displayButton');
+    const panel = head.querySelector('#displayPanel');
+    const setPanel = (open, focusBack) => {
+      panel.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      if (open) {
+        const first = panel.querySelector('input:checked') || panel.querySelector('input');
+        if (first) first.focus();
+      } else if (focusBack) {
+        btn.focus();
+      }
+    };
+    btn.addEventListener('click', () => setPanel(panel.hidden, false));
+    document.addEventListener('click', (event) => {
+      if (!panel.hidden && !event.target.closest('.display-wrap')) setPanel(false, false);
+    });
+    head.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !panel.hidden) {
+        event.stopPropagation();
+        setPanel(false, true);
+      }
+    });
+  }
+
+  /* Printing: questions open up so their answers print too, then go back as they were */
+  window.addEventListener('beforeprint', () => {
+    AWY.$$('details:not([open])').forEach((d) => {
+      d.dataset.printOpened = 'yes';
+      d.open = true;
+    });
+  });
+  window.addEventListener('afterprint', () => {
+    AWY.$$('details[data-print-opened]').forEach((d) => {
+      d.open = false;
+      delete d.dataset.printOpened;
+    });
+  });
+
   /* Search across the whole website, from the button in the header (js/site/search.js) */
   if (head) {
     const script = document.createElement('script');
     script.src = root + 'js/site/search.js';
     document.body.appendChild(script);
+    /* Words explained where they appear (js/site/terms.js) */
+    const terms = document.createElement('script');
+    terms.src = root + 'js/site/terms.js';
+    document.body.appendChild(terms);
+
+    /* Print buttons print the page as it is, with the menu and footer left off */
+    AWY.$$('[data-print]').forEach((b) => b.addEventListener('click', () => window.print()));
   }
 
   /*
@@ -189,7 +295,7 @@
     });
     /* Turning a tablet or widening the window past the menu's width puts everything back */
     window.addEventListener('resize', () => {
-      if (open && window.innerWidth > 1240) setOpen(false, false);
+      if (open && getComputedStyle(toggle).display === 'none') setOpen(false, false);
     });
     /* Coming back to a page from the browser's history never finds the menu still open */
     window.addEventListener('pageshow', () => setOpen(false, false));

@@ -35,6 +35,7 @@
 
   /* Confirms the send, then counts down and returns to the home page, unless the visitor chooses to stay */
   function done(form, kind) {
+    clearDraft(kind);
     const panel = form.closest('.form-panel');
     const home = (document.body.dataset.root || '') + 'index.html';
     panel.innerHTML = String(html`<div class="form-done" tabindex="-1">
@@ -68,6 +69,211 @@
       box.querySelector('[data-countdown]').textContent = 'You can stay on this page as long as you like.';
       event.currentTarget.remove();
     });
+  }
+
+  /*
+    Email suggestions. As someone types their email, a list underneath offers to finish it
+    with a common provider, and a likely typo such as gmial.com is offered as a fix.
+  */
+  const DOMAINS = [
+    'gmail.com', 'outlook.com', 'icloud.com', 'hotmail.com', 'bigpond.com', 'yahoo.com',
+    'outlook.com.au', 'hotmail.com.au', 'live.com.au', 'yahoo.com.au', 'me.com', 'optusnet.com.au',
+    'iinet.net.au', 'tpg.com.au', 'bigpond.net.au', 'westnet.com.au', 'internode.on.net', 'live.com',
+    'msn.com', 'proton.me', 'protonmail.com', 'aol.com', 'health.qld.gov.au', 'health.nsw.gov.au'
+  ];
+  const SHOWN = 6;
+
+  function distance(a, b) {
+    const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+    for (let j = 1; j <= b.length; j++) d[0][j] = j;
+    for (let i = 1; i <= a.length; i++) {
+      for (let j = 1; j <= b.length; j++) {
+        d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+        if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+      }
+    }
+    return d[a.length][b.length];
+  }
+
+  function emailIdeas(value) {
+    const v = value.trim().toLowerCase();
+    if (!v || /\s/.test(v)) return { items: [], fix: false };
+    const at = v.indexOf('@');
+    if (at < 0) return { items: DOMAINS.slice(0, SHOWN).map((d) => v + '@' + d), fix: false };
+    const local = v.slice(0, at);
+    const typed = v.slice(at + 1);
+    if (!local || typed.includes('@')) return { items: [], fix: false };
+    if (DOMAINS.includes(typed)) return { items: [], fix: false };
+    const starts = DOMAINS.filter((d) => d.startsWith(typed));
+    if (starts.length) return { items: starts.slice(0, SHOWN).map((d) => local + '@' + d), fix: false };
+    /* No provider starts that way: if it's close to one, it's probably a typo */
+    if (typed.length >= 4 && typed.includes('.')) {
+      const best = DOMAINS.map((d) => ({ d: d, n: distance(typed, d) })).sort((a, b) => a.n - b.n)[0];
+      if (best.n > 0 && best.n <= 2) return { items: [local + '@' + best.d], fix: true };
+    }
+    return { items: [], fix: false };
+  }
+
+  function emailHints(input) {
+    const field = input.closest('.field');
+    const list = document.createElement('ul');
+    list.className = 'email-hints';
+    list.id = input.id + 'Hints';
+    list.setAttribute('role', 'listbox');
+    list.setAttribute('aria-label', 'Suggested email addresses');
+    list.hidden = true;
+    field.classList.add('has-hints');
+    input.insertAdjacentElement('afterend', list);
+    input.setAttribute('role', 'combobox');
+    input.setAttribute('aria-autocomplete', 'list');
+    input.setAttribute('aria-expanded', 'false');
+    input.setAttribute('aria-controls', list.id);
+    const status = document.createElement('p');
+    status.className = 'sr-only';
+    status.setAttribute('role', 'status');
+    field.appendChild(status);
+    let active = -1;
+    let items = [];
+    const options = () => Array.from(list.querySelectorAll('[role="option"]'));
+
+    const close = () => {
+      list.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+      input.removeAttribute('aria-activedescendant');
+      active = -1;
+    };
+    const highlight = () => {
+      options().forEach((li, i) => {
+        li.classList.toggle('is-active', i === active);
+        li.setAttribute('aria-selected', String(i === active));
+      });
+      if (active >= 0) input.setAttribute('aria-activedescendant', options()[active].id);
+      else input.removeAttribute('aria-activedescendant');
+    };
+    const choose = (i) => {
+      input.value = items[i];
+      close();
+      status.textContent = 'Email set to ' + items[i];
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+    const show = () => {
+      const result = emailIdeas(input.value);
+      items = result.items;
+      if (!items.length || document.activeElement !== input) return close();
+      list.innerHTML = String(html`${result.fix ? html`<li class="email-hints-note" role="presentation">Did you mean</li>` : ''}${items.map((it, i) => html`<li role="option" id="${list.id + i}" aria-selected="false"><span>${it.slice(0, it.indexOf('@'))}</span><strong>${it.slice(it.indexOf('@'))}</strong></li>`)}`);
+      options().forEach((li, i) => {
+        li.addEventListener('mousedown', (event) => event.preventDefault());
+        li.addEventListener('click', () => choose(i));
+      });
+      list.hidden = false;
+      input.setAttribute('aria-expanded', 'true');
+      active = -1;
+      highlight();
+      status.textContent = items.length + (items.length === 1 ? ' suggestion' : ' suggestions') + ', use the arrow keys to choose';
+    };
+
+    input.addEventListener('input', show);
+    input.addEventListener('focus', show);
+    input.addEventListener('blur', () => setTimeout(close, 120));
+    input.addEventListener('keydown', (event) => {
+      if (list.hidden) return;
+      const n = options().length;
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        active = (active + 1) % n;
+        highlight();
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        active = (active - 1 + n) % n;
+        highlight();
+      } else if ((event.key === 'Enter' || event.key === 'Tab') && active >= 0) {
+        if (event.key === 'Enter') event.preventDefault();
+        choose(active);
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        event.stopPropagation();
+        close();
+      }
+    });
+  }
+
+  /*
+    What someone has typed is kept in this browser tab until they send it, so a reload or a
+    wrong click doesn't lose it. It's cleared once sent, and when the tab is closed.
+  */
+  const draftKey = (kind) => 'awy.draft.' + kind;
+
+  function saveDraft(form, kind) {
+    const data = {};
+    Array.from(form.elements).forEach((el) => {
+      if (!el.name || el.name === 'website' || el.type === 'submit') return;
+      if (el.type === 'radio') {
+        if (el.checked) data[el.name] = el.value;
+      } else if (el.type === 'checkbox') {
+        data[el.name] = el.checked;
+      } else {
+        data[el.name] = el.value;
+      }
+    });
+    try {
+      sessionStorage.setItem(draftKey(kind), JSON.stringify(data));
+    } catch (error) {
+      /* storage blocked: the form still works, it just isn't kept */
+    }
+  }
+
+  function loadDraft(form, kind) {
+    let data = null;
+    try {
+      data = JSON.parse(sessionStorage.getItem(draftKey(kind)) || 'null');
+    } catch (error) {
+      data = null;
+    }
+    if (!data) return false;
+    let any = false;
+    Object.keys(data).forEach((name) => {
+      const el = form.elements[name];
+      if (!el) return;
+      if (el instanceof RadioNodeList || (el.length && !el.tagName)) {
+        Array.from(el).forEach((r) => { r.checked = r.value === data[name]; });
+      } else if (el.type === 'checkbox') {
+        el.checked = !!data[name];
+        any = any || el.checked;
+      } else if (el.tagName === 'SELECT') {
+        el.value = data[name];
+        el.dispatchEvent(new Event('change'));
+        any = any || !!data[name];
+      } else {
+        el.value = data[name];
+        any = any || !!data[name];
+      }
+    });
+    return any;
+  }
+
+  function clearDraft(kind) {
+    try {
+      sessionStorage.removeItem(draftKey(kind));
+    } catch (error) {
+      /* nothing to clear */
+    }
+  }
+
+  /*
+    The preferred therapist and how someone heard about us travel at the end of the message
+    (or the reason for a referral), since the enquiry function only sends the fields it knows.
+  */
+  function withExtras(body, kind) {
+    const out = Object.assign({}, body);
+    const lines = [];
+    if (out.therapist && !/^no preference/i.test(out.therapist)) lines.push('Preferred therapist: ' + out.therapist);
+    if (out.heardFrom) lines.push('Heard about us through: ' + out.heardFrom);
+    delete out.therapist;
+    delete out.heardFrom;
+    const field = kind === 'referral' ? 'reason' : 'message';
+    if (lines.length && out[field] !== undefined) out[field] = String(out[field]).trim() + '\n\n' + lines.join('\n');
+    return out;
   }
 
   async function send(body) {
@@ -108,11 +314,32 @@
       fit();
     }
 
-    /* Arriving from "Ask to see Jake" on the team page starts the message for them */
-    const asked = { jake: 'Jake', chelsie: 'Chelsie' }[new URLSearchParams(location.search).get('with')];
-    if (kind === 'contact' && asked && form.elements.message && !form.elements.message.value) {
-      form.elements.message.value = "I'd like to see " + asked + '. ';
+    AWY.$$('input[type="email"]', form).forEach(emailHints);
+
+    /* Anything typed earlier in this tab comes back, and is kept as they go */
+    const restored = loadDraft(form, kind);
+    let saving = null;
+    form.addEventListener('input', () => {
+      clearTimeout(saving);
+      saving = setTimeout(() => saveDraft(form, kind), 250);
+    });
+    form.addEventListener('change', () => saveDraft(form, kind));
+    const keep = form.querySelector('[data-draft-note]');
+    if (keep) {
+      keep.innerHTML = String(html`<span>${restored ? 'We kept what you typed earlier in this tab.' : 'What you type is kept in this tab until you send it.'}</span> <button type="button" class="link-btn" data-clear-draft>Clear the form</button>`);
+      keep.querySelector('[data-clear-draft]').addEventListener('click', () => {
+        form.reset();
+        clearDraft(kind);
+        AWY.$$('select', form).forEach((el) => el.dispatchEvent(new Event('change')));
+        keep.querySelector('span').textContent = 'The form is clear. What you type is kept in this tab until you send it.';
+        const first = form.querySelector('input:not([type="hidden"]):not([tabindex="-1"]), select, textarea');
+        if (first) first.focus();
+      });
     }
+
+    /* Arriving from "Ask to see Jake" on the team page picks them as the preferred therapist */
+    const asked = { jake: 'jake', chelsie: 'chelsie' }[new URLSearchParams(location.search).get('with')];
+    if (asked && form.elements.therapist) form.elements.therapist.value = asked;
 
     /* The NDIS number field only shows when it's relevant */
     const funding = form.elements.fundingType;
@@ -134,7 +361,7 @@
       const button = form.querySelector('[type="submit"]');
       let reply;
       try {
-        reply = await AWY.ui.busy(button, () => send(Object.assign({ kind: kind }, readable(form, result.values))));
+        reply = await AWY.ui.busy(button, () => send(withExtras(Object.assign({ kind: kind }, readable(form, result.values)), kind)));
       } catch (error) {
         problem(form, html`Your ${kind === 'referral' ? 'referral' : 'message'} couldn't be sent, because the connection dropped. Please check your connection and try again, or email us at ${email}. Everything you typed is still here.`);
         return;
