@@ -161,7 +161,7 @@
     return html`<li>
       <span class="avatar" aria-hidden="true">${fmt.initials(s.name || s.email)}</span>
       <div class="what"><strong>${s.name || 'No name given'}</strong>
-        <div class="meta"><span>${icon('mail')}${s.email}</span><span>${icon('clock')}Signed up ${fmt.relative(s.createdAt.slice(0, 10)).toLowerCase()}</span></div>
+        <div class="meta"><span>${icon('mail')}${s.email}</span><span>${icon('clock')}Signed up ${fmt.relative(AWY.date.stampDate(s.createdAt)).toLowerCase()}</span></div>
         ${note ? html`<div class="meta" style="margin-top:0.25rem">${note}</div>` : ''}
       </div>
       <div class="end">

@@ -16,7 +16,7 @@
     { name: 'name', label: 'Practice name', type: 'text', required: true },
     { name: 'email', label: 'Email', type: 'email', required: true },
     { name: 'phone', label: 'Phone', type: 'tel', rule: 'phone' },
-    { name: 'abn', label: 'ABN', type: 'text' },
+    { name: 'abn', label: 'ABN', type: 'text', rule: 'abn' },
     { name: 'postal', label: 'Postal address', type: 'text', span: 'all' },
     { name: 'areaDetail', label: 'Service area', type: 'textarea', span: 'all', rows: 2, hint: 'Where you visit in person, and that telehealth reaches anywhere in Australia' }
   ];

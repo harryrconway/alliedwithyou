@@ -238,7 +238,7 @@
         { name: 'name', label: 'Full name', type: 'text', required: true },
         { name: 'title', label: 'Position title', type: 'text' },
         { name: 'phone', label: 'Phone', type: 'tel', rule: 'phone' },
-        { name: 'registration', label: 'AHPRA registration', type: 'text', hint: 'For registered practitioners only' }
+        { name: 'registration', label: 'AHPRA registration', type: 'text', rule: 'ahpra', hint: 'For registered practitioners only' }
       ]
     },
 

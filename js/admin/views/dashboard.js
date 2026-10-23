@@ -50,7 +50,7 @@
       const myOpen = tasksOn ? rules.openTasks(db, user.id).sort((a, b) => a.dueDate.localeCompare(b.dueDate)) : [];
       const myOverdue = myOpen.filter((t) => t.dueDate < today);
       const myWeek = calendarOn ? rules.blocksBetween(db, today, weekEnd, user.id) : [];
-      const pending = approvals ? rules.pendingStaff(db).filter((s) => s.emailConfirmedAt) : [];
+      const pending = approvals ? rules.approvableStaff(db, AWY.auth.isReserved) : [];
       const newFeedback = review ? db.feedback.filter((f) => f.status === 'submitted') : [];
       const myFeedback = db.feedback.filter((f) => f.createdBy === user.id);
       const checksAll = access.can('manageChecks');
@@ -88,7 +88,7 @@
         <div class="panel-head"><h2 id="approveTitle">Waiting for approval</h2><a class="btn btn-quiet btn-sm" href="#/staff">Team and access</a></div>
         <ul class="rows">${pending.slice(0, 5).map((s) => html`<li>
           <span class="avatar" aria-hidden="true">${fmt.initials(s.name || s.email)}</span>
-          <div class="what"><a href="#/staff">${s.name || s.email}</a><div class="meta"><span>${s.email}</span><span>Signed up ${fmt.relative(s.createdAt.slice(0, 10)).toLowerCase()}</span></div></div>
+          <div class="what"><a href="#/staff">${s.name || s.email}</a><div class="meta"><span>${s.email}</span><span>Signed up ${fmt.relative(AWY.date.stampDate(s.createdAt)).toLowerCase()}</span></div></div>
         </li>`)}</ul>
       </section>` : '';
 
@@ -105,7 +105,7 @@
         <div class="panel-head"><h2 id="fbTitle">${review ? 'Recent feedback' : 'Your feedback'}</h2><a class="btn btn-quiet btn-sm" href="#/feedback">${review ? 'All feedback' : 'View'}</a></div>
         ${feedbackList.length
           ? html`<ul class="rows">${feedbackList.map((f) => html`<li>
-            <div class="what"><a href="#/feedback?open=${f.id}">${f.title}</a><div class="meta"><span>Reference ${f.ref}</span><span>${fmt.relative(f.createdAt.slice(0, 10))}</span>${review ? html`<span>${rules.staffName(db, f.createdBy)}</span>` : ''}</div></div>
+            <div class="what"><a href="#/feedback?open=${f.id}">${f.title}</a><div class="meta"><span>Reference ${f.ref}</span><span>${fmt.relative(AWY.date.stampDate(f.createdAt))}</span>${review ? html`<span>${rules.staffName(db, f.createdBy)}</span>` : ''}</div></div>
             <div class="end">${C.badge('feedback', f.status)}</div>
           </li>`)}</ul>`
           : html`<div class="panel-body">${C.empty({ icon: 'message', title: 'Nothing yet', text: 'Found a problem, or have an idea? Use Report an issue at the top of the page.' })}</div>`}

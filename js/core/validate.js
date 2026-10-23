@@ -1,7 +1,7 @@
 /*
   Form validation shared by the website and the dashboard.
   Rules come from the markup: required, type="email", minlength, min, max,
-  and data-rule="phone | postcode | ndis". data-error overrides the message.
+  and data-rule="phone | postcode | ndis | abn | ahpra". data-error overrides the message.
 */
 (function () {
   const AWY = (window.AWY = window.AWY || {});
@@ -19,6 +19,16 @@
     },
     ndis(v) {
       return /^\d{9}$/.test(v.replace(/\s/g, '')) ? '' : 'NDIS numbers have nine digits';
+    },
+    abn(v) {
+      const d = v.replace(/\s/g, '');
+      if (!/^\d{11}$/.test(d)) return 'ABNs have eleven numbers';
+      const weights = [10, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19];
+      const sum = weights.reduce((t, w, i) => t + w * (Number(d[i]) - (i === 0 ? 1 : 0)), 0);
+      return sum % 89 === 0 ? '' : "That ABN doesn't look right. Please check it on abr.business.gov.au";
+    },
+    ahpra(v) {
+      return /^[a-z]{3}\d{10}$/i.test(v.replace(/\s/g, '')) ? '' : 'AHPRA numbers are three letters then ten numbers, like OCC0001234567';
     }
   };
 

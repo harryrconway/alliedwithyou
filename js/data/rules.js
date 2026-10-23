@@ -29,6 +29,11 @@
       return db.staff.filter((s) => s.status === 'pending').sort((a, b) => a.createdAt.localeCompare(b.createdAt));
     },
 
+    /* Sign ups an administrator can approve now: email confirmed, and not a reserved practice address (those join from their invitation) */
+    approvableStaff(db, isReserved) {
+      return rules.pendingStaff(db).filter((s) => s.emailConfirmedAt && !(isReserved && isReserved(s.email)));
+    },
+
     /* Tasks */
     taskStatus(t, today) {
       if (t.status === 'open' && t.dueDate < today) return 'overdue';

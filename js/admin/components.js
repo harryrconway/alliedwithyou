@@ -360,7 +360,7 @@
         danger: true
       });
       if (!ok) return false;
-      const done = await C.save(AWY.store.remove(opts.table, opts.id), (opts.label.charAt(0).toUpperCase() + opts.label.slice(1)) + ' deleted.', { area: opts.table, operation: 'delete' });
+      const done = await C.save(AWY.store.remove(opts.table, opts.id), (schema.tables[opts.table].singular.charAt(0).toUpperCase() + schema.tables[opts.table].singular.slice(1)) + ' deleted.', { area: opts.table, operation: 'delete' });
       if (done && opts.after) opts.after();
       return !!done;
     },
