@@ -364,7 +364,6 @@ html.is-held .site-header {
     background: var(--color-sage-soft);
     border-color: var(--color-sage);
     color: var(--color-deep);
-    box-shadow: inset 3px 0 0 var(--color-deep);
   }
 
   .nav-actions {
@@ -1806,10 +1805,6 @@ html.is-held .site-header {
 .site-search .search-results a[role="option"]:hover,
 .site-search .search-results a.is-active {
   background: var(--color-green-light);
-}
-
-.site-search .search-results a.is-active {
-  box-shadow: inset 3px 0 0 var(--color-deep);
 }
 
 .site-search .search-results a:hover > .icon:first-child,
