@@ -9,6 +9,7 @@ exclude:
   # See "Under construction" in docs/operations.md.
   - index.html
   - about.html
+  - team.html
   - services.html
   - services/
   - ndis.html

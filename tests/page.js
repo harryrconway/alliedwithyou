@@ -15,7 +15,7 @@ async function open(ctx, width) {
 }
 
 const PUBLIC_PAGES = [
-  'index.html', 'about.html', 'services.html', 'services/assessments.html', 'services/independence.html', 'services/home.html',
+  'index.html', 'about.html', 'team.html', 'services.html', 'services/assessments.html', 'services/independence.html', 'services/home.html',
   'services/technology.html', 'services/therapy.html', 'services/reports.html', 'ndis.html', 'myagedcare.html', 'process.html', 'referrals.html',
   'contact.html', 'northernrivers.html', 'goldcoast.html', 'faq.html', 'fees.html', 'privacy.html', 'complaints.html', 'accessibility.html', '404.html',
   'construction.html', 'admin/index.html'

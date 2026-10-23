@@ -23,7 +23,8 @@
     { url: 'services.html', label: 'Services', icon: 'clipboard', words: 'services help what we do occupational therapy ot' },
     { url: 'process.html', label: 'How it works', icon: 'chart', words: 'how it works process steps what to expect first appointment waiting wait times' },
     { url: 'faq.html', label: 'Questions people ask', icon: 'message', words: 'faq faqs questions answers' },
-    { url: 'about.html', label: 'About us', icon: 'users', words: 'about us team who we are practice' },
+    { url: 'team.html', label: 'Our team', icon: 'users', words: 'team our team staff people therapist therapists who owner owners principal jake chelsie chelsea meet choose' },
+    { url: 'about.html', label: 'About us', icon: 'info', words: 'about us who we are practice how we work' },
     { url: 'privacy.html', label: 'Privacy', icon: 'lock', words: 'privacy personal information data' },
     { url: 'complaints.html', label: 'Complaints and feedback', icon: 'alertCircle', words: 'complaint complaints feedback unhappy concern' },
     { url: 'accessibility.html', label: 'Accessibility', icon: 'eye', words: 'accessibility accessible interpreter interpreters auslan large print' },
@@ -66,7 +67,8 @@
     trip: ['fall'], renovation: ['modification'], renovate: ['modification'], modify: ['modification'],
     reschedule: ['cancel', 'move an appointment'], postpone: ['cancel'],
     hcp: ['support at home', 'package'], homecare: ['support at home', 'package'],
-    waitlist: ['wait'], accident: ['injury']
+    waitlist: ['wait'], accident: ['injury'],
+    chelsea: ['chelsie'], staff: ['team', 'occupational therapist'], owner: ['owned', 'owner']
   };
 
   let index = null;
