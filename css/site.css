@@ -1529,7 +1529,7 @@ html.is-held .site-header {
     justify-content: center;
     width: 2.75rem;
     padding: 0;
-    margin-left: calc(var(--space-3) * -1);
+    margin-left: var(--space-3);
   }
 
   .search-btn-label,
@@ -2412,47 +2412,34 @@ main .is-found {
 
 .about-team-people {
   display: grid;
-  gap: var(--space-4);
+  gap: 0;
   margin: var(--space-6) 0 0;
-  padding: var(--space-5) 0 0;
+  padding: 0;
   list-style: none;
-  border-top: 1px solid rgb(255 255 255 / 0.16);
 }
 
 .about-team-people li {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
+  padding-block: var(--space-4);
+  border-top: 1px solid rgb(255 255 255 / 0.16);
+}
+
+.about-team-people li:last-child {
+  border-bottom: 1px solid rgb(255 255 255 / 0.16);
 }
 
 .about-team-people strong {
   display: block;
   color: var(--color-white);
-  font-size: var(--text-lg);
+  font-size: var(--text-xl);
   line-height: 1.2;
 }
 
-.about-team-people li > span:last-child {
+.about-team-people span {
+  display: block;
+  margin-top: 0.15rem;
   color: #b9d2c8;
   font-size: var(--text-sm);
-}
-
-.about-initial {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 50%;
-  background: var(--color-white);
-  color: var(--color-deep);
-  font-size: 1.35rem;
-  font-weight: var(--weight-bold);
-}
-
-.about-initial.is-sage {
-  background: #dbe7d6;
-  color: #3f5a3a;
+  font-weight: var(--weight-semibold);
 }
 
 .about-team .about-team-btn {
@@ -2551,43 +2538,75 @@ main .is-found {
   }
 }
 
-/* How we work: five commitments, not steps, so no numbers */
+/*
+  How we work: five commitments, not steps, so no numbers. The heading takes the first
+  place in the grid so the five panels fill it evenly, each marked with an arrow.
+*/
 
-.about-approach-title {
-  margin-bottom: var(--space-6);
+.about-approach-grid {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.about-approach-head {
+  padding: var(--space-2) var(--space-4) var(--space-4) 0;
+}
+
+.about-approach-head p {
+  margin: var(--space-3) 0 0;
+  max-width: 22rem;
+  color: var(--color-text-muted);
 }
 
 .about-approach {
-  display: grid;
-  gap: var(--space-6) var(--space-7);
+  display: contents;
   margin: 0;
 }
 
 .about-approach div {
-  padding-left: var(--space-5);
-  border-left: 3px solid var(--color-sage);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--color-white);
+  box-shadow: 0 1px 2px rgb(20 45 45 / 0.04), 0 8px 24px rgb(20 50 50 / 0.05);
 }
 
 .about-approach dt {
   color: var(--color-deep);
   font-size: var(--text-lg);
   font-weight: var(--weight-bold);
+  line-height: var(--leading-snug);
+}
+
+/* An arrow badge: moving forward together, the way the logo's two figures lean in */
+.about-approach dt::before {
+  content: "";
+  display: block;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-bottom: var(--space-4);
+  border-radius: 50%;
+  background: var(--color-sage-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230c5661' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E") center / 1.25rem no-repeat;
 }
 
 .about-approach dd {
   margin: var(--space-2) 0 0;
-  max-width: 34rem;
+  color: var(--color-text);
 }
 
-@media (min-width: 760px) {
-  .about-approach {
+@media (min-width: 720px) {
+  .about-approach-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (min-width: 1100px) {
-  .about-approach {
+  .about-approach-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-5);
+  }
+
+  .about-approach-head {
+    align-self: center;
   }
 }
 
