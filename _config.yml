@@ -4,7 +4,8 @@ exclude:
   # Under construction since 22 October 2026. The real website stays here untouched but
   # isn't published. soon.html and missing.html publish construction.html in its place, as
   # the home page and for any address that isn't found. The staff dashboard in admin/ is
-  # still published. To go live again, delete this group and those two files.
+  # still published. To go live again, delete this group and those two files. The search
+  # index and sitemap are here too, since they describe the pages that aren't published yet.
   # See "Under construction" in docs/operations.md.
   - index.html
   - about.html
@@ -20,7 +21,11 @@ exclude:
   - privacy.html
   - complaints.html
   - accessibility.html
+  - northernrivers.html
+  - goldcoast.html
   - 404.html
+  - js/site/searchindex.json
+  - sitemap.xml
 
   # Never part of the website: notes, database changes and the automated checks
   - docs/

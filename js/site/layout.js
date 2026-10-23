@@ -8,32 +8,47 @@
   const current = document.body.dataset.page || '';
 
   const NAV = [
-    { key: 'about', href: 'about.html', label: 'About' },
-    { key: 'services', href: 'services.html', label: 'Services' },
-    { key: 'ndis', href: 'ndis.html', label: 'NDIS' },
-    { key: 'myagedcare', href: 'myagedcare.html', label: 'My Aged Care' },
-    { key: 'process', href: 'process.html', label: 'How it works' },
-    { key: 'fees', href: 'fees.html', label: 'Fees' },
-    { key: 'faq', href: 'faq.html', label: 'FAQs' },
-    { key: 'contact', href: 'contact.html', label: 'Contact' }
+    { key: 'about', href: 'about.html', label: 'About', icon: 'users' },
+    { key: 'services', href: 'services.html', label: 'Services', icon: 'clipboard' },
+    { key: 'ndis', href: 'ndis.html', label: 'NDIS', icon: 'target' },
+    { key: 'myagedcare', href: 'myagedcare.html', label: 'My Aged Care', icon: 'heart' },
+    { key: 'process', href: 'process.html', label: 'How it works', icon: 'chart' },
+    { key: 'fees', href: 'fees.html', label: 'Fees', icon: 'wallet' },
+    { key: 'faq', href: 'faq.html', label: 'FAQs', icon: 'message' },
+    { key: 'contact', href: 'contact.html', label: 'Contact', icon: 'mail' }
   ];
 
   const icon = (name) => AWY.raw(AWY.icon(name));
+  const here = (key) => AWY.raw(key === current ? 'aria-current="page"' : '');
 
+  /*
+    On phones and tablets the menu fills the screen under the header. The extra details
+    at the bottom only show there; on wide screens the links sit in the header as usual.
+  */
   function header() {
     const links = NAV.map(
-      (item) => html`<a href="${root + item.href}" ${AWY.raw(item.key === current ? 'aria-current="page"' : '')}>${item.label}</a>`
+      (item, i) => html`<a href="${root + item.href}" ${here(item.key)} style="--i:${i}">${icon(item.icon)}<span>${item.label}</span></a>`
     );
     return html`<div class="wrap">
       <a class="brand" href="${root}index.html" aria-label="Allied With You, home">
         <img src="${root}images/logomark.svg" alt="" width="42" height="42">
         <span>Allied <span class="with">With</span> You</span>
       </a>
-      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteNav">${icon('menu')}<span>Menu</span></button>
       <nav class="nav" id="siteNav" aria-label="Main">
-        ${links}
-        <a class="btn" href="${root}referrals.html" ${AWY.raw(current === 'referrals' ? 'aria-current="page"' : '')}>Make a referral</a>
+        <div class="nav-links">${links}</div>
+        <div class="nav-actions">
+          <a class="btn" href="${root}referrals.html" ${here('referrals')}>Make a referral</a>
+          <a class="btn btn-secondary nav-only" href="${root}contact.html">Make an enquiry</a>
+        </div>
+        <div class="nav-mark nav-only" aria-hidden="true"><span><img src="${root}images/logomark.svg" alt="" width="120" height="120"></span></div>
+        <ul class="nav-info nav-only" aria-label="About the practice">
+          <li>${icon('mail')}<a href="mailto:${biz.email}">${biz.email}</a></li>
+          <li>${icon('pin')}<span>Home visits across the ${biz.areas[0]} and ${biz.areas[1]}</span></li>
+          <li>${icon('video')}<span>Telehealth anywhere in Australia</span></li>
+        </ul>
       </nav>
+      <button class="search-btn" id="siteSearchButton" type="button" aria-haspopup="dialog" aria-expanded="false" aria-keyshortcuts="Control+K Meta+K /">${icon('search')}<span class="search-btn-label">Search</span><kbd aria-hidden="true">Ctrl K</kbd></button>
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="siteNav"><span class="nav-toggle-icon" aria-hidden="true"><span></span><span></span><span></span></span><span class="nav-toggle-label">Menu</span></button>
     </div>`;
   }
 
@@ -65,6 +80,14 @@
           </ul>
         </div>
         <div>
+          <h2>Where we work</h2>
+          <ul>
+            <li><a href="${root}northernrivers.html">Northern Rivers</a></li>
+            <li><a href="${root}goldcoast.html">Gold Coast</a></li>
+            <li><a href="${root}process.html#byTelehealth">Telehealth across Australia</a></li>
+          </ul>
+        </div>
+        <div>
           <h2>For referrers</h2>
           <ul>
             <li><a href="${root}referrals.html">Make a referral</a></li>
@@ -92,24 +115,86 @@
   mount('[data-site-footer]', footer);
   AWY.hydrateIcons();
 
-  /* Mobile menu */
+  /* Search across the whole website, from the button in the header (js/site/search.js) */
+  if (head) {
+    const script = document.createElement('script');
+    script.src = root + 'js/site/search.js';
+    document.body.appendChild(script);
+  }
+
+  /*
+    Holds the page still behind the menu or search, including on iPhones, where hiding
+    overflow alone still lets the page scroll. Either one can hold it; it lets go when both have.
+  */
+  let holds = 0;
+  let heldAt = 0;
+  AWY.holdPage = function (hold) {
+    holds = Math.max(0, holds + (hold ? 1 : -1));
+    const body = document.body;
+    if (hold && holds === 1) {
+      heldAt = window.scrollY;
+      /* Room for the scroll bar that's about to disappear, so nothing shifts sideways */
+      const bar = window.innerWidth - document.documentElement.clientWidth;
+      body.style.top = -heldAt + 'px';
+      if (bar > 0) body.style.paddingRight = bar + 'px';
+      document.documentElement.classList.add('is-held');
+    } else if (!hold && holds === 0) {
+      document.documentElement.classList.remove('is-held');
+      body.style.top = '';
+      body.style.paddingRight = '';
+      window.scrollTo({ top: heldAt, behavior: 'instant' });
+    }
+  };
+
+  /* The menu on phones and tablets: fills the screen, everything behind it held still and set aside */
   if (head) {
     const toggle = head.querySelector('.nav-toggle');
+    const label = toggle.querySelector('.nav-toggle-label');
     const nav = head.querySelector('.nav');
-    const setOpen = (open) => {
+    const behind = () => Array.from(document.body.children).filter((el) => el !== head && el.tagName !== 'SCRIPT' && el.tagName !== 'DIALOG');
+    let open = false;
+
+    const setOpen = (next, returnFocus) => {
+      if (next === open) return;
+      open = next;
       toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      label.textContent = open ? 'Close' : 'Menu';
+      head.classList.toggle('menu-open', open);
       nav.classList.toggle('is-open', open);
-    };
-    toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
-    nav.addEventListener('click', (event) => {
-      if (event.target.closest('a')) setOpen(false);
-    });
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && nav.classList.contains('is-open')) {
-        setOpen(false);
+      behind().forEach((el) => {
+        if (open) el.setAttribute('inert', '');
+        else el.removeAttribute('inert');
+      });
+      AWY.holdPage(open);
+      if (open) {
+        const first = nav.querySelector('a');
+        if (first) setTimeout(() => first.focus({ preventScroll: true }), 60);
+      } else if (returnFocus) {
         toggle.focus();
       }
+    };
+    toggle.setAttribute('aria-label', 'Open menu');
+
+    toggle.addEventListener('click', () => setOpen(!open, false));
+    nav.addEventListener('click', (event) => {
+      if (event.target.closest('a')) setOpen(false, false);
     });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && open && !document.querySelector('dialog[open]')) {
+        setOpen(false, true);
+      }
+    });
+    /* Turning a tablet or widening the window past the menu's width puts everything back */
+    window.addEventListener('resize', () => {
+      if (open && window.innerWidth > 1140) setOpen(false, false);
+    });
+    /* Coming back to a page from the browser's history never finds the menu still open */
+    window.addEventListener('pageshow', () => setOpen(false, false));
+    /* Search opened from the header closes the menu first */
+    head.querySelector('#siteSearchButton').addEventListener('click', () => setOpen(false, false), true);
+    AWY.closeMenu = () => setOpen(false, false);
+
     const onScroll = () => head.classList.toggle('is-scrolled', window.scrollY > 8);
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
