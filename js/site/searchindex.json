@@ -70,7 +70,7 @@
      "id": "",
      "title": "About Allied With You",
      "kind": "page",
-     "text": "A small, local occupational therapy practice that works alongside the people we see, their families and the professionals around them. About Allied With You, an occupational therapy practice in the Northern Rivers and Gold Coast, and how we work with clients, families and carers."
+     "text": "A small, local occupational therapy practice that works alongside the people we see, their families and the professionals around them. At home Across the Northern Rivers and the Gold Coast In the community At the shops, on the bus, at work, wherever it happens By telehealth Anywhere in Australia, when that suits better About Allied With You, an occupational therapy practice in the Northern Rivers and Gold Coast, and how we work with clients, families and carers."
     },
     {
      "id": "whoAre",
@@ -79,16 +79,16 @@
      "text": "Allied With You is an occupational therapy practice working with people across the Northern Rivers and the Gold Coast , and by telehealth anywhere in Australia. We help people manage everyday tasks, stay safe at home and keep doing the things that matter to them. That might mean building skills after an illness or injury, finding the right equipment, making changes around the home, or writing a clear report so the right support can be funded. Most of our work happens where life happens: in your home, out in your community, or by telehealth when that suits better."
     },
     {
-     "id": "whoWork",
-     "title": "Who we work with",
-     "kind": "section",
-     "text": "We see people paying privately, people using a health fund, Medicare GP plan or Support at Home package, and NDIS participants. Family members, carers, GPs and support coordinators are welcome to get in touch on someone's behalf."
-    },
-    {
      "id": "teamTitle",
      "title": "Owned and run by Jake and Chelsie",
      "kind": "section",
-     "text": "Our two principal occupational therapists. Meet them, and choose who you'd like to see."
+     "text": "Our two principal occupational therapists. When you work with us, you work with one of them. J Jake Principal Occupational Therapist C Chelsie Principal Occupational Therapist"
+    },
+    {
+     "id": "whoWork",
+     "title": "Who we work with",
+     "kind": "section",
+     "text": "We see people paying privately, people using a health fund, Medicare GP plan or Support at Home package, and NDIS participants. Family members, carers, GPs and support coordinators are welcome to get in touch on someone's behalf. Make a referral . Paying privately Our fees, and what's included Private health insurance Claim from your extras cover Medicare GP plan A rebate when your GP refers you Support at Home Through My Aged Care NDIS participants Self managed and plan managed"
     },
     {
      "id": "approachTitle",
@@ -119,19 +119,19 @@
      "id": "jake",
      "title": "Jake",
      "kind": "section",
-     "text": "Principal occupational therapist Jake is one of the two owners of Allied With You, and sees people at home, out in the community and by telehealth."
+     "text": "Principal Occupational Therapist Owner, Allied With You Jake is one of the two owners of Allied With You, and sees people at home, out in the community and by telehealth."
     },
     {
      "id": "chelsie",
      "title": "Chelsie",
      "kind": "section",
-     "text": "Principal occupational therapist Chelsie is one of the two owners of Allied With You, and sees people at home, out in the community and by telehealth."
+     "text": "Principal Occupational Therapist Owner, Allied With You Chelsie is one of the two owners of Allied With You, and sees people at home, out in the community and by telehealth. Occupational therapists in Australia are registered with the Occupational Therapy Board of Australia through Ahpra. You can check any practitioner on the public register of practitioners ."
     },
     {
      "id": "chooseTitle",
      "title": "Choosing who you see",
      "kind": "section",
-     "text": "If you'd like to see Jake or Chelsie in particular, say so when you get in touch and we'll do our best to arrange it. Sometimes it depends on where you live, the kind of help you need and when you're free, so we'll tell you if the other is a better fit or could see you sooner. Not sure? That's fine. Tell us a little about what's going on, and we'll suggest who would suit you best. Make an enquiry Occupational therapists in Australia are registered with the Occupational Therapy Board of Australia through Ahpra. You can check any practitioner on the public register of practitioners ."
+     "text": "If you'd like to see Jake or Chelsie in particular, say so when you get in touch and we'll do our best to arrange it. Sometimes it depends on where you live, the kind of help you need and when you're free, so we'll tell you if the other is a better fit or could see you sooner. Not sure? That's fine. Tell us a little about what's going on, and we'll suggest who would suit you best. Make an enquiry"
     }
    ]
   },
