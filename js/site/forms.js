@@ -108,6 +108,12 @@
       fit();
     }
 
+    /* Arriving from "Ask to see Jake" on the team page starts the message for them */
+    const asked = { jake: 'Jake', chelsie: 'Chelsie' }[new URLSearchParams(location.search).get('with')];
+    if (kind === 'contact' && asked && form.elements.message && !form.elements.message.value) {
+      form.elements.message.value = "I'd like to see " + asked + '. ';
+    }
+
     /* The NDIS number field only shows when it's relevant */
     const funding = form.elements.fundingType;
     const ndisField = form.querySelector('[data-show-for-ndis]');

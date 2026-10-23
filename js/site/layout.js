@@ -8,7 +8,8 @@
   const current = document.body.dataset.page || '';
 
   const NAV = [
-    { key: 'about', href: 'about.html', label: 'About', icon: 'users' },
+    { key: 'about', href: 'about.html', label: 'About', icon: 'info' },
+    { key: 'team', href: 'team.html', label: 'Our team', icon: 'users' },
     { key: 'services', href: 'services.html', label: 'Services', icon: 'clipboard' },
     { key: 'ndis', href: 'ndis.html', label: 'NDIS', icon: 'target' },
     { key: 'myagedcare', href: 'myagedcare.html', label: 'My Aged Care', icon: 'heart' },
@@ -71,6 +72,7 @@
           <h2>Explore</h2>
           <ul>
             <li><a href="${root}about.html">About us</a></li>
+            <li><a href="${root}team.html">Our team</a></li>
             <li><a href="${root}services.html">Services</a></li>
             <li><a href="${root}ndis.html">NDIS participants</a></li>
             <li><a href="${root}myagedcare.html">My Aged Care</a></li>
@@ -187,7 +189,7 @@
     });
     /* Turning a tablet or widening the window past the menu's width puts everything back */
     window.addEventListener('resize', () => {
-      if (open && window.innerWidth > 1140) setOpen(false, false);
+      if (open && window.innerWidth > 1240) setOpen(false, false);
     });
     /* Coming back to a page from the browser's history never finds the menu still open */
     window.addEventListener('pageshow', () => setOpen(false, false));

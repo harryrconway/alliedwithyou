@@ -270,7 +270,7 @@ html.is-held .site-header {
   Phones and tablets: the menu fills the screen under the header and fits without scrolling.
   Sizes follow the screen's height, so a small phone gets a tighter version of the same layout.
 */
-@media (max-width: 1140px) {
+@media (max-width: 1240px) {
   .nav-toggle {
     display: inline-flex;
   }
@@ -507,6 +507,13 @@ html.is-held .site-header {
   /* Too little room for the logo to read well: it steps aside */
   @media (max-height: 540px) {
     .nav-mark {
+      display: none;
+    }
+  }
+
+  /* The smallest phones: the details step aside, since the Contact tile is right there */
+  @media (max-height: 600px) {
+    .nav-info {
       display: none;
     }
   }
@@ -1517,7 +1524,7 @@ html.is-held .site-header {
 }
 
 /* On wide screens the menu fills the header, so search is a round icon button there */
-@media (min-width: 1141px) {
+@media (min-width: 1241px) {
   .search-btn {
     justify-content: center;
     width: 2.75rem;
@@ -1536,7 +1543,7 @@ html.is-held .site-header {
   }
 }
 
-@media (max-width: 1140px) {
+@media (max-width: 1240px) {
   .search-btn {
     margin-left: auto;
   }
@@ -2321,4 +2328,106 @@ main .is-found {
   flex: none;
   width: 1rem;
   height: 1rem;
+}
+
+/* Team page: a card for each therapist, and the About page's link to it */
+
+.team-full {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  margin-top: 0;
+}
+
+.team-card-full {
+  align-items: flex-start;
+  gap: var(--space-5);
+  padding: var(--space-6);
+}
+
+.team-card-full .team-mark {
+  width: 5.5rem;
+  height: 5.5rem;
+  font-size: 2.1rem;
+}
+
+.team-body h2 {
+  margin: 0;
+  color: var(--color-deep);
+  font-size: var(--text-2xl);
+}
+
+.team-body > p:not(.team-role) {
+  margin: var(--space-3) 0 0;
+}
+
+.team-body .btn {
+  margin-top: var(--space-5);
+}
+
+@media (max-width: 480px) {
+  .team-card-full {
+    flex-direction: column;
+  }
+}
+
+.team-teaser {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border: var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--color-white);
+  box-shadow: var(--shadow-sm);
+}
+
+.team-teaser > div:nth-child(2) {
+  flex: 1 1 18rem;
+}
+
+.team-teaser h2 {
+  margin: 0;
+  font-size: var(--text-xl);
+}
+
+.team-teaser p {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+}
+
+.team-marks {
+  display: flex;
+}
+
+.team-marks .team-mark {
+  width: 3.75rem;
+  height: 3.75rem;
+  font-size: 1.4rem;
+}
+
+.team-marks .team-mark + .team-mark {
+  margin-left: -0.6rem;
+}
+
+/* Nine pages in the menu: on wider screens the links sit a little closer so they clear the logo */
+@media (min-width: 1241px) and (max-width: 1440px) {
+  .nav a {
+    padding-inline: 0.55rem;
+  }
+
+  .nav .btn {
+    margin-left: var(--space-2);
+    padding-inline: 1rem;
+  }
+
+  .site-header .wrap {
+    gap: var(--space-4);
+  }
+}
+
+/* The phone menu: an odd tile out at the end spans the full width rather than leave a gap */
+@media (max-width: 1240px) {
+  .nav-links a:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
 }

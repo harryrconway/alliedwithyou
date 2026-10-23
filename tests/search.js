@@ -9,7 +9,7 @@ const fs = require('fs');
 const path = require('path');
 
 const PAGES = [
-  'index.html', 'about.html', 'services.html', 'services/assessments.html', 'services/independence.html', 'services/home.html',
+  'index.html', 'about.html', 'team.html', 'services.html', 'services/assessments.html', 'services/independence.html', 'services/home.html',
   'services/technology.html', 'services/therapy.html', 'services/reports.html', 'ndis.html', 'myagedcare.html', 'process.html',
   'northernrivers.html', 'goldcoast.html', 'fees.html', 'faq.html', 'referrals.html', 'contact.html', 'privacy.html', 'complaints.html', 'accessibility.html'
 ];
@@ -120,7 +120,7 @@ module.exports = async function search(ctx) {
     if (!(await p.evaluate(() => { const d = document.querySelector(location.hash); return d && d.open; }))) failures.push('The question search found is not opened on arrival');
 
     /* Typos are put right, and everyday words find the website's own */
-    for (const [typed, want] of [['cancelation', /fees\.html/], ['wheelchiar', /technology|myagedcare/], ['zoom', /process|index|faq/], ['how much does it cost', /fees|faq/]]) {
+    for (const [typed, want] of [['cancelation', /fees\.html/], ['wheelchiar', /technology|myagedcare/], ['zoom', /process|index|faq/], ['how much does it cost', /fees|faq/], ['chelsea', /team\.html/], ['jake', /team\.html/], ['who are the therapists', /team\.html/]]) {
       await p.evaluate(() => { if (!document.querySelector('#siteSearch').open) AWY.siteSearch.open(); });
       await p.fill('#siteSearchInput', typed);
       await p.waitForTimeout(250);

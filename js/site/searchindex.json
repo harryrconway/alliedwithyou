@@ -86,21 +86,9 @@
     },
     {
      "id": "teamTitle",
-     "title": "Our occupational therapists",
+     "title": "Owned and run by Jake and Chelsie",
      "kind": "section",
-     "text": "When you work with Allied With You, you work with one of us. We see people at home, in the community and by telehealth."
-    },
-    {
-     "id": "jake",
-     "title": "Jake",
-     "kind": "section",
-     "text": "Occupational therapist"
-    },
-    {
-     "id": "chelsie",
-     "title": "Chelsie",
-     "kind": "section",
-     "text": "Occupational therapist Occupational therapists in Australia are registered with the Occupational Therapy Board of Australia through Ahpra. You can check any practitioner on the public register of practitioners ."
+     "text": "Our two principal occupational therapists. Meet them, and choose who you'd like to see."
     },
     {
      "id": "approachTitle",
@@ -113,6 +101,37 @@
      "title": "Want to talk it through?",
      "kind": "section",
      "text": "If you're wondering whether occupational therapy could help, send us a message. There's no need to have it all worked out first."
+    }
+   ]
+  },
+  {
+   "url": "team.html",
+   "title": "Our team",
+   "heading": "Our team",
+   "sections": [
+    {
+     "id": "",
+     "title": "Our team",
+     "kind": "page",
+     "text": "Allied With You is owned and run by Jake and Chelsie, its two principal occupational therapists. When you work with us, you work with one of them. Meet Jake and Chelsie, the principal occupational therapists who own and run Allied With You, and choose who you would like to see."
+    },
+    {
+     "id": "jake",
+     "title": "Jake",
+     "kind": "section",
+     "text": "Principal occupational therapist Jake is one of the two owners of Allied With You, and sees people at home, out in the community and by telehealth."
+    },
+    {
+     "id": "chelsie",
+     "title": "Chelsie",
+     "kind": "section",
+     "text": "Principal occupational therapist Chelsie is one of the two owners of Allied With You, and sees people at home, out in the community and by telehealth."
+    },
+    {
+     "id": "chooseTitle",
+     "title": "Choosing who you see",
+     "kind": "section",
+     "text": "If you'd like to see Jake or Chelsie in particular, say so when you get in touch and we'll do our best to arrange it. Sometimes it depends on where you live, the kind of help you need and when you're free, so we'll tell you if the other is a better fit or could see you sooner. Not sure? That's fine. Tell us a little about what's going on, and we'll suggest who would suit you best. Make an enquiry Occupational therapists in Australia are registered with the Occupational Therapy Board of Australia through Ahpra. You can check any practitioner on the public register of practitioners ."
     }
    ]
   },
