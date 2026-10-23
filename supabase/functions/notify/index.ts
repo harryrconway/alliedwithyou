@@ -63,7 +63,12 @@ function reply(status: number, body: Record<string, unknown>) {
 }
 
 function today(): string {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: ZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+  return localDay(new Date().toISOString());
+}
+
+// The practice's calendar day for a saved timestamp, rather than its UTC day
+function localDay(stamp: string): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: ZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(stamp));
 }
 
 function addDays(iso: string, n: number): string {
@@ -165,7 +170,7 @@ Deno.serve(async (req) => {
         text: [
           'Hello,',
           '',
-          name + ' (' + p.email + ') created an account for the practice dashboard on ' + longDate(p.created_at.slice(0, 10)) + ', confirmed their email address, and is waiting for approval.',
+          name + ' (' + p.email + ') created an account for the practice dashboard on ' + longDate(localDay(p.created_at)) + ', confirmed their email address, and is waiting for approval.',
           '',
           ...warning,
           'You can approve or decline it in Team and access:',
@@ -197,7 +202,7 @@ Deno.serve(async (req) => {
     .in('status', ['received', 'in_progress']);
   if (privacyError) return reply(500, { ok: false, error: 'read' });
   const duePrivacy = (parts.includes('privacy') ? privacyRows ?? [] : [])
-    .map((p: { id: string; ref: string; status: string; created_at: string }) => ({ ...p, due: addDays(p.created_at.slice(0, 10), 30) }))
+    .map((p: { id: string; ref: string; status: string; created_at: string }) => ({ ...p, due: addDays(localDay(p.created_at), 30) }))
     .map((p) => ({ ...p, pstage: privacyStage(daysUntil(now, p.due)) }))
     .filter((p) => p.pstage);
 

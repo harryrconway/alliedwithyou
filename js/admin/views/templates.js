@@ -170,7 +170,7 @@
         <button type="button" class="link-button" data-open-template="${t.id}">${t.title}</button>
         <div class="meta">
           <span>${C.label('templateFunding', t.funding)}</span>
-          ${v ? html`<span>Version ${v.versionNo}, ${fmt.date(v.createdAt.slice(0, 10))}</span>` : html`<span>No file yet</span>`}
+          ${v ? html`<span>Version ${v.versionNo}, ${fmt.date(AWY.date.stampDate(v.createdAt))}</span>` : html`<span>No file yet</span>`}
         </div>
         ${t.description ? html`<p class="small muted" style="margin-top:0.25rem">${t.description}</p>` : ''}
       </div>

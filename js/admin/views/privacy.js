@@ -69,7 +69,7 @@
         ['Email', p.requesterEmail],
         ['Phone', p.requesterPhone],
         ['What they asked', p.details],
-        ['Due by', fmt.date(D.addDays(p.createdAt.slice(0, 10), 30))]
+        ['Due by', fmt.date(D.addDays(D.stampDate(p.createdAt), 30))]
       ])}`,
       values: p,
       db: db,
@@ -82,7 +82,7 @@
   }
 
   function row(db, p, manage) {
-    const due = D.addDays(p.createdAt.slice(0, 10), 30);
+    const due = D.addDays(D.stampDate(p.createdAt), 30);
     const today = D.today();
     return html`<li>
       <div class="what">

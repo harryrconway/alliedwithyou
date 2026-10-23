@@ -172,7 +172,7 @@
         <button type="button" class="link-button" data-open-report="${f.id}">${f.title}</button>
         <div class="meta">
           <span>Reference ${f.ref}</span>
-          <span>${fmt.relative(f.createdAt.slice(0, 10))}</span>
+          <span>${fmt.relative(AWY.date.stampDate(f.createdAt))}</span>
           ${review ? html`<span>${icon('user')}${f.createdBy ? person(db, f.createdBy) : 'Former staff member'}</span>` : ''}
           ${review && f.assignedTo ? html`<span>${icon('tasks')}${person(db, f.assignedTo)}</span>` : ''}
           ${f.errorRef ? html`<span>${icon('alertCircle')}Error ${f.errorRef}</span>` : ''}
