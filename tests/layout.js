@@ -21,7 +21,7 @@ module.exports = async function layout(ctx) {
   for (const [w, h] of [[320, 568], [390, 844], [768, 1024], [844, 390]]) {
     const m = await ctx.browser.newPage({ viewport: { width: w, height: h } });
     await m.goto(ctx.base + 'fees.html', { waitUntil: 'networkidle' });
-    await m.evaluate(() => window.scrollTo(0, 500));
+    await m.evaluate(() => window.scrollTo({ top: 500, behavior: 'instant' }));
     await m.click('.nav-toggle');
     await m.waitForTimeout(700);
     const state = await m.evaluate(() => {

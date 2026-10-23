@@ -124,7 +124,7 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 * Browser checks default to Chromium. Set `BROWSER=firefox` or `BROWSER=webkit` to run the non database checks under another engine. Doing this on 21 Oct 2026 found two things that still need looking into, both in `tests/`, not the site itself: under Firefox, the `site` check's mocked enquiry request is not intercepted, so it reaches the real function and fails on cross origin grounds, meaning the enquiry form has not actually been proven to work in Firefox yet; under WebKit, the `layout` check's first tab stop assertion fails, which matches Safari's usual default of leaving links out of the tab order until Full Keyboard Access is turned on, so it may be the check that needs adjusting rather than the page
 * The Supabase free plan has no backups, and database backups never include stored files anyway. Acceptable for staff accounts, settings, tasks, availability and blank templates, not for client information or copies of staff documents.
 * Staff checks hold details only. Uploading copies of documents waits for backups and two step sign in for administrators.
-* The website search only covers the public pages, and matches whole words and the start of words, so a misspelling finds nothing. Its index has to be rebuilt with `npm run build` in `tests/` after a page changes; the `search` check fails until it is.
+* The website search only covers the public pages. It matches whole words and the start of words, and puts a misspelling right only when the website has a close enough word. Its index has to be rebuilt with `npm run build` in `tests/` after a page changes; the `search` check fails until it is.
 * Safari and Firefox could not be tested automatically on 23 Oct 2026, as their test engines could not be downloaded. The code was checked by hand for features older versions lack, and two were fixed. Check the website in both before going live.
 * The home page loading animation adds about two seconds to the first visit of each session. It was kept as a design choice, but it is the largest delay left on the website.
 * With larger text on a small phone, the phone menu scrolls inside itself so nothing is cut off; at standard text it fits on one screen. On phones under 600 pixels tall the text size choices step out of the menu, and browser zoom still works.
@@ -135,7 +135,6 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 ## Outstanding work
 
 * Release checks still to do: send the three invitations when the practice is ready, and confirm the locked sections on a live sign in.
-* Today's Stage 7 work (privacy requests and the new search function) is checked and applied on staging, and needs applying to production the same way, following `docs/operations.md`.
 
 What's left from the master plan falls into two kinds, which is simpler than the five separate later stages `docs/audit.md` first set out, since each one builds on the last anyway.
 
