@@ -15,15 +15,17 @@ The test database only ever holds fictional records and throwaway test accounts.
 
 ## Under construction
 
-Since 22 October 2026 the public website is under construction at the practice's request. Every address shows `construction.html` instead, and the staff dashboard at `/admin/` works as normal.
+Since 22 October 2026 the public website is under construction at the practice's request. The home page and any address that isn't found show `construction.html` instead, and the staff dashboard at `/admin/` works as normal.
 
-How it works: GitHub Pages builds the site with Jekyll, and `_config.yml` lists the real pages under `exclude`, so they aren't published. `soon.html` publishes `construction.html` as the home page, and `missing.html` publishes it as the not found page, so old links land on it too. The real pages are untouched in the repository, so they can still be worked on and the automated checks still test them.
+How it works: GitHub Pages builds the site with Jekyll. `soon.html` publishes `construction.html` as the home page, and `missing.html` publishes it as the not found page, so mistyped addresses land on it too. `_config.yml` leaves the real home page, the real not found page and the sitemap out under `exclude`. The real pages are untouched in the repository, so they can still be worked on and the automated checks still test them.
+
+Since 25 October 2026 the other real pages are published again, at the practice's request, so they can look through the website on their own devices before it launches. Clicking the logo on the construction page opens `home.html`, which publishes the real home page at `/home.html`. The real pages' Home links lead back to the construction page, so `js/site/construction.js` remembers the click for the rest of that visit in that tab and sends people straight on to `/home.html`. A new tab shows the construction page again. The logo isn't a link, so search engines don't follow it, but anyone with an old page address from 19 to 22 October now sees that real page, and the contact and referral forms send real enquiries to admin@.
 
 To go live again:
 
-* In `_config.yml`, delete the group of real pages under `exclude`. Keep the last group, which keeps notes, database changes and tests off the website.
-* Delete `soon.html` and `missing.html`.
-* Keep or delete `construction.html`, `css/construction.css` and `js/site/construction.js`. They do nothing once the two files above are gone.
+* In `_config.yml`, delete the under construction group under `exclude`. Keep the last group, which keeps notes, database changes and tests off the website.
+* Delete `soon.html`, `missing.html` and `home.html`.
+* Delete `construction.html`, `css/construction.css` and `js/site/construction.js`. The construction page would otherwise stay published at `/construction.html`, and its logo would open `/home.html`, which no longer exists.
 * In `tests/`, run `npm run build` and then `npm test`, so the search index, sitemap and structured data match the pages.
 * Push to `main`, then check https://alliedwithyou.com.au shows the real home page within a few minutes.
 * Then, once only: add the site to Google Search Console and Bing Webmaster Tools, verified through the domain's records in cPanel, and submit https://alliedwithyou.com.au/sitemap.xml to each.

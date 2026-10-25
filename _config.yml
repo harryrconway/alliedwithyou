@@ -1,37 +1,16 @@
 # What GitHub Pages publishes. It builds the site with Jekyll, which reads this file.
 
 exclude:
-  # Under construction since 22 October 2026. The real website stays here untouched but
-  # isn't published. soon.html and missing.html publish construction.html in its place, as
-  # the home page and for any address that isn't found. The staff dashboard in admin/ is
-  # still published. To go live again, delete this group and those two files. The search
-  # index and sitemap are here too, since they describe the pages that aren't published yet.
+  # Under construction since 22 October 2026. soon.html and missing.html publish
+  # construction.html as the home page and for any address that isn't found, so the real
+  # home page and not found page are left out here. Since 25 October the other real pages
+  # are published again so the practice can look through them: clicking the logo on the
+  # construction page opens home.html, a copy of the real home page. The sitemap stays out
+  # so search engines aren't pointed at pages that aren't launched yet. To go live again,
+  # delete this group, soon.html, missing.html and home.html.
   # See "Under construction" in docs/operations.md.
   - index.html
-  - about.html
-  - team.html
-  - services.html
-  - services/
-  - ndis.html
-  - myagedcare.html
-  - process.html
-  - referrals.html
-  - contact.html
-  - faq.html
-  - fees.html
-  - privacy.html
-  - complaints.html
-  - accessibility.html
-  - northernrivers.html
-  - goldcoast.html
-  - funding.html
-  - firstvisit.html
-  - referrers.html
-  - easyread.html
-  - glossary.html
-  - js/site/glossary.json
   - 404.html
-  - js/site/searchindex.json
   - sitemap.xml
 
   # Never part of the website: notes, database changes and the automated checks
