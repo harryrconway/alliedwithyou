@@ -8,7 +8,10 @@
 
   Content:
     { v: 1, logo: null for the main logo, 'none', or a logo's id,
-      footer: 'text', pageNumbers: true, blocks: [ ... ] }
+      footer: 'text', pageNumbers: true, watermark: true, blocks: [ ... ] }
+  watermark puts a large, faint copy of the logo mark in the bottom right corner of every
+  page, behind the text, running off the edges. The picture is faint itself (see
+  images/watermark.png), so it looks the same in Word, Google Docs and LibreOffice.
   Blocks:
     title { text, lead }          heading { text }          subheading { text }
     text { text, guide }          bullets { items }         ticks { items }
@@ -77,6 +80,7 @@
       logo: c.logo === 'none' || (typeof c.logo === 'string' && /^[0-9a-f-]{36}$/.test(c.logo)) ? c.logo : null,
       footer: c.footer == null ? FOOTER : str(c.footer, 200),
       pageNumbers: c.pageNumbers !== false,
+      watermark: c.watermark !== false,
       blocks: blocks
     };
   }
@@ -206,10 +210,31 @@
     return { w: w, h: h };
   }
 
-  function header(logo) {
-    if (!logo) return HEAD + '<w:hdr ' + NS + '>' + para('', { style: 'Header' }) + '</w:hdr>';
+  /* A4 in EMUs, and the faint logo: 14 cm square, about a quarter of it off the bottom right edges */
+  const PAGE_W = 7560310;
+  const PAGE_H = 10692130;
+  const MARK = 5040000;
+
+  function watermark(mark) {
+    const x = PAGE_W - Math.round(MARK * 0.74);
+    const y = PAGE_H - Math.round(MARK * 0.74);
+    return '<w:r><w:drawing><wp:anchor distT="0" distB="0" distL="0" distR="0" simplePos="0" relativeHeight="0" behindDoc="1" locked="1" layoutInCell="1" allowOverlap="1">' +
+      '<wp:simplePos x="0" y="0"/><wp:positionH relativeFrom="page"><wp:posOffset>' + x + '</wp:posOffset></wp:positionH>' +
+      '<wp:positionV relativeFrom="page"><wp:posOffset>' + y + '</wp:posOffset></wp:positionV>' +
+      '<wp:extent cx="' + MARK + '" cy="' + MARK + '"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:wrapNone/>' +
+      '<wp:docPr id="2" name="Watermark"/><wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>' +
+      '<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic>' +
+      '<pic:nvPicPr><pic:cNvPr id="0" name="watermark.png"/><pic:cNvPicPr/></pic:nvPicPr>' +
+      '<pic:blipFill><a:blip r:embed="rId2"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>' +
+      '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="' + MARK + '" cy="' + MARK + '"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>' +
+      '</pic:pic></a:graphicData></a:graphic></wp:anchor></w:drawing></w:r>';
+  }
+
+  function header(logo, mark) {
+    const behind = mark ? watermark(mark) : '';
+    if (!logo) return HEAD + '<w:hdr ' + NS + (mark ? ' ' + DRAW_NS : '') + '>' + para(behind, { style: 'Header' }) + '</w:hdr>';
     const s = logoSize(logo.width, logo.height);
-    const drawing = '<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="' + s.w + '" cy="' + s.h + '"/>' +
+    const drawing = behind + '<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="' + s.w + '" cy="' + s.h + '"/>' +
       '<wp:docPr id="1" name="Logo"/><wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>' +
       '<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic>' +
       '<pic:nvPicPr><pic:cNvPr id="0" name="logo.' + logo.ext + '"/><pic:cNvPicPr/></pic:nvPicPr>' +
@@ -273,7 +298,7 @@
   const OFFICE = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/';
   const PACKAGE = 'http://schemas.openxmlformats.org/package/2006/relationships/';
 
-  function types(logo) {
+  function types(images) {
     const doc = 'application/vnd.openxmlformats-officedocument.wordprocessingml.';
     const over = [
       ['/word/document.xml', doc + 'document.main+xml'],
@@ -288,7 +313,7 @@
     return HEAD + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
       '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
       '<Default Extension="xml" ContentType="application/xml"/>' +
-      (logo ? '<Default Extension="' + logo.ext + '" ContentType="image/' + logo.ext + '"/>' : '') +
+      Array.from(new Set(images)).map((ext) => '<Default Extension="' + ext + '" ContentType="image/' + ext + '"/>').join('') +
       over.map((o) => '<Override PartName="' + o[0] + '" ContentType="' + o[1] + '"/>').join('') + '</Types>';
   }
 
@@ -307,12 +332,14 @@
 
   /*
     The parts of the Word file, as [{ name, data }] for AWY.zip.
-    options: { title, created, logo: { data: Uint8Array, type: 'image/png' or 'image/jpeg', width, height } or null }
+    options: { title, created, logo: { data: Uint8Array, type: 'image/png' or 'image/jpeg', width, height } or null,
+      watermark: { data: Uint8Array } for the faint logo, a PNG, or null }
   */
   function parts(content, options) {
     const c = normalise(content);
     const o = options || {};
     const logo = o.logo && o.logo.data ? Object.assign({}, o.logo, { ext: o.logo.type === 'image/jpeg' ? 'jpeg' : 'png' }) : null;
+    const mark = c.watermark && o.watermark && o.watermark.data ? o.watermark : null;
     const top = logo ? 2400 : 1134;
     const body = c.blocks.map(block).join('');
     const document = HEAD + '<w:document ' + NS + '><w:body>' + (body || para()) +
@@ -322,7 +349,7 @@
     const titleBlock = c.blocks.find((b) => b.type === 'title');
     const enc = new TextEncoder();
     const files = [
-      ['[Content_Types].xml', types(logo)],
+      ['[Content_Types].xml', types([logo && logo.ext, mark && 'png'].filter((x) => x))],
       ['_rels/.rels', rels([['rId1', OFFICE + 'officeDocument', 'word/document.xml'], ['rId2', PACKAGE + 'metadata/core-properties', 'docProps/core.xml'], ['rId3', OFFICE + 'extended-properties', 'docProps/app.xml']])],
       ['docProps/core.xml', core(o.title || (titleBlock && titleBlock.text) || 'Template', o.created)],
       ['docProps/app.xml', APP],
@@ -330,14 +357,16 @@
       ['word/styles.xml', styles()],
       ['word/numbering.xml', NUMBERING],
       ['word/settings.xml', SETTINGS],
-      ['word/header1.xml', header(logo)],
+      ['word/header1.xml', header(logo, mark)],
       ['word/footer1.xml', footer(c.footer, c.pageNumbers)],
       ['word/_rels/document.xml.rels', rels([['rId1', OFFICE + 'styles', 'styles.xml'], ['rId2', OFFICE + 'numbering', 'numbering.xml'], ['rId3', OFFICE + 'settings', 'settings.xml'], ['rId4', OFFICE + 'header', 'header1.xml'], ['rId5', OFFICE + 'footer', 'footer1.xml']])]
     ].map((f) => ({ name: f[0], data: enc.encode(f[1]) }));
-    if (logo) {
-      files.push({ name: 'word/_rels/header1.xml.rels', data: enc.encode(rels([['rId1', OFFICE + 'image', 'media/logo.' + logo.ext]])) });
-      files.push({ name: 'word/media/logo.' + logo.ext, data: logo.data });
-    }
+    const pictures = [];
+    if (logo) pictures.push(['rId1', OFFICE + 'image', 'media/logo.' + logo.ext]);
+    if (mark) pictures.push(['rId2', OFFICE + 'image', 'media/watermark.png']);
+    if (pictures.length) files.push({ name: 'word/_rels/header1.xml.rels', data: enc.encode(rels(pictures)) });
+    if (logo) files.push({ name: 'word/media/logo.' + logo.ext, data: logo.data });
+    if (mark) files.push({ name: 'word/media/watermark.png', data: mark.data });
     return files;
   }
 

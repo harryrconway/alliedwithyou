@@ -1617,8 +1617,14 @@ a.figure:hover {
 
 .modal-editor {
   width: min(100rem, calc(100vw - 2rem));
+  max-width: none;
   height: calc(100vh - 2rem);
-  max-height: calc(100vh - 2rem);
+  height: calc(100dvh - 2rem);
+  max-height: none;
+}
+
+.ed-short {
+  display: none;
 }
 
 .modal-editor .modal-body {
@@ -1970,11 +1976,52 @@ a.figure:hover {
 }
 
 @media (max-width: 560px) {
+  /* The whole screen on a phone. dvh leaves room for the browser's own bars, so Save stays visible */
   .modal-editor {
     width: 100vw;
     height: 100vh;
-    max-height: 100vh;
+    height: 100dvh;
+    margin: 0;
     border-radius: 0;
+  }
+
+  .modal-editor .modal-head p {
+    display: none;
+  }
+
+  .modal-editor .modal-foot {
+    flex-wrap: nowrap;
+    gap: var(--space-2);
+    border-radius: 0;
+  }
+
+  .ed-long {
+    display: none;
+  }
+
+  .ed-short {
+    display: inline;
+  }
+
+  /* Each fill in row as one group: label and remove side by side, the note underneath */
+  .ed-rows {
+    gap: 0;
+  }
+
+  .ed-row + .ed-row {
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: var(--border);
+  }
+
+  .ed-row [data-row-remove] {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .ed-row [data-k="hint"] {
+    grid-column: 1;
+    grid-row: 2;
   }
 
   .ed-edit,
@@ -1982,9 +2029,12 @@ a.figure:hover {
     padding: var(--space-3);
   }
 
-  .ed-settings,
-  .ed-row {
+  .ed-settings {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ed-row {
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
   .ed-page {
@@ -1994,6 +2044,18 @@ a.figure:hover {
   .pv-foot {
     white-space: normal;
   }
+}
+
+/* The smallest phones: the download button as its icon alone, so the buttons stay on one line */
+@media (max-width: 400px) {
+  .ed-short {
+    display: none;
+  }
+}
+
+/* The faint logo in the bottom right corner, as it prints on every page */
+.ed-page.pv-watermark {
+  background: #fff url("../images/watermark.png") no-repeat right -3.5rem bottom -3.5rem / min(70%, 22rem);
 }
 
 /* Logo library */
