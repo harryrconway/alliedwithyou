@@ -41,6 +41,7 @@
     columns: what the dashboard may write. Anything else in a record is ignored on save.
     nullable: columns where an empty value is stored as null.
     rename: dashboard names that differ from the column name in more than case.
+    select: the columns a list reads, when not all of them are needed on screen.
   */
   const TABLES = {
     staff: {
@@ -101,8 +102,16 @@
     },
     templateVersions: {
       table: 'template_versions', order: 'created_at', desc: true, limit: 1000,
-      columns: ['template_id', 'file_path', 'file_name', 'mime_type', 'size_bytes', 'note'],
-      nullable: []
+      /* What a version was built from is only read when someone edits it */
+      select: 'id, template_id, version_no, file_path, file_name, mime_type, size_bytes, note, uploaded_by, created_at, editable',
+      columns: ['template_id', 'file_path', 'file_name', 'mime_type', 'size_bytes', 'note', 'content'],
+      nullable: ['content']
+    },
+    templateLogos: {
+      table: 'template_logos', order: 'name',
+      columns: ['name', 'file_path', 'mime_type', 'width', 'height', 'size_bytes'],
+      nullable: [],
+      roles: ['administrator']
     },
     staffChecks: {
       table: 'staff_checks', order: 'expires_on',
@@ -213,7 +222,7 @@
   function list(name) {
     const def = TABLES[name];
     if (!def || (def.roles && !(user && def.roles.includes(user.role)))) return Promise.resolve([]);
-    let q = client.from(def.table).select('*').order(def.order, { ascending: !def.desc });
+    let q = client.from(def.table).select(def.select || '*').order(def.order, { ascending: !def.desc });
     if (name === 'calendar') {
       const w = store.calendarWindow();
       q = q.gte('starts_at', D.addDays(w.from, -1)).lt('starts_at', D.addDays(w.to, 2));
@@ -317,7 +326,7 @@
 
     /* Everything the open sections need, read in parallel */
     async snapshot() {
-      const names = ['staff', 'tasks', 'calendar', 'supportItems', 'feedback', 'feedbackNotes', 'feedbackEvents', 'templates', 'templateVersions', 'staffChecks', 'errorEvents', 'auditEvents', 'monitorChecks', 'privacyRequests'];
+      const names = ['staff', 'tasks', 'calendar', 'supportItems', 'feedback', 'feedbackNotes', 'feedbackEvents', 'templates', 'templateVersions', 'templateLogos', 'staffChecks', 'errorEvents', 'auditEvents', 'monitorChecks', 'privacyRequests'];
       const results = await Promise.all(names.map((n) => list(n)).concat([readSettings()]));
       const db = {};
       names.forEach((n, i) => (db[n] = results[i]));
@@ -373,6 +382,27 @@
       if (!rows.length) throw missing();
       emit({ type: 'remove', table: name });
       return { removed: rows.length };
+    },
+
+    /* What a template version was built from in the dashboard, or null for an uploaded file */
+    async versionContent(id) {
+      const row = await run('templateVersions', client.from('template_versions').select('content').eq('id', id).maybeSingle());
+      return row ? row.content : null;
+    },
+
+    /* Deletes a template and every version for good. Change history keeps a record of it.
+       The files go once the versions have, and a file that can't be removed can't be opened either. */
+    async deleteTemplate(id) {
+      const paths = await run('templates', client.rpc('delete_template', { target: id }));
+      if (paths && paths.length) {
+        try {
+          await client.storage.from('templates').remove(paths);
+        } catch (error) {
+          /* nothing points at them any more */
+        }
+      }
+      emit({ type: 'remove', table: 'templates' });
+      return { removed: 1 };
     }
   };
 
@@ -388,6 +418,8 @@
     txt: 'text/plain'
   };
   const MAX_FILE = 25 * 1024 * 1024;
+  const IMAGE_TYPES = { png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg' };
+  const MAX_IMAGE = 2 * 1024 * 1024;
 
   function storageError(error) {
     const status = Number(error.statusCode || error.status || 0);
@@ -414,9 +446,22 @@
       return '';
     },
 
+    imageTypes: IMAGE_TYPES,
+    imageAccept: '.png,.jpg,.jpeg',
+
+    /* Checks a chosen logo. Word files take PNG and JPEG pictures. */
+    checkImage(file) {
+      if (!file) return 'Please choose a picture';
+      const ext = (file.name.split('.').pop() || '').toLowerCase();
+      if (!IMAGE_TYPES[ext]) return 'Please choose a PNG or JPEG picture';
+      if (file.size > MAX_IMAGE) return 'That picture is larger than 2 MB';
+      if (!file.size) return 'That picture is empty';
+      return '';
+    },
+
     async upload(bucket, path, file) {
       const ext = (file.name.split('.').pop() || '').toLowerCase();
-      const { error } = await client.storage.from(bucket).upload(path, file, { contentType: FILE_TYPES[ext] || file.type, upsert: false });
+      const { error } = await client.storage.from(bucket).upload(path, file, { contentType: FILE_TYPES[ext] || IMAGE_TYPES[ext] || file.type, upsert: false });
       if (error) throw storageError(error);
     },
 
@@ -427,6 +472,13 @@
       } catch (error) {
         /* nothing else to do */
       }
+    },
+
+    /* The file itself, for logos shown in the dashboard and put into Word files */
+    async download(bucket, path) {
+      const { data, error } = await client.storage.from(bucket).download(path);
+      if (error) throw storageError(error);
+      return data;
     },
 
     async link(bucket, path, downloadName) {

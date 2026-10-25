@@ -134,6 +134,12 @@ Every Sunday night the `housekeeping` job deletes error reports and sent alert r
 
 Template files live in the private `templates` storage bucket. Nobody can open a file directly. The dashboard asks for a link that works for two minutes, and the database only gives one for an approved template, or to an administrator. Files that became a version can't be deleted, so the history stays complete.
 
+Templates made in the dashboard keep what they were built from with each version, so they can be opened in the editor again, and every save makes the Word file too. Versions uploaded as a file are changed outside the dashboard. The editor's Word files are written by `js/admin/docx.js`, with the main logo from `images/wordlogo.png` unless a template picks another.
+
+Logos for templates live in the private `logos` storage bucket, administrators only. Deleting a logo doesn't change Word files already saved; templates that used it show the main logo the next time they're saved.
+
+An administrator can delete a template for good from its Manage window. The `delete_template()` database function records it in Change history first, with the title and number of versions, then removes the template and its versions, and the dashboard removes the files. It can't be undone, so retire a template instead to hide it but keep it.
+
 Files aren't included in database backups, even on a paid plan. Before anything important is stored only in the dashboard, arrange a separate copy, for example a regular download of the current templates.
 
 The nine starter templates were loaded as drafts on 20 October 2026. They were written for the practice and need reviewing before approval, with agreements and contracts checked by a lawyer.

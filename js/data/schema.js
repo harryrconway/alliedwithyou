@@ -157,6 +157,7 @@
       ['calendar_blocks', 'Calendar'],
       ['templates', 'Templates'],
       ['template_versions', 'Template versions'],
+      ['template_logos', 'Template logos'],
       ['staff_checks', 'Staff checks'],
       ['privacy_requests', 'Privacy requests'],
       ['downloads', 'Downloads']

@@ -23,7 +23,8 @@ Open sections: dashboard, calendar, tasks, templates, team and access (including
 * The calendar shows when people are booked or away, never who with. Entries can be in any state or territory, for telehealth anywhere in Australia. The calendar is laid out in the device's own time, and each entry shows its state and its time there.
 * Tasks and calendar notes must not include client details until client records are switched on.
 * Any failure shows a short reference, and **Report an issue** sends it to the administrators with that reference attached.
-* Templates are versioned: administrators upload a new version with a note on what changed, and every earlier version stays available.
+* Templates are versioned: administrators build and change them in the dashboard, section by section beside a preview of the page, or upload a file made elsewhere. Every save is a new version with a note on what changed, and every earlier version stays available. Templates made in the dashboard are saved as Word files, with the main logo or one from the logo library.
+* An administrator can delete a template for good. Change history keeps a record of what was deleted, by whom and when.
 * Checks and registrations record details and expiry dates only, never copies of documents.
 * Administrators get an email when someone is waiting for approval, a weekly summary on Monday mornings, and an alert if the website, sign in or the enquiry form stops working. Staff get reminders before their checks expire.
 * Feedback and reported issues are tracked as tickets, and administrators can see every change in Change history.
@@ -43,6 +44,7 @@ The checks live in `tests/`. The first time, run `npm install` and `npm run setu
 * the enquiry function refuses other websites, incomplete forms and spam
 * the website forms send readable details and explain failures
 * the dashboard works end to end in a browser: sign in, invitations, password reset, locked sections, tasks, calendar, approvals, fees, feedback and dropped connections
+* the template editor builds, saves and reopens templates, the logo library works, deleting a template removes everything and is recorded, the Word files are sound, and only administrators can do any of it
 * the website search finds and opens sections and questions, from the keyboard too, and its index matches the pages
 * email suggestions, forms that keep what's typed, the preferred therapist and how did you hear questions, the funding helper, words explained where they appear, and the text size and contrast choices all work
 * every public page has a canonical address, share details, a sensible title and description, and the sitemap and structured data match the pages
@@ -67,16 +69,16 @@ css/base.css, components.css             shared styles
 css/site.css, admin.css                  website and dashboard layouts
 js/config.js                             which Supabase project to use, and public settings
 js/vendor/                               supabase-js, copied unchanged
-js/core/                                 icons, formatting, form checking, dialogs, error handling
+js/core/                                 icons, formatting, form checking, dialogs, error handling, zip files
 js/data/                                 field definitions, business rules and the Supabase data layer
 js/site/                                 website header, footer, menu, search, forms, funding helper and word explanations
-js/admin/                                dashboard sign in, frame, routing and shared actions
+js/admin/                                dashboard sign in, frame, routing, shared actions, the template editor and its Word files
 js/admin/views/                          one file per dashboard screen
 supabase/                                migrations, sign in settings, email templates, Edge Function
 fonts/                                   Nunito Sans, the only font used
 docs/                                    audit, register and operations notes
 tests/                                   automated checks (npm test)
-images/                                  logo, logomark, touch icon, share image for link previews
+images/                                  logo, logomark, touch icon, share image for link previews, logo for Word files
 sitemap.xml, robots.txt                  for search engines (rebuilt by npm run seo)
 ```
 
@@ -89,6 +91,8 @@ sitemap.xml, robots.txt                  for search engines (rebuilt by npm run 
 * Explanations of words like plan managed: `glossary.html`, then `npm run build`
 * Email providers suggested in forms: `DOMAINS` in `js/site/forms.js`
 * Fields, options and statuses in the dashboard: `js/data/schema.js`
+* Starting layouts for new templates: `layout()` in `js/admin/editor.js`
+* How Word files made in the dashboard look: `js/admin/docx.js`
 * Which sections are switched on, and what each role can do: `js/admin/access.js`, plus the matching rules in a new migration
 * Practice details, services and fees: the dashboard's Settings screen
 

@@ -10,8 +10,8 @@ const path = require('path');
 const serve = require('./serve');
 
 const ROOT = path.resolve(__dirname, '..');
-const ALL = ['syntax', 'links', 'text', 'search', 'seo', 'auth', 'enquiry', 'notify', 'site', 'helpers', 'crm', 'layout'];
-const BROWSER = ['text', 'search', 'site', 'helpers', 'crm', 'layout'];
+const ALL = ['syntax', 'links', 'text', 'search', 'seo', 'auth', 'enquiry', 'notify', 'site', 'helpers', 'crm', 'editor', 'layout'];
+const BROWSER = ['text', 'search', 'site', 'helpers', 'crm', 'editor', 'layout'];
 const ENGINES = { chromium: 'chromium', firefox: 'firefox', webkit: 'webkit' };
 
 (async () => {
