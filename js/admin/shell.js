@@ -111,7 +111,7 @@
     { section: 'dashboard', label: 'Dashboard', href: '#/', words: 'home overview' },
     { section: 'calendar', label: 'Calendar', href: '#/calendar', words: 'bookings availability leave diary schedule' },
     { section: 'tasks', label: 'Tasks', href: '#/tasks', words: 'to do reminders follow up' },
-    { section: 'templates', label: 'Templates', href: '#/templates', words: 'forms agreements contracts letters documents' },
+    { section: 'templates', label: 'Templates', href: '#/templates', words: 'forms agreements contracts letters documents logo logos editor word' },
     { section: 'staff', label: 'Team and access', href: '#/staff', words: 'staff people roles approvals accounts' },
     { section: 'staff', label: 'Checks and registrations', href: '#/staff/checks', words: 'police working with children blue card ochre ahpra insurance first aid screening' },
     { section: 'statistics', label: 'Reports', href: '#/statistics', words: 'statistics hours figures' },

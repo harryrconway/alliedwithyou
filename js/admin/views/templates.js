@@ -86,10 +86,17 @@
       submitLabel: 'Open the editor',
       onOpen(modal) {
         const field = (name) => modal.form.elements[name].closest('.field');
+        /* Each of these is needed only when shown, so it is marked required then rather than optional */
+        const need = (name, on) => {
+          field(name).hidden = !on;
+          modal.form.elements[name].required = on;
+          const optional = field(name).querySelector('.optional');
+          if (optional) optional.hidden = true;
+        };
         const sync = () => {
           const start = modal.form.elements.start.value;
-          field('copyFrom').hidden = start !== 'copy';
-          field('file').hidden = start !== 'upload';
+          need('copyFrom', start === 'copy');
+          need('file', start === 'upload');
           modal.form.querySelector('[type="submit"]').textContent = start === 'upload' ? 'Add template' : 'Open the editor';
         };
         modal.form.elements.start.addEventListener('change', sync);

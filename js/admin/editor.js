@@ -199,11 +199,11 @@
     const area = (f, value, label, rows) => html`<textarea class="textarea" data-f="${f}" data-lines aria-label="${label}" rows="${rows || Math.max(2, value.length + 1)}">${value.join('\n')}</textarea>`;
     switch (b.type) {
       case 'title':
-        return html`<input class="input ed-big" data-f="text" aria-label="Title" value="${b.text}">
-          <input class="input" data-f="lead" aria-label="Line under the title" placeholder="A line under the title (optional)" value="${b.lead}">`;
+        return html`<input class="input ed-big" data-f="text" aria-label="Title" maxlength="160" value="${b.text}">
+          <input class="input" data-f="lead" aria-label="Line under the title" maxlength="600" placeholder="A line under the title (optional)" value="${b.lead}">`;
       case 'heading':
       case 'subheading':
-        return html`<input class="input" data-f="text" aria-label="${kindLabel(b.type)}" value="${b.text}">`;
+        return html`<input class="input" data-f="text" aria-label="${kindLabel(b.type)}" maxlength="160" value="${b.text}">`;
       case 'text':
         return html`<div class="ed-texttools"><button type="button" class="btn btn-quiet btn-sm" data-bold title="Make the selected words bold"><strong>B</strong> Bold</button></div>
           <textarea class="textarea" data-f="text" aria-label="Text" rows="${Math.min(14, Math.max(3, b.text.split('\n').length + 1))}">${b.text}</textarea>
@@ -214,8 +214,8 @@
         return html`${area('items', b.items, kindLabel(b.type))}<p class="hint">One per line.</p>`;
       case 'fields':
         return html`<div class="ed-rows">${b.rows.map((r, i) => html`<div class="ed-row">
-            <input class="input" data-row="${i}" data-k="label" aria-label="Label ${i + 1}" placeholder="Label" value="${r.label}">
-            <input class="input" data-row="${i}" data-k="hint" aria-label="Note under label ${i + 1}" placeholder="Small note under the label (optional)" value="${r.hint}">
+            <input class="input" data-row="${i}" data-k="label" aria-label="Label ${i + 1}" maxlength="200" placeholder="Label" value="${r.label}">
+            <input class="input" data-row="${i}" data-k="hint" aria-label="Note under label ${i + 1}" maxlength="300" placeholder="Small note under the label (optional)" value="${r.hint}">
             <button type="button" class="btn btn-quiet btn-icon btn-sm" data-row-remove="${i}" aria-label="Remove row ${i + 1}">${icon('close')}</button>
           </div>`)}</div>
           <button type="button" class="btn btn-secondary btn-sm" data-row-add>${icon('plus')}Add a row</button>`;
@@ -223,17 +223,17 @@
         return html`<label class="choice"><input type="checkbox" data-f="labels" ${raw(b.labels ? 'checked' : '')}> Shade the first column, for labels down the side</label>
           <div class="ed-gridwrap"><table class="ed-grid">
             <thead><tr>${b.columns.map((h, j) => html`<th><div class="ed-cell">
-              <input class="input" data-col="${j}" aria-label="Heading for column ${j + 1}" value="${h}">
+              <input class="input" data-col="${j}" aria-label="Heading for column ${j + 1}" maxlength="120" value="${h}">
               ${b.columns.length > 1 ? html`<button type="button" class="btn btn-quiet btn-icon btn-sm" data-col-remove="${j}" aria-label="Remove column ${j + 1}">${icon('close')}</button>` : ''}
             </div></th>`)}<th class="ed-gridend"></th></tr></thead>
-            <tbody>${b.rows.map((r, i) => html`<tr>${r.map((c, j) => html`<td><input class="input" data-cell="${i + ':' + j}" aria-label="Row ${i + 1}, column ${j + 1}" value="${c}"></td>`)}
+            <tbody>${b.rows.map((r, i) => html`<tr>${r.map((c, j) => html`<td><input class="input" data-cell="${i + ':' + j}" aria-label="Row ${i + 1}, column ${j + 1}" maxlength="400" value="${c}"></td>`)}
               <td class="ed-gridend"><button type="button" class="btn btn-quiet btn-icon btn-sm" data-row-remove="${i}" aria-label="Remove row ${i + 1}">${icon('close')}</button></td></tr>`)}</tbody>
           </table></div>
           <div class="btn-row"><button type="button" class="btn btn-secondary btn-sm" data-row-add>${icon('plus')}Add a row</button>
             <button type="button" class="btn btn-secondary btn-sm" data-col-add ${raw(b.columns.length >= 8 ? 'disabled' : '')}>${icon('plus')}Add a column</button></div>
           <p class="hint">Leave cells empty for people to write in.</p>`;
       case 'box':
-        return html`<input class="input" data-f="heading" aria-label="Heading for the box" placeholder="Heading (optional)" value="${b.heading}">
+        return html`<input class="input" data-f="heading" aria-label="Heading for the box" maxlength="160" placeholder="Heading (optional)" value="${b.heading}">
           ${area('items', b.items, 'Points in the box')}<p class="hint">One point per line.</p>`;
       case 'space':
         return html`<label class="ed-inline">Lines of space <input class="input" type="number" min="1" max="30" data-f="lines" value="${b.lines}"></label>`;
@@ -321,7 +321,7 @@
           <section class="ed-preview" aria-label="Preview"><div class="ed-page"></div></section>
         </div>
       </div>`,
-      footer: html`<div class="spacer"><button type="button" class="btn btn-quiet" data-ed-download>${icon('download')}Download a copy</button></div>
+      footer: html`<div class="spacer"><button type="button" class="btn btn-quiet" data-ed-download aria-label="Download a copy">${icon('download')}<span class="ed-long">Download a copy</span><span class="ed-short" aria-hidden="true">Download</span></button></div>
         <button type="button" class="btn btn-secondary" data-ed-cancel>Cancel</button>
         <button type="button" class="btn" data-ed-save>${icon('check')}Save</button>`
     });
@@ -402,6 +402,11 @@
 
     el.addEventListener('change', (event) => {
       const t = event.target;
+      if (t.dataset.f === 'lines') {
+        const s = at(t);
+        if (s) t.value = s.b.lines;
+        return;
+      }
       if (t.dataset.set === 'logo') {
         doc.logo = t.value || null;
         dirty = true;
@@ -547,6 +552,13 @@
         leave();
       }
     }, true);
+    /* Chrome closes a dialog without asking if Escape is pressed twice with no click in between, so the key is handled here */
+    el.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && dirty) {
+        event.preventDefault();
+        leave();
+      }
+    });
     el.addEventListener('cancel', (event) => {
       if (dirty) {
         event.preventDefault();
