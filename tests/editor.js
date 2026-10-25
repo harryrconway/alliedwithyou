@@ -106,16 +106,17 @@ module.exports = async function editor(ctx) {
     /* Every part of a Word file the editor makes is sound XML, and every kind of section comes out */
     const parts = await p.evaluate(() => {
       const content = { blocks: AWY.editor.KINDS.map((k) => ({ type: k.type, text: 'QA ' + k.type + ' & **bold**', lead: 'Lead', items: ['One', 'Two'], rows: k.type === 'fields' ? [{ label: 'Name', hint: 'Hint' }] : [['A', ''], ['B', '']], columns: ['First', 'Second'], labels: true, heading: 'Box', lines: 3 })) };
-      const files = AWY.docx.parts(content, { title: 'QA', logo: { data: new Uint8Array([137, 80, 78, 71]), type: 'image/png', width: 640, height: 465 } });
+      const files = AWY.docx.parts(content, { title: 'QA', logo: { data: new Uint8Array([137, 80, 78, 71]), type: 'image/png', width: 640, height: 465 }, watermark: { data: new Uint8Array([137, 80, 78, 71]) } });
       const text = new TextDecoder();
       return files.map((f) => {
         if (!/\.(xml|rels)$/.test(f.name)) return { name: f.name, bad: false };
         const xml = text.decode(f.data);
-        return { name: f.name, bad: !!new DOMParser().parseFromString(xml, 'application/xml').querySelector('parsererror'), xml: f.name === 'word/document.xml' ? xml : '' };
+        return { name: f.name, bad: !!new DOMParser().parseFromString(xml, 'application/xml').querySelector('parsererror'), xml: f.name === 'word/document.xml' || f.name === 'word/header1.xml' ? xml : '' };
       });
     });
     ok(parts.every((f) => !f.bad), 'A part of the Word file was not sound XML: ' + parts.filter((f) => f.bad).map((f) => f.name).join(', '));
-    ok(['[Content_Types].xml', 'word/document.xml', 'word/styles.xml', 'word/header1.xml', 'word/media/logo.png'].every((n) => parts.some((f) => f.name === n)), 'The Word file was missing a part');
+    ok(['[Content_Types].xml', 'word/document.xml', 'word/styles.xml', 'word/header1.xml', 'word/media/logo.png', 'word/media/watermark.png'].every((n) => parts.some((f) => f.name === n)), 'The Word file was missing a part');
+    ok(/behindDoc="1"/.test((parts.find((f) => f.name === 'word/header1.xml') || {}).xml || ''), 'The faint background logo was not behind the text on every page');
     const body = (parts.find((f) => f.name === 'word/document.xml') || {}).xml || '';
     ok(/QA text &amp; <\/w:t><\/w:r><w:r><w:rPr><w:b\/><\/w:rPr><w:t xml:space="preserve">bold<\/w:t>/.test(body), 'Bold words or symbols in text did not come out right in the Word file');
     ok(/w:w="11906" w:h="16838"/.test(body) && /w:type="page"/.test(body) && /☐/.test(body), 'The Word file was not A4, or lost its page break or tick boxes');

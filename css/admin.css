@@ -2053,6 +2053,11 @@ a.figure:hover {
   }
 }
 
+/* The faint logo in the bottom right corner, as it prints on every page */
+.ed-page.pv-watermark {
+  background: #fff url("../images/watermark.png") no-repeat right -3.5rem bottom -3.5rem / min(70%, 22rem);
+}
+
 /* Logo library */
 
 .logo-list > li {

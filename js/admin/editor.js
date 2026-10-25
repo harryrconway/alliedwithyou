@@ -20,6 +20,7 @@
   const icon = (n) => raw(AWY.icon(n));
 
   const MAIN = { src: '../images/wordlogo.png', type: 'image/png', width: 640, height: 465 };
+  const MARK = '../images/watermark.png';
 
   const KINDS = [
     { type: 'title', label: 'Title' },
@@ -154,6 +155,20 @@
     const res = await fetch(MAIN.src);
     if (!res.ok) throw new Error('The main logo could not be loaded');
     return { data: new Uint8Array(await res.arrayBuffer()), type: MAIN.type, width: MAIN.width, height: MAIN.height };
+  }
+
+  /* The faint logo for the background of every page, fetched once */
+  let markBytes = null;
+  async function watermarkFor(content) {
+    if (!content.watermark) return null;
+    if (!markBytes) {
+      markBytes = fetch(MARK).then((res) => {
+        if (!res.ok) throw new Error('The background logo could not be loaded');
+        return res.arrayBuffer();
+      }).then((b) => new Uint8Array(b));
+      markBytes.catch(() => { markBytes = null; });
+    }
+    return { data: await markBytes };
   }
 
   /* The preview, drawn like the printed page */
@@ -314,6 +329,7 @@
                 <button type="button" class="btn btn-quiet btn-sm" data-manage-logos>${icon('settings')}Logos</button></div></div>
               <div class="field"><label for="edFooter">Footer</label><input class="input" id="edFooter" data-set="footer" maxlength="200" value="${doc.footer}"></div>
               <label class="choice"><input type="checkbox" data-set="pageNumbers" ${raw(doc.pageNumbers ? 'checked' : '')}> Page numbers in the footer</label>
+              <label class="choice"><input type="checkbox" data-set="watermark" ${raw(doc.watermark ? 'checked' : '')}> Faint logo in the background of every page</label>
             </div>
             <ol class="ed-blocks"></ol>
             <div class="ed-insert ed-end"><select class="select" data-add-end aria-label="Add a section at the end"><option value="">Add a section at the end</option>${kindOptions()}</select></div>
@@ -346,6 +362,7 @@
         if (src) logo = '<img class="pv-logo" alt="" src="' + esc(src) + '">';
       }
       const foot = [doc.footer, doc.pageNumbers ? 'Page 1 of 1' : ''].filter((x) => x).join('   |   ');
+      page.classList.toggle('pv-watermark', !!doc.watermark);
       page.innerHTML = logo + (doc.blocks.map(previewBlock).join('') || '<p class="pv-empty">Add a section to start.</p>') + (foot ? '<p class="pv-foot">' + esc(foot) + '</p>' : '');
     }
     const later = () => {
@@ -380,6 +397,7 @@
       if (t.dataset.set) {
         if (t.dataset.set === 'footer') doc.footer = t.value;
         if (t.dataset.set === 'pageNumbers') doc.pageNumbers = t.checked;
+        if (t.dataset.set === 'watermark') doc.watermark = t.checked;
         return changed();
       }
       const s = at(t);
@@ -505,15 +523,16 @@
 
     AWY.on(el, 'click', '[data-ed-download]', (event, btn) => AWY.ui.busy(btn, async () => {
       const content = docx.normalise(doc);
-      const blob = await C.save((async () => docx.build(content, { title: title(), logo: await logoFor(content) }))(), '', { area: 'templates', operation: 'download a copy' });
+      const blob = await C.save((async () => docx.build(content, { title: title(), logo: await logoFor(content), watermark: await watermarkFor(content) }))(), '', { area: 'templates', operation: 'download a copy' });
       if (blob) AWY.exports.save(fileName(title() + ', unsaved copy'), blob);
     }));
 
     /* Saves the Word file and the sections as a new version. A file left behind by a failed save is removed. */
     async function saveVersion(content, note) {
       const logo = await logoFor(content);
+      const mark = await watermarkFor(content);
       if (!template) template = await store.create('templates', Object.assign({}, opts.pending, { status: 'draft' }), { requestId: requestId });
-      const blob = docx.build(content, { title: template.title, logo: logo });
+      const blob = docx.build(content, { title: template.title, logo: logo, watermark: mark });
       const name = fileName(template.title);
       const path = template.id + '/' + AWY.uuid() + '.docx';
       await files.upload('templates', path, new File([blob], name, { type: docx.MIME }));
