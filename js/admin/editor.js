@@ -194,9 +194,14 @@
         return b.items.filter((i) => i.trim()).map((i) => '<p class="pv-tick"><span aria-hidden="true">☐</span> ' + bold(i) + '</p>').join('');
       case 'fields':
         return '<table class="pv-table pv-fields"><tbody>' + b.rows.map((r) => '<tr><th>' + bold(r.label) + (r.hint ? '<small>' + esc(r.hint) + '</small>' : '') + '</th><td></td></tr>').join('') + '</tbody></table>';
-      case 'table':
-        return '<table class="pv-table"><thead><tr>' + b.columns.map((h) => '<th>' + bold(h) + '</th>').join('') + '</tr></thead><tbody>' +
+      case 'table': {
+        /* The same column widths as the Word file, so the preview wraps text where the page will */
+        const widths = b.widths && b.widths.length === b.columns.length ? b.widths : b.columns.map(() => 1);
+        const total = widths.reduce((n, x) => n + x, 0);
+        const cols = '<colgroup>' + widths.map((x) => '<col style="width:' + (100 * x / total).toFixed(2) + '%">').join('') + '</colgroup>';
+        return '<table class="pv-table">' + cols + '<thead><tr>' + b.columns.map((h) => '<th>' + bold(h) + '</th>').join('') + '</tr></thead><tbody>' +
           b.rows.map((r) => '<tr>' + r.map((c, i) => (b.labels && i === 0 ? '<th>' + bold(c) + '</th>' : '<td>' + bold(c) + '</td>')).join('') + '</tr>').join('') + '</tbody></table>';
+      }
       case 'box':
         return '<div class="pv-box">' + (b.heading ? '<strong>' + bold(b.heading) + '</strong>' : '') + '<ul class="pv-bullets">' + b.items.filter((i) => i.trim()).map((i) => '<li>' + bold(i) + '</li>').join('') + '</ul></div>';
       case 'space':

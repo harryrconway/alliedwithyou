@@ -1882,7 +1882,9 @@ a.figure:hover {
   width: 100%;
   margin: 0 0 0.9rem;
   border-collapse: collapse;
+  table-layout: fixed;
   font-size: 0.8rem;
+  overflow-wrap: break-word;
 }
 
 .pv-table th,
@@ -2039,6 +2041,16 @@ a.figure:hover {
 
   .ed-page {
     padding: 1.25rem 1rem;
+  }
+
+  /* Wide tables fit the page on a phone, as they do on paper */
+  .pv-table {
+    font-size: 0.7rem;
+  }
+
+  .pv-table th,
+  .pv-table td {
+    padding: 0.25rem 0.3rem;
   }
 
   .pv-foot {
