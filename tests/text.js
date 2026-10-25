@@ -47,7 +47,7 @@ module.exports = async function text(ctx) {
     const rel = path.relative(ctx.root, file);
     const ast = acorn.parse(fs.readFileSync(file, 'utf8'), { ecmaVersion: 2022, locations: true });
     walk.full(ast, (node) => {
-      if (node.type === 'Literal' && typeof node.value === 'string' && /\s/.test(node.value) && !CODEISH.test(node.value)) flag(rel + ':' + node.loc.start.line, node.value);
+      if (node.type === 'Literal' && typeof node.value === 'string' && /\s/.test(node.value) && !CODEISH.test(node.value)) flag(rel + ':' + node.loc.start.line, node.value.replace(/<[^>]*>/g, ' '));
       if (node.type === 'TemplateLiteral') flag(rel + ':' + node.loc.start.line, node.quasis.map((q) => q.value.cooked).join(' ').replace(/<[^>]*>/g, ' '));
     });
   }

@@ -299,6 +299,7 @@ module.exports = async function crm(ctx) {
     await p.click('.page-head [data-new-template]');
     await p.fill('dialog input[name="title"]', tplName);
     await p.selectOption('dialog select[name="category"]', 'form');
+    await p.selectOption('dialog select[name="start"]', 'upload');
     await p.setInputFiles('dialog input[name="file"]', fileOne);
     await p.click('dialog [type="submit"]');
     ok(await toast(p, 'added as a draft'), 'An administrator could not add a template');

@@ -2,6 +2,8 @@
   Templates: agreements, forms, letters and policies the team downloads and fills in.
   Administrators add templates, upload new versions and approve them. Everyone else sees
   approved templates only. Every version is kept, so nothing is ever overwritten.
+  Templates can also be built and changed in the dashboard (js/admin/editor.js), and an
+  administrator can delete one for good, which Change history records.
 */
 (function () {
   const AWY = (window.AWY = window.AWY || {});
@@ -55,23 +57,83 @@
     if (url) window.location.href = url;
   }
 
+  /* Whether a version can be opened in the editor */
+  const editable = (v) => !!(v && v.editable === true);
+
+  function invalid(name, message) {
+    return new store.StoreError(message, { category: 'validation', friendly: message, errors: { [name]: message } });
+  }
+
+  /* A new template starts from a layout, a copy of another one, or a file someone already has */
   function newTemplate() {
+    const db = AWY.app.db;
+    const copyable = db.templates.filter((t) => editable(current(db, t))).sort((a, b) => a.title.localeCompare(b.title));
+    const starts = AWY.editor.LAYOUTS
+      .concat(copyable.length ? [{ value: 'copy', label: 'A copy of another template' }] : [])
+      .concat([{ value: 'upload', label: 'A file I already have' }]);
     C.openForm({
       title: 'New template',
       subtitle: 'It starts as a draft, which only administrators can see. Approve it when it\'s ready for the team.',
       area: 'templates',
-      fields: schema.tables.templates.fields.concat([fileField('File', 'PDF, Word, Excel or plain text, up to 25 MB.')]),
-      values: { funding: 'any' },
-      db: AWY.app.db,
+      fields: schema.tables.templates.fields.concat([
+        { name: 'start', label: 'Start from', type: 'select', options: starts, required: true, span: 'all' },
+        { name: 'copyFrom', label: 'Template to copy', type: 'select', options: copyable.map((t) => ({ value: t.id, label: t.title })), span: 'all' },
+        Object.assign(fileField('File', 'PDF, Word, Excel or plain text, up to 25 MB.'), { required: false })
+      ]),
+      values: { funding: 'any', start: 'blank' },
+      db: db,
       size: 'wide',
-      submitLabel: 'Add template',
+      submitLabel: 'Open the editor',
+      onOpen(modal) {
+        const field = (name) => modal.form.elements[name].closest('.field');
+        const sync = () => {
+          const start = modal.form.elements.start.value;
+          field('copyFrom').hidden = start !== 'copy';
+          field('file').hidden = start !== 'upload';
+          modal.form.querySelector('[type="submit"]').textContent = start === 'upload' ? 'Add template' : 'Open the editor';
+        };
+        modal.form.elements.start.addEventListener('change', sync);
+        sync();
+      },
       async onSubmit(values, modal) {
-        const file = chosenFile(modal);
-        const t = await store.create('templates', { title: values.title, category: values.category, funding: values.funding, description: values.description, status: 'draft' }, { requestId: modal.requestId });
-        await addVersion(t.id, file, 'First version');
-        AWY.ui.toast(values.title + ' added as a draft.');
+        const details = { title: values.title, category: values.category, funding: values.funding, description: values.description };
+        if (values.start === 'upload') {
+          const file = chosenFile(modal);
+          const t = await store.create('templates', Object.assign({ status: 'draft' }, details), { requestId: modal.requestId });
+          await addVersion(t.id, file, 'First version');
+          AWY.ui.toast(values.title + ' added as a draft.');
+          return;
+        }
+        let content = { blocks: AWY.editor.layout(values.start, values.title) };
+        if (values.start === 'copy') {
+          const source = db.templates.find((t) => t.id === values.copyFrom);
+          if (!source) throw invalid('copyFrom', 'Please choose a template to copy');
+          content = JSON.parse(JSON.stringify(await store.versionContent(current(db, source).id) || {}));
+          const top = (content.blocks || []).find((b) => b.type === 'title');
+          if (top) top.text = values.title;
+        }
+        /* Opens once this form has closed */
+        setTimeout(() => AWY.editor.open({ pending: details, content: content }), 0);
       }
     });
+  }
+
+  /* Opens a version in the editor. Saving makes a new version, so the one opened stays as it was. */
+  async function edit(t, v, button) {
+    const content = await AWY.ui.busy(button, () => C.save(store.versionContent(v.id), '', { area: 'templates', operation: 'open in the editor' }));
+    if (content) AWY.editor.open({ template: t, content: content });
+  }
+
+  async function remove(t) {
+    const n = rules.templateVersions(AWY.app.db, t.id).length;
+    const ok = await AWY.ui.confirm({
+      title: 'Delete ' + t.title + ' for good?',
+      message: 'This removes the template and ' + (n === 1 ? 'its only version' : 'all ' + n + ' versions') + ', including the files. It can\'t be undone.',
+      detail: 'Change history keeps a record of what was deleted, by whom and when. To hide a template but keep it, retire it instead.',
+      confirmLabel: 'Delete for good',
+      danger: true
+    });
+    if (ok) await C.save(store.deleteTemplate(t.id), t.title + ' deleted.', { area: 'templates', operation: 'delete' });
   }
 
   function newVersion(t) {
@@ -127,6 +189,7 @@
     if (!t) return;
     const manage = access.can('manageTemplates');
     const versions = rules.templateVersions(db, t.id);
+    const now = current(db, t);
     const modal = AWY.ui.modal({
       title: t.title,
       subtitle: C.label('templateCategory', t.category) + ', for ' + { any: 'any client', ndis: 'NDIS', sah: 'Support at Home', private: 'private clients' }[t.funding],
@@ -134,30 +197,45 @@
       body: html`
         ${t.description ? html`<p>${t.description}</p>` : ''}
         ${manage ? html`<p style="margin-top:0.75rem">${C.badge('template', t.status)}${t.approvedAt ? html` <span class="small muted">Approved ${fmt.stamp(t.approvedAt)}${t.approvedBy ? ' by ' + rules.staffName(db, t.approvedBy) : ''}</span>` : ''}</p>` : ''}
+        ${manage && now && !editable(now) ? html`<div class="notice" style="margin-top:1rem">${icon('info')}<div>This version was uploaded as a file, so it is changed outside the dashboard: download it, edit it, then upload a new version. To build it here instead, start a new template from a layout.</div></div>` : ''}
         <h3 style="margin-top:1.25rem">Versions</h3>
         ${versions.length ? html`<ul class="rows version-list">${versions.map((v) => html`<li>
           <div class="what"><strong>Version ${v.versionNo}${v.id === t.currentVersionId ? html` <span class="tag">Current</span>` : ''}</strong>
-            <div class="meta"><span>${fmt.stamp(v.createdAt)}</span><span>${v.uploadedBy ? rules.staffName(db, v.uploadedBy) : 'Added at setup'}</span><span>${fmt.fileSize(v.sizeBytes)}</span></div>
+            <div class="meta"><span>${fmt.stamp(v.createdAt)}</span><span>${v.uploadedBy ? rules.staffName(db, v.uploadedBy) : 'Added at setup'}</span><span>${fmt.fileSize(v.sizeBytes)}</span>${editable(v) ? html`<span>Made in the dashboard</span>` : ''}</div>
             ${v.note ? html`<div class="meta" style="margin-top:0.2rem"><span>${v.note}</span></div>` : ''}
           </div>
-          <div class="end"><button type="button" class="btn btn-quiet btn-sm" data-download-version="${v.id}">${icon('download')}Download</button></div>
+          <div class="end">
+            ${manage && editable(v) && v.id !== t.currentVersionId ? html`<button type="button" class="btn btn-quiet btn-sm" data-edit-version="${v.id}">${icon('edit')}Edit from here</button>` : ''}
+            <button type="button" class="btn btn-quiet btn-sm" data-download-version="${v.id}">${icon('download')}Download</button>
+          </div>
         </li>`)}</ul>` : html`<p class="muted small">No file has been uploaded yet.</p>`}`,
       footer: manage
         ? html`<span class="spacer btn-row" style="gap:0.5rem">
             ${t.status === 'draft' ? html`<button type="button" class="btn btn-secondary" data-act="approved" ${raw(t.currentVersionId ? '' : 'disabled')}>${icon('checkCircle')}Approve</button>` : ''}
             ${t.status === 'approved' ? html`<button type="button" class="btn btn-secondary" data-act="retired">${icon('archive')}Retire</button>` : ''}
             ${t.status !== 'draft' ? html`<button type="button" class="btn btn-quiet" data-act="draft">Move to draft</button>` : ''}
+            <button type="button" class="btn btn-quiet btn-danger" data-act="delete">${icon('trash')}Delete</button>
           </span>
-          <button type="button" class="btn btn-secondary" data-act="edit">${icon('edit')}Edit details</button>
-          <button type="button" class="btn" data-act="version">${icon('upload')}New version</button>`
+          <button type="button" class="btn btn-secondary" data-act="edit">Details</button>
+          <button type="button" class="btn ${editable(now) ? 'btn-secondary' : ''}" data-act="version">${icon('upload')}Upload a version</button>
+          ${editable(now) ? html`<button type="button" class="btn" data-act="editor">${icon('edit')}Edit template</button>` : ''}`
         : html`<button type="button" class="btn btn-secondary" data-close>Close</button>`
     });
     AWY.on(modal.el, 'click', '[data-download-version]', (event, btn) => download(t, versions.find((v) => v.id === btn.dataset.downloadVersion), btn));
-    AWY.on(modal.el, 'click', '[data-act]', (event, btn) => {
+    AWY.on(modal.el, 'click', '[data-edit-version]', async (event, btn) => {
+      await edit(t, versions.find((v) => v.id === btn.dataset.editVersion), btn);
+      modal.close();
+    });
+    AWY.on(modal.el, 'click', '[data-act]', async (event, btn) => {
       const act = btn.dataset.act;
+      if (act === 'editor') {
+        await edit(t, now, btn);
+        return modal.close();
+      }
       modal.close();
       if (act === 'version') newVersion(t);
       if (act === 'edit') editTemplate(t);
+      if (act === 'delete') remove(t);
       if (['approved', 'retired', 'draft'].includes(act)) setStatus(t, act);
     });
   }
@@ -208,7 +286,8 @@
         ${C.pageHead({
           title: 'Templates',
           subtitle: 'Agreements, forms, letters and policies, ready to download and fill in. Every change is kept as a new version.',
-          actions: manage ? html`<button type="button" class="btn" data-new-template>${icon('plus')}New template</button>` : ''
+          actions: manage ? html`<button type="button" class="btn btn-secondary" data-logos>${icon('settings')}Logos</button>
+            <button type="button" class="btn" data-new-template>${icon('plus')}New template</button>` : ''
         })}
         ${manage ? html`<div class="notice" style="margin-bottom:1rem">${icon('info')}<div>Drafts are only visible to administrators. Approve a template when it has been reviewed and is ready for the team. Have agreements and contracts checked by a lawyer before their first use.</div></div>` : ''}
         ${manage ? C.seg('show', [
@@ -237,6 +316,7 @@
 
       C.bindFilters(ctx);
       AWY.on(ctx.el, 'click', '[data-new-template]', () => newTemplate());
+      AWY.on(ctx.el, 'click', '[data-logos]', () => AWY.editor.logos());
       AWY.on(ctx.el, 'click', '[data-open-template]', (event, btn) => openTemplate(btn.dataset.openTemplate));
       AWY.on(ctx.el, 'click', '[data-download]', (event, btn) => {
         const t = db.templates.find((x) => x.id === btn.dataset.download);

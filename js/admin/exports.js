@@ -254,6 +254,8 @@
       const res = await fetch(link);
       if (!res.ok) throw new Error('A template file could not be read');
       files.push({ name: path, data: new Uint8Array(await res.arrayBuffer()) });
+      /* A version made in the dashboard also keeps its sections, so it can be put back into the editor */
+      if (v.content && typeof v.content === 'object') files.push({ name: path.replace(/(\.[^.\/]+)?$/, ', editor sections.json'), data: encoder.encode(JSON.stringify(v.content, null, 1)) });
     }
     counts.push('Template files: ' + data.templateVersions.length);
 
@@ -262,7 +264,7 @@
       'Allied With You practice dashboard',
       'A copy of everything in the dashboard, downloaded ' + fmt.stamp(new Date().toISOString()) + ' by ' + (me.name || me.email) + '.',
       '',
-      'Each spreadsheet opens in Excel, Numbers or Google Sheets. Template files holds every version of every template.',
+      'Each spreadsheet opens in Excel, Numbers or Google Sheets. Template files holds every version of every template, and for templates made in the dashboard, a file of the sections the editor needs to open them again.',
       'Calendar times are in the state or territory each entry was booked in.',
       '',
       counts.join('\r\n'),
