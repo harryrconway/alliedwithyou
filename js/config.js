@@ -22,7 +22,7 @@
     supabaseKey: project.key,
     enquiryUrl: project.url + '/functions/v1/enquiry',
     emailDomain: 'alliedwithyou.com.au',
-    practiceEmail: 'admin@alliedwithyou.com.au',
+    practiceEmail: 'hello@alliedwithyou.com.au',
     reservedEmails: ['admin@alliedwithyou.com.au', 'jake@alliedwithyou.com.au', 'chelsie@alliedwithyou.com.au'],
     idleMinutes: 30
   };

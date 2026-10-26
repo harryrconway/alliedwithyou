@@ -4,7 +4,7 @@
 
   AWY.business = {
     name: 'Allied With You',
-    email: 'admin@alliedwithyou.com.au',
+    email: 'hello@alliedwithyou.com.au',
     areas: ['Northern Rivers', 'Gold Coast']
   };
 })();

@@ -33,7 +33,7 @@
   const LINE = 'CFCBC2';
   const BOX = '☐';
   const MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-  const FOOTER = 'Allied With You   |   Occupational therapy   |   admin@alliedwithyou.com.au';
+  const FOOTER = 'Allied With You   |   Occupational therapy   |   hello@alliedwithyou.com.au';
 
   const TYPES = ['title', 'heading', 'subheading', 'text', 'bullets', 'ticks', 'fields', 'table', 'box', 'space', 'pagebreak'];
   const LIMIT = { blocks: 400, text: 20000, line: 600, items: 200, rows: 200, columns: 8 };
