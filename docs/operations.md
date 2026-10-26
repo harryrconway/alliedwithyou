@@ -19,7 +19,7 @@ Since 22 October 2026 the public website is under construction at the practice's
 
 How it works: GitHub Pages builds the site with Jekyll. `soon.html` publishes `construction.html` as the home page, and `missing.html` publishes it as the not found page, so mistyped addresses land on it too. `_config.yml` leaves the real home page, the real not found page and the sitemap out under `exclude`. The real pages are untouched in the repository, so they can still be worked on and the automated checks still test them.
 
-Since 25 October 2026 the other real pages are published again, at the practice's request, so they can look through the website on their own devices before it launches. Clicking the logo on the construction page opens `home.html`, which publishes the real home page at `/home.html`. The real pages' Home links lead back to the construction page, so `js/site/construction.js` remembers the click for the rest of that visit in that tab and sends people straight on to `/home.html`. A new tab shows the construction page again. The logo isn't a link, so search engines don't follow it, but anyone with an old page address from 19 to 22 October now sees that real page, and the contact and referral forms send real enquiries to admin@.
+Since 25 October 2026 the other real pages are published again, at the practice's request, so they can look through the website on their own devices before it launches. Clicking the logo on the construction page opens `home.html`, which publishes the real home page at `/home.html`. The real pages' Home links lead back to the construction page, so `js/site/construction.js` remembers the click for the rest of that visit in that tab and sends people straight on to `/home.html`. A new tab shows the construction page again. The logo isn't a link, so search engines don't follow it, but anyone with an old page address from 19 to 22 October now sees that real page, and the contact and referral forms send real enquiries to hello@.
 
 To go live again:
 
@@ -47,7 +47,7 @@ The AAAA records were added on 20 Oct 2026, after the VentraIP health check flag
 Secrets live in two places only, and never in the repository:
 
 * `.env` in the project folder on Harry's Mac. It's ignored by git and readable only by Harry's account. It holds the test database password, both projects' publishable and secret keys, and the noreply@ mailbox details.
-* Supabase function secrets on each project, set with `supabase secrets set`. These are `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `ENQUIRY_TO`, `FORM_SALT`, `NOTIFY_SECRET`, `DASHBOARD_URL` and, on the test project only, `ALLOW_LOCAL` and `NOTIFY_REDIRECT`.
+* Supabase function secrets on each project, set with `supabase secrets set`. These are `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `ENQUIRY_TO` (hello@ on production), `FORM_SALT`, `NOTIFY_SECRET`, `DASHBOARD_URL`, optionally `ALERTS_TO` (hello@ when not set) and, on the test project only, `ALLOW_LOCAL` and `NOTIFY_REDIRECT`.
 * Supabase Vault on each project holds `notify_url` and `notify_secret` for the scheduled alerts. `.env` keeps a copy of each project's notify secret. When setting them from a file with `--env-file`, put each value in single quotes. Unquoted values with special characters are changed on the way in, which broke the production mail password on release day. `supabase secrets list` shows a fingerprint of each value, so a stored value can be checked against `.env` without revealing it.
 
 The publishable keys are safe to include in the website, because Row Level Security decides what each signed in person can see. The secret keys bypass those rules, so they must never appear in website code.
@@ -77,20 +77,20 @@ The `[remotes.staging]` block points the test project's links at localhost, so t
 
 ## Email alerts
 
-`supabase/functions/notify` sends the dashboard's alerts from noreply@:
+`supabase/functions/notify` sends the dashboard's alerts from noreply@. Those for the practice go to one shared inbox, hello@alliedwithyou.com.au, once there is an active administrator to act on them; the function's `ALERTS_TO` secret can change the address.
 
-* to every active administrator, when someone has created an account, confirmed their email and is waiting for approval
-* to a staff member, 60, 30 and 7 days before one of their checks expires and once after it has, and the same reminders to administrators as one list
+* to the practice, when someone has created an account, confirmed their email and is waiting for approval
+* to a staff member, 60, 30 and 7 days before one of their checks expires and once after it has, and the same reminders to the practice as one list
 
 The database runs it every 15 minutes, through the `pg_cron` job named `notify`. The job reads the function's address and a shared secret from Supabase Vault (`notify_url` and `notify_secret`), and the function checks the secret against its own `NOTIFY_SECRET`. Each alert is recorded in the `notifications` table before it's sent, so it never goes twice, and a failed send is cleared to be tried again. On the test project, the `NOTIFY_REDIRECT` secret sends every alert to noreply@ instead.
 
-The same function sends a weekly summary to administrators on Monday mornings, from 8am Queensland time, and checks every 15 minutes that the website, staff sign in and the enquiry form are answering. After two failures in a row it emails administrators and developers, and again when it's working. Results show under **Feedback and issues**, then **Errors and service checks**. Because these checks run inside Supabase, they can't report Supabase itself being down. A free outside monitor, such as UptimeRobot watching https://alliedwithyou.com.au/admin/, would cover that.
+The same function sends a weekly summary to the practice on Monday mornings, from 8am Queensland time, and checks every 15 minutes that the website, staff sign in and the enquiry form are answering. After two failures in a row it sends an email, and again when it's working. Results show under **Feedback and issues**, then **Errors and service checks**. Because these checks run inside Supabase, they can't report Supabase itself being down. A free outside monitor, such as UptimeRobot watching https://alliedwithyou.com.au/admin/, would cover that.
 
 To pause the alerts, run `select cron.unschedule('notify');` in the SQL editor. The migration shows how to schedule it again. Recent runs are in `cron.job_run_details` and the function's replies in `net._http_response`.
 
 ## Edge Functions
 
-`supabase/functions/enquiry` emails website enquiries and referrals to the practice. On the test project they go to noreply@ instead, so testing never emails the practice. The website forms in `js/site/forms.js` call it, and visitors who can't get through are offered the admin@ address. Deploy with:
+`supabase/functions/enquiry` emails website enquiries and referrals to the practice. On the test project they go to noreply@ instead, so testing never emails the practice. The website forms in `js/site/forms.js` call it, and visitors who can't get through are offered the hello@ address. Deploy with:
 
 `npx supabase functions deploy enquiry --project-ref <ref> --use-api --no-verify-jwt`
 
@@ -126,7 +126,7 @@ Spreadsheet text that starts like a formula, for example with an equals sign, ge
 
 ## Privacy requests and the weekly clean up
 
-Any active staff member can log a privacy request in **Privacy requests**, and administrators work it through to a reply within 30 days. Administrators get an email 7 days before the deadline and once it's passed. These emails give the request's reference and due date only, never the person's name or what they asked.
+Any active staff member can log a privacy request in **Privacy requests**, and administrators work it through to a reply within 30 days. The practice gets an email 7 days before the deadline and once it's passed. These emails give the request's reference and due date only, never the person's name or what they asked.
 
 Every Sunday night the `housekeeping` job deletes error reports and sent alert records older than 180 days. It doesn't touch the change history, which is kept until the practice decides how long to keep records. To change what it clears, add a migration that calls `cron.schedule('housekeeping', ...)` again with the new command.
 

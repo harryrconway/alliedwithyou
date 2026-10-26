@@ -81,7 +81,7 @@ module.exports = async function site(ctx) {
 
   answer = { status: 502, body: { ok: false, error: 'send' } };
   await p.click('form[data-enquiry] [type="submit"]');
-  ok(await p.waitForSelector('.form-summary >> text=admin@alliedwithyou.com.au', { timeout: 5000 }).then(() => true, () => false), 'A failed send did not offer the practice email address');
+  ok(await p.waitForSelector('.form-summary >> text=hello@alliedwithyou.com.au', { timeout: 5000 }).then(() => true, () => false), 'A failed send did not offer the practice email address');
 
   answer = { status: 200, body: { ok: true } };
   await p.click('form[data-enquiry] [type="submit"]');

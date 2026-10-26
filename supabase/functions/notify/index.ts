@@ -1,11 +1,12 @@
-// Sends the dashboard's email alerts:
-//   a new account waiting for approval, to every active administrator
-//   staff checks coming up for renewal, to the person and, as one list, to administrators
-//   privacy requests within 7 days of their 30 day deadline, or past it, to administrators
-//   a weekly summary for administrators, on Monday mornings, naming how long it has been
-//   since Download everything was last run, since that is the only backup on the free plan
-//   service checks: the website, staff sign in and the enquiry form, with an email to
-//   administrators and developers after two failures in a row, and when it's working again
+// Sends the dashboard's email alerts. Those for the practice go to one shared inbox,
+// hello@ unless ALERTS_TO says otherwise, once there is an active administrator to act on them:
+//   a new account waiting for approval
+//   staff checks coming up for renewal, to the person and, as one list, to the practice
+//   privacy requests within 7 days of their 30 day deadline, or past it
+//   a weekly summary on Monday mornings, naming how long it has been since Download
+//   everything was last run, since that is the only backup on the free plan
+//   service checks: the website, staff sign in and the enquiry form, with an email after
+//   two failures in a row, and when it's working again
 // The database's scheduler calls this every 15 minutes with a shared secret. Each alert is
 // recorded in the notifications table before it's sent, so nothing goes out twice, and a
 // failed send is cleared so it's tried again next time. Check emails name the type of check
@@ -27,6 +28,8 @@ function timingSafeEqual(a: string, b: string): boolean {
 const DASHBOARD = Deno.env.get('DASHBOARD_URL') ?? 'https://alliedwithyou.com.au/admin/';
 // On the test project every email goes to this address instead, so nobody real is emailed
 const REDIRECT = Deno.env.get('NOTIFY_REDIRECT') ?? '';
+// The practice's shared inbox for alerts
+const ALERTS_TO = Deno.env.get('ALERTS_TO') ?? 'hello@alliedwithyou.com.au';
 const ZONE = 'Australia/Brisbane';
 // How long between copies of Download everything before the weekly summary says so
 const BACKUP_DUE_DAYS = 14;
@@ -143,17 +146,20 @@ Deno.serve(async (req) => {
   const body = await req.json().catch(() => ({}));
   const parts: string[] = Array.isArray(body.only) ? body.only : ['signups', 'checks', 'weekly', 'monitor', 'privacy'];
   const pretendDown: string[] = REDIRECT && Array.isArray(body.fail) ? body.fail : [];
+  // On the test project a check can name its own alerts address, to find its emails afterwards
+  const alertsTo: string = REDIRECT && typeof body.alertsTo === 'string' ? body.alertsTo : ALERTS_TO;
 
   const { data: people, error: peopleError } = await db.from('profiles').select('id, email, full_name, status, role, created_at, email_confirmed_at');
   if (peopleError) return reply(500, { ok: false, error: 'read' });
   const admins = (people as Person[]).filter((p) => p.role === 'administrator' && p.status === 'active');
-  const adminEmails = admins.map((a) => a.email);
+  // Practice alerts go to the shared inbox, once there's an active administrator to act on them
+  const practiceTo = admins.length ? [alertsTo] : [];
   const byId = new Map((people as Person[]).map((p) => [p.id, p]));
   const mails: Mail[] = [];
 
   // New accounts that have confirmed their email and are waiting. Without an administrator
   // to tell, nothing is recorded, so the alert goes out once there is one.
-  if (parts.includes('signups') && adminEmails.length) {
+  if (parts.includes('signups') && practiceTo.length) {
     const since = new Date(Date.now() - 14 * 86400000).toISOString();
     const { data: reserved } = await db.from('signup_allowlist').select('email');
     const reservedEmails = new Set((reserved ?? []).map((r: { email: string }) => r.email));
@@ -165,7 +171,7 @@ Deno.serve(async (req) => {
         : [];
       mails.push({
         keys: ['signup:' + p.id],
-        to: adminEmails,
+        to: practiceTo,
         subject: 'A new account is waiting for approval',
         text: [
           'Hello,',
@@ -207,7 +213,7 @@ Deno.serve(async (req) => {
     .filter((p) => p.pstage);
 
   // Service checks. An alert goes out after two failures in a row, and once more when it's working again.
-  const watchers = (people as Person[]).filter((p) => (p.role === 'administrator' || p.role === 'developer') && p.status === 'active').map((p) => p.email);
+  const watchers = (people as Person[]).some((p) => (p.role === 'administrator' || p.role === 'developer') && p.status === 'active') ? [alertsTo] : [];
   const monitorMails: Mail[] = [];
   const results: Record<string, string> = {};
   if (parts.includes('monitor')) {
@@ -253,7 +259,7 @@ Deno.serve(async (req) => {
 
   // The weekly summary, on Monday mornings in Queensland, or whenever a test asks for it
   const time = clock();
-  const weeklyDue = parts.includes('weekly') && adminEmails.length && (Array.isArray(body.only) || (time.weekday === 'Monday' && time.hour >= 8));
+  const weeklyDue = parts.includes('weekly') && practiceTo.length && (Array.isArray(body.only) || (time.weekday === 'Monday' && time.hour >= 8));
   const weekKey = 'weekly:' + addDays(now, -((['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].indexOf(time.weekday) + 7) % 7));
 
   // Record every candidate before sending. Keys that already exist come back empty.
@@ -306,7 +312,7 @@ Deno.serve(async (req) => {
         + (backupDays >= BACKUP_DUE_DAYS ? '. It is the only backup while the database plan has none, and is worth running again soon' : '');
     sending.push({
       keys: [weekKey],
-      to: adminEmails,
+      to: practiceTo,
       subject: 'Your weekly dashboard summary',
       text: [
         'Hello,',
@@ -359,11 +365,11 @@ Deno.serve(async (req) => {
     });
   }
 
-  // One list for administrators
-  if (newChecks.length && adminEmails.length) {
+  // One list for the practice
+  if (newChecks.length && practiceTo.length) {
     sending.push({
       keys: [],
-      to: adminEmails,
+      to: practiceTo,
       subject: 'Staff checks needing renewal',
       text: [
         'Hello,',
@@ -382,10 +388,10 @@ Deno.serve(async (req) => {
 
   // Privacy requests close to, or past, their 30 day deadline
   const newPrivacy = duePrivacy.filter((p) => claimed.has('privacy:' + p.id + ':' + p.pstage));
-  if (newPrivacy.length && adminEmails.length) {
+  if (newPrivacy.length && practiceTo.length) {
     sending.push({
       keys: newPrivacy.map((p) => 'privacy:' + p.id + ':' + p.pstage),
-      to: adminEmails,
+      to: practiceTo,
       subject: newPrivacy.some((p) => p.pstage === 'overdue') ? 'A privacy request is overdue' : 'A privacy request is due soon',
       text: [
         'Hello,',

@@ -9,7 +9,7 @@ The website is live at https://alliedwithyou.com.au. The staff dashboard lives a
 ## How it fits together
 
 * **Website:** plain HTML, CSS and JavaScript on GitHub Pages, published whenever `main` changes. The `CNAME` file sets the domain. Email stays with the existing cPanel host.
-* **Enquiry and referral forms:** sent to a Supabase Edge Function, which emails them to admin@ through the noreply@ mailbox. Nothing from a form is stored.
+* **Enquiry and referral forms:** sent to a Supabase Edge Function, which emails them to hello@ through the noreply@ mailbox. Nothing from a form is stored.
 * **Staff dashboard:** signs in with Supabase Auth and reads and writes through `js/data/remote.js`. Every table has Row Level Security, so what each person can see or change is decided by the database, not the screens.
 * **Two Supabase projects, both in Sydney:** production for the live site, and a test project for development and the automated checks. `js/config.js` picks one by the address the page is opened from.
 
@@ -26,7 +26,7 @@ Open sections: dashboard, calendar, tasks, templates, team and access (including
 * Templates are versioned: administrators build and change them in the dashboard, section by section beside a preview of the page, or upload a file made elsewhere. Every save is a new version with a note on what changed, and every earlier version stays available. Templates made in the dashboard are saved as Word files, with the main logo or one from the logo library.
 * An administrator can delete a template for good. Change history keeps a record of what was deleted, by whom and when.
 * Checks and registrations record details and expiry dates only, never copies of documents.
-* Administrators get an email when someone is waiting for approval, a weekly summary on Monday mornings, and an alert if the website, sign in or the enquiry form stops working. Staff get reminders before their checks expire.
+* The practice's hello@ inbox gets an email when someone is waiting for approval, a weekly summary on Monday mornings, privacy request deadlines, the list of staff checks due, and an alert if the website, sign in or the enquiry form stops working. Staff get reminders before their checks expire.
 * Feedback and reported issues are tracked as tickets, and administrators can see every change in Change history.
 * Administrators have reports for any period and can download spreadsheets or one zip file of everything. Each download is noted in Change history.
 

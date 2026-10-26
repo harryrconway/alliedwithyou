@@ -23,6 +23,12 @@ ids = data[0].split()
 if sys.argv[3] == 'delete':
     for i in ids: m.store(i, '+FLAGS', '\\\\Deleted')
     m.expunge()
+if sys.argv[3] == 'subjects':
+    import email, email.header
+    for i in ids:
+        typ, msg = m.fetch(i, '(BODY.PEEK[HEADER.FIELDS (SUBJECT)])')
+        print(str(email.header.make_header(email.header.decode_header(email.message_from_bytes(msg[0][1])['Subject']))))
+    sys.exit(0)
 print(len(ids))
 m.logout()
 `;
@@ -39,9 +45,11 @@ module.exports = async function notify(ctx) {
   const call = (secret, body) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-notify-secret': secret }, body: JSON.stringify(body || {}) });
   /* A run whose emails didn't all send releases them for the next run, so try again as the schedule would */
   let retried = 0;
+  /* Practice alerts go to a made up address carrying this run's code, so its emails can be found in the redirected inbox */
+  const alertsTo = () => 'qa.alerts.' + stamp + '@example.com';
   const run = async (body) => {
     for (let attempt = 0; ; attempt += 1) {
-      const res = await call(env.STAGING_NOTIFY_SECRET, body);
+      const res = await call(env.STAGING_NOTIFY_SECRET, Object.assign({ alertsTo: alertsTo() }, body));
       const json = await res.json().catch(() => ({}));
       if (res.status !== 502 || attempt === 3) return { status: res.status, body: json };
       retried += 1;
@@ -49,6 +57,7 @@ module.exports = async function notify(ctx) {
     }
   };
   const inbox = (marker, action) => Number(execFileSync('python3', ['-c', INBOX, ctx.root + '/.env', marker, action]).toString().trim());
+  const subjects = (marker) => execFileSync('python3', ['-c', INBOX, ctx.root + '/.env', marker, 'subjects']).toString().trim().split('\n').join('; ');
   const stamp = Date.now().toString(36);
   const marker = 'QA Alert ' + stamp;
   const password = 'Test' + Math.random().toString(36).slice(2) + 'Aa9!';
@@ -91,14 +100,16 @@ module.exports = async function notify(ctx) {
     if (requestError) throw new Error('Could not add a privacy request: ' + requestError.message);
     keys.push('privacy:' + request.id + ':7');
 
-    const first = await run({});
+    /* Everything but the weekly summary, which has its own part below, so a Monday run doesn't send it twice */
+    const everything = { only: ['signups', 'checks', 'monitor', 'privacy'] };
+    const first = await run(everything);
     ok(first.status === 200 && first.body.ok, 'The alerts function failed: ' + first.status + ' ' + JSON.stringify(first.body));
     const { data: recorded } = await service.from('notifications').select('key').in('key', keys);
     ok(recorded && recorded.length === 4, 'Not every alert that was due was recorded: ' + (recorded || []).length + ' of 4');
     const { data: far } = await service.from('notifications').select('key').like('key', 'check:' + id('cpr') + ':%');
     ok(far && far.length === 0, 'A reminder was sent for a check that is not due yet');
 
-    await run({});
+    await run(everything);
 
     /* The weekly summary goes once a week. This week's record is cleared first, as the schedule may have sent it already. */
     const weekly = (await run({ only: ['weekly'] })).body;
@@ -129,7 +140,7 @@ module.exports = async function notify(ctx) {
       emails = inbox(stamp, 'count');
     }
     /* Approval alert, the staff member's reminder, the administrators' list, the privacy request reminder, the weekly summary, not working, working again */
-    ok(emails === 7, 'Expected 7 alert emails, found ' + emails);
+    ok(emails === 7, 'Expected 7 alert emails, found ' + emails + ': ' + subjects(stamp));
   } catch (error) {
     failures.push('The check stopped: ' + error.message);
   } finally {
