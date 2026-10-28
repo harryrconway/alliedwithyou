@@ -2726,7 +2726,13 @@ main .is-found {
   font-size: var(--text-sm);
 }
 
-.member-body > p:not(.member-title):not(.member-owner) {
+.member-email {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+.member-body > p:not(.member-title):not(.member-owner):not(.member-email) {
   margin: var(--space-4) 0 var(--space-6);
   padding-top: var(--space-4);
   border-top: var(--border);

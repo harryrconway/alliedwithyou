@@ -122,6 +122,7 @@ Statuses follow the master plan: Complete and verified, Partially implemented, I
 | 21 Oct 2026 | The notify function compares its shared secret with a plain equality check rather than a constant time one | Low | Fixed with a constant time comparison, deployed and checked on staging and production. Behaves the same either way, a wrong secret is still refused |
 | 21 Oct 2026 | The enquiry function strips control characters from free text fields but not line breaks, so a submitted message could contain a line that looks like another field | Low | Fixed in source: every field except the message and the reason for a referral now has line breaks turned into spaces, so only the one field meant to hold a longer message can span several lines |
 | 21 Oct 2026 | The tasks table's update policy checks less on write than on read, unlike the matching calendar policy | Low | Fixed: `20261021000000_taskcheck.sql` applied to staging and production, matching the calendar policy's stronger pattern |
+| 28 Oct 2026 | Website | Live at the practice's request: the under construction page and everything that published it are gone, and the real home page, not found page and sitemap are published again. Jake's and Chelsie's email addresses added to their profiles on the Team page. The same day, cPanel's Email Routing was set to Remote Mail Exchanger, as the domain's mail is now with Microsoft 365, and test messages through both live forms reached hello@ | this change |
 
 ## Known limitations
 
