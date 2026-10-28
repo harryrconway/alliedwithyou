@@ -54,12 +54,6 @@ module.exports = async function helpers(ctx) {
   fail(sent && !('therapist' in sent) && !('heardFrom' in sent), 'Extra fields are sent separately as well as in the message');
   fail((await p.evaluate(() => sessionStorage.getItem('awy.draft.contact'))) === null, 'What was typed is still kept after sending');
 
-  /* Referral form gets suggestions too */
-  await p.goto(ctx.base + 'referrals.html', { waitUntil: 'networkidle' });
-  await p.click('#referrerEmail');
-  await p.keyboard.type('gp');
-  fail((await p.$$('#referrerEmailHints [role="option"]')).length > 0, 'The referral form email has no suggestions');
-
   /* Funding helper */
   await p.goto(ctx.base + 'funding.html', { waitUntil: 'networkidle' });
   await p.check('input[name="ndis"][value="plan"]');

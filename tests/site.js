@@ -1,7 +1,8 @@
 /*
-  The website's enquiry and referral forms, with the enquiry function stood in for,
-  so no email is ever sent. Checks what's sent, and what visitors see when it works,
-  when they've sent too many, and when the connection drops.
+  The website's contact form, with the enquiry function stood in for, so no email is ever
+  sent. Checks what's sent, and what visitors see when it works, when they've sent too many,
+  and when the connection drops. Referrals go through the practice's Splose form, which the
+  referral page shows in a frame.
 */
 const { open } = require('./page');
 
@@ -40,44 +41,25 @@ module.exports = async function site(ctx) {
   await p.waitForTimeout(1500);
   ok(/contact\.html/.test(p.url()), 'A sent contact form left the page before it could be read');
 
-  /* Referral form */
-  const fillReferral = async () => {
-    await p.goto(ctx.base + 'referrals.html', { waitUntil: 'networkidle' });
-    await p.selectOption('#referralType', 'ndis');
-    await p.fill('#referrerName', 'Jo Referrer');
-    await p.selectOption('#referrerRole', 'gp');
-    await p.fill('#referrerPhone', '0400 000 000');
-    await p.fill('#referrerEmail', 'jo@example.com');
-    await p.fill('#firstName', 'Sam');
-    await p.fill('#lastName', 'Person');
-    await p.fill('#phone', '0400 000 001');
-    await p.fill('#suburb', 'Tweed Heads');
-    await p.selectOption('#state', 'VIC');
-    await p.selectOption('#fundingType', 'ndis_plan');
-    await p.selectOption('#service', 'home');
-    await p.fill('#reason', 'Checking the referral form works.');
-    await p.check('input[name="consent"]');
-  };
-
-  await fillReferral();
-  ok((await p.$$eval('#state option', (os) => os.map((o) => o.value).filter(Boolean).join(','))) === everyState, 'The referral form did not offer every state and territory');
-  ok(await p.isVisible('#ndisNumber'), 'The NDIS number field did not appear for an NDIS referral');
-  const fundingFor = (t) => p.selectOption('#referralType', t).then(() => p.$$eval('#fundingType option', (os) => os.map((o) => o.value).filter(Boolean).join(',')));
-  ok((await fundingFor('myagedcare')) === 'sah,unsure', 'A My Aged Care referral offered funding options that do not fit');
-  ok((await fundingFor('private')) === 'private,healthfund,medicare,unsure', 'A private referral offered funding options that do not fit');
-  ok((await fundingFor('ndis')) === 'ndis_self,ndis_plan,unsure', 'An NDIS referral offered funding options that do not fit');
-  ok((await p.inputValue('#fundingType')) === '', 'Changing the type of referral kept a funding choice that no longer fits');
-  await p.selectOption('#fundingType', 'ndis_plan');
+  /* When sending fails, visitors keep what they typed and are told why */
+  await p.goto(ctx.base + 'contact.html', { waitUntil: 'networkidle' });
+  await p.fill('#cFirst', 'Alex');
+  await p.fill('#cLast', 'Tester');
+  await p.fill('#cEmail', 'alex@example.com');
+  await p.selectOption('#cAbout', 'myself');
+  await p.fill('#cSuburb', 'Fremantle');
+  await p.selectOption('#cState', 'WA');
+  await p.fill('#cMessage', 'Checking a failed send.');
   sent = null;
   answer = { status: 429, body: { ok: false, error: 'limit' } };
   await p.click('form[data-enquiry] [type="submit"]');
-  ok(await p.waitForSelector('.form-summary >> text=paused', { timeout: 5000 }).then(() => true, () => false), 'Too many referrals did not explain the pause');
-  ok(sent && sent.kind === 'referral' && sent.referralType === 'NDIS' && sent.state === 'Victoria' && sent.consent === 'yes' && sent.fundingType === 'NDIS plan managed', 'The referral did not send readable details: ' + JSON.stringify(sent));
+  ok(await p.waitForSelector('.form-summary >> text=paused', { timeout: 5000 }).then(() => true, () => false), 'Too many messages did not explain the pause');
+  ok(sent && sent.kind === 'contact', 'The contact form was not sent when it should have been');
 
   answer = 'drop';
   await p.click('form[data-enquiry] [type="submit"]');
-  ok(await p.waitForSelector('.form-summary >> text=connection dropped', { timeout: 5000 }).then(() => true, () => false), 'A dropped connection on the referral form was not explained');
-  ok((await p.inputValue('#reason')) === 'Checking the referral form works.', 'A failed referral lost what was typed');
+  ok(await p.waitForSelector('.form-summary >> text=connection dropped', { timeout: 5000 }).then(() => true, () => false), 'A dropped connection on the contact form was not explained');
+  ok((await p.inputValue('#cMessage')) === 'Checking a failed send.', 'A failed send lost what was typed');
 
   answer = { status: 502, body: { ok: false, error: 'send' } };
   await p.click('form[data-enquiry] [type="submit"]');
@@ -85,8 +67,19 @@ module.exports = async function site(ctx) {
 
   answer = { status: 200, body: { ok: true } };
   await p.click('form[data-enquiry] [type="submit"]');
-  ok(await p.waitForSelector('text=has been sent', { timeout: 5000 }).then(() => true, () => false), 'A referral did not confirm it was sent');
-  ok(await p.isVisible('.done-steps >> text=reviews the referral') && await p.isVisible('.form-done a[href$="referrers.html"]'), 'A sent referral did not show what happens next for referrers');
+  ok(await p.waitForSelector('text=has been sent', { timeout: 5000 }).then(() => true, () => false), 'Sending again after a failure did not work');
+
+  /* Referrals go through the practice's Splose form, stood in for here, in a frame the page's security rules allow */
+  await p.route('https://alliedwithyou.splose.com/**', (route) => route.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><title>Referral form</title><p>Splose referral form</p>' }));
+  await p.goto(ctx.base + 'referrals.html', { waitUntil: 'networkidle' });
+  ok(!(await p.$('form[data-enquiry]')), 'The old referral form is still on the referral page');
+  const embed = await p.$('.embed-form iframe[src="https://alliedwithyou.splose.com/public-form/befe841e-6a11-48b4-8288-2177e6c4a4f1"]');
+  ok(embed && (await embed.getAttribute('title')) === 'Referral form', 'The referral page did not show the Splose referral form');
+  if (embed) {
+    await embed.scrollIntoViewIfNeeded();
+    const inside = await embed.contentFrame();
+    ok(inside && await inside.waitForSelector('text=Splose referral form', { timeout: 5000 }).then(() => true, () => false), 'The Splose referral form did not load in its frame');
+  }
 
   p.problems.filter((x) => !/ERR_FAILED|Failed to load resource|429 for|502 for/.test(x)).forEach((x) => failures.push(x));
   await p.close();

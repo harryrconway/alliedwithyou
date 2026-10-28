@@ -79,7 +79,7 @@ To pause the alerts, run `select cron.unschedule('notify');` in the SQL editor. 
 
 ## Edge Functions
 
-`supabase/functions/enquiry` emails website enquiries and referrals to the practice. On the test project they go to noreply@ instead, so testing never emails the practice. The website forms in `js/site/forms.js` call it, and visitors who can't get through are offered the hello@ address. Deploy with:
+`supabase/functions/enquiry` emails website enquiries from the contact form to the practice. Referrals go through the practice's Splose form on `referrals.html` instead, though the function still accepts them. On the test project they go to noreply@ instead, so testing never emails the practice. The website forms in `js/site/forms.js` call it, and visitors who can't get through are offered the hello@ address. Deploy with:
 
 `npx supabase functions deploy enquiry --project-ref <ref> --use-api --no-verify-jwt`
 

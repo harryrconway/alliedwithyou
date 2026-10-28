@@ -1,5 +1,5 @@
 /*
-  Website enquiry and referral forms.
+  The website's contact form. Referrals go through the practice's Splose form instead.
   A submission is emailed to the practice through the enquiry function. Nothing is kept
   on the website. If sending fails, the visitor keeps what they typed and is offered the
   practice's email address instead.
@@ -41,28 +41,16 @@
     ['1800 353 374', '1800353374', 'Elder abuse helpline, for older people and those who care for them']
   ];
 
-  /* What happens after each kind of form */
+  /* What happens after the contact form */
   const NEXT = {
-    contact: {
-      title: 'Thanks, your message has been sent',
-      lead: "We'll get back to you soon, by your preferred method.",
-      steps: [
-        ['First', 'Jake or Chelsie reads your message.'],
-        ['Then', 'We get in touch to talk about your goals, fees and funding.'],
-        ['After that', 'We book your first visit, at home, in the community or by telehealth.']
-      ],
-      more: ['firstvisit.html', 'Your first appointment']
-    },
-    referral: {
-      title: 'Thanks, your referral has been sent',
-      lead: "We'll contact the person, or their representative, and let you know once we've been in touch.",
-      steps: [
-        ['First', 'Jake or Chelsie reviews the referral.'],
-        ['Then', 'We call the person to talk about goals, funding and timing.'],
-        ['After that', "We let you know, and send reports when they're ready."]
-      ],
-      more: ['referrers.html', 'Information for referrers']
-    }
+    title: 'Thanks, your message has been sent',
+    lead: "We'll get back to you soon, by your preferred method.",
+    steps: [
+      ['First', 'Jake or Chelsie reads your message.'],
+      ['Then', 'We get in touch to talk about your goals, fees and funding.'],
+      ['After that', 'We book your first visit, at home, in the community or by telehealth.']
+    ],
+    more: ['firstvisit.html', 'Your first appointment']
   };
 
   /* Confirms the send, with what happens next and where to get help now. It stays on screen, so there's time to read it. */
@@ -70,7 +58,7 @@
     clearDraft(kind);
     const panel = form.closest('.form-panel');
     const root = document.body.dataset.root || '';
-    const next = NEXT[kind === 'referral' ? 'referral' : 'contact'];
+    const next = NEXT;
     panel.innerHTML = String(html`<div class="form-done" tabindex="-1">
       <div class="done-alert">
         ${raw(AWY.icon('alert'))}
@@ -292,18 +280,17 @@
   }
 
   /*
-    The preferred therapist and how someone heard about us travel at the end of the message
-    (or the reason for a referral), since the enquiry function only sends the fields it knows.
+    The preferred therapist and how someone heard about us travel at the end of the message,
+    since the enquiry function only sends the fields it knows.
   */
-  function withExtras(body, kind) {
+  function withExtras(body) {
     const out = Object.assign({}, body);
     const lines = [];
     if (out.therapist && !/^no preference/i.test(out.therapist)) lines.push('Preferred therapist: ' + out.therapist);
     if (out.heardFrom) lines.push('Heard about us through: ' + out.heardFrom);
     delete out.therapist;
     delete out.heardFrom;
-    const field = kind === 'referral' ? 'reason' : 'message';
-    if (lines.length && out[field] !== undefined) out[field] = String(out[field]).trim() + '\n\n' + lines.join('\n');
+    if (lines.length && out.message !== undefined) out.message = String(out.message).trim() + '\n\n' + lines.join('\n');
     return out;
   }
 
@@ -327,23 +314,6 @@
   AWY.$$('form[data-enquiry]').forEach((form) => {
     const kind = form.dataset.enquiry;
     AWY.validate.live(form);
-
-    /* Once the type of referral is chosen, the funding question only offers the options that fit it */
-    const type = form.elements.referralType;
-    const fundingSelect = form.elements.fundingType;
-    if (type && fundingSelect) {
-      const all = Array.from(fundingSelect.options).map((o) => o.cloneNode(true));
-      const fit = () => {
-        const current = fundingSelect.value;
-        fundingSelect.innerHTML = '';
-        all.filter((o) => !o.value || !o.dataset.for || !type.value || o.dataset.for === type.value)
-          .forEach((o) => fundingSelect.appendChild(o.cloneNode(true)));
-        fundingSelect.value = Array.from(fundingSelect.options).some((o) => o.value === current) ? current : '';
-        fundingSelect.dispatchEvent(new Event('change'));
-      };
-      type.addEventListener('change', fit);
-      fit();
-    }
 
     AWY.$$('input[type="email"]', form).forEach(emailHints);
 
@@ -372,18 +342,6 @@
     const asked = { jake: 'jake', chelsie: 'chelsie' }[new URLSearchParams(location.search).get('with')];
     if (asked && form.elements.therapist) form.elements.therapist.value = asked;
 
-    /* The NDIS number field only shows when it's relevant */
-    const funding = form.elements.fundingType;
-    const ndisField = form.querySelector('[data-show-for-ndis]');
-    if (funding && ndisField) {
-      const sync = () => {
-        ndisField.hidden = !String(funding.value).startsWith('ndis');
-        if (ndisField.hidden) form.elements.ndisNumber.value = '';
-      };
-      funding.addEventListener('change', sync);
-      sync();
-    }
-
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const result = AWY.validate.form(form, (v) => (kind === 'contact' && v.preferredContact === 'phone' && !v.phone ? { phone: 'Please add a phone number so we can call you back' } : {}));
@@ -392,9 +350,9 @@
       const button = form.querySelector('[type="submit"]');
       let reply;
       try {
-        reply = await AWY.ui.busy(button, () => send(withExtras(Object.assign({ kind: kind }, readable(form, result.values)), kind)));
+        reply = await AWY.ui.busy(button, () => send(withExtras(Object.assign({ kind: kind }, readable(form, result.values)))));
       } catch (error) {
-        problem(form, html`Your ${kind === 'referral' ? 'referral' : 'message'} couldn't be sent, because the connection dropped. Please check your connection and try again, or email us at ${email}. Everything you typed is still here.`);
+        problem(form, html`Your message couldn't be sent, because the connection dropped. Please check your connection and try again, or email us at ${email}. Everything you typed is still here.`);
         return;
       }
       if (reply.status === 200 && reply.data.ok) {
@@ -408,7 +366,7 @@
         });
         problem(form, 'Some details are missing. Please check the highlighted fields.');
       } else {
-        problem(form, html`Sorry, your ${kind === 'referral' ? 'referral' : 'message'} couldn't be sent just now. Please try again in a few minutes, or email us at ${email}. Everything you typed is still here.`);
+        problem(form, html`Sorry, your message couldn't be sent just now. Please try again in a few minutes, or email us at ${email}. Everything you typed is still here.`);
       }
     });
   });
