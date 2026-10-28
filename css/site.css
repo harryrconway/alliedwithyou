@@ -1363,16 +1363,17 @@ html.is-held .site-header {
   margin-top: var(--space-6);
 }
 
-/* The referral page is the practice's Splose form and nothing else: it fills the screen
-   below the menu, edge to edge on a phone and as one clean panel on a computer. The form
-   scrolls inside its frame, and the page footer follows below. */
+/* The referral page is the practice's Splose form and nothing else, with no footer: it fills
+   the screen below the menu, edge to edge on a phone and as one clean panel on a computer.
+   The form scrolls inside its frame. */
 .embed-page {
   padding: clamp(0rem, 2.2vw, 1.75rem);
   background: var(--color-cream);
 }
 
 .embed-full {
-  height: calc(100dvh - var(--header-height) - 2 * clamp(0rem, 2.2vw, 1.75rem));
+  /* The extra pixel is the header's bottom border */
+  height: calc(100dvh - var(--header-height) - 1px - 2 * clamp(0rem, 2.2vw, 1.75rem));
   min-height: 36rem;
   overflow: hidden;
   border: 1px solid var(--color-line);
@@ -1389,8 +1390,13 @@ html.is-held .site-header {
 }
 
 @media (max-width: 40rem) {
+  .embed-page {
+    padding: 0;
+  }
+
   .embed-full {
-    height: calc(100dvh - var(--header-height));
+    height: calc(100dvh - var(--header-height) - 1px);
+    min-height: 20rem;
     border: 0;
     border-radius: 0;
     box-shadow: none;
@@ -1711,23 +1717,26 @@ html.is-held .site-header {
   font-size: 0.72rem;
 }
 
-/* On wide screens the menu fills the header, so search is a round icon button there */
+/* Search is a round icon button at every size, so it never crowds the logo. Its name is still there for screen readers. */
+.search-btn {
+  justify-content: center;
+  width: 2.75rem;
+  padding: 0;
+}
+
+.search-btn-label,
+.search-btn kbd {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 @container header (min-width: 77.5625rem) {
   .search-btn {
-    justify-content: center;
-    width: 2.75rem;
-    padding: 0;
     margin-left: var(--space-3);
-  }
-
-  .search-btn-label,
-  .search-btn kbd {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 }
 
@@ -1738,29 +1747,6 @@ html.is-held .site-header {
 
   .site-header .wrap {
     gap: var(--space-3);
-  }
-}
-
-@media (max-width: 720px), (hover: none) {
-  .search-btn kbd {
-    display: none;
-  }
-}
-
-@media (max-width: 420px) {
-  .search-btn {
-    justify-content: center;
-    width: 2.75rem;
-    padding: 0;
-  }
-
-  .search-btn-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 }
 
@@ -2389,14 +2375,15 @@ main .is-found {
   }
 }
 
-/* Small phones: the menu and search buttons become round icons so the name always fits */
+/* Small phones: the menu button becomes a round icon too, so the name always fits. Measured in
+   text units, so it happens a little sooner when someone has chosen larger text. */
 
 .search-btn,
 .nav-toggle {
   flex: none;
 }
 
-@media (max-width: 380px) {
+@container header (max-width: 24rem) {
   .nav-toggle {
     justify-content: center;
     width: 2.75rem;
