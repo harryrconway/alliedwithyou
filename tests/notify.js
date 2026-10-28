@@ -1,37 +1,12 @@
 /*
   Email alerts on the test (staging) project: a confirmed account waiting for approval, and
   staff checks due for renewal. Calls the notify function directly, checks each alert is
-  recorded once and sent once, and that a wrong secret is refused. On the test project every
-  email goes to noreply@, and this check deletes them afterwards. Never runs against production.
+  recorded once and sent once, and that a wrong secret is refused. On the test project nothing
+  is sent: the function checks it can sign in to the mail server and lists what it would have
+  sent, and this check reads that list. Never runs against production.
 */
-const { execFileSync } = require('child_process');
 const { createClient } = require('@supabase/supabase-js');
 const { readEnv } = require('./env');
-
-/* Counts, and optionally deletes, the alert emails in the noreply@ inbox that mention a marker */
-const INBOX = `
-import imaplib, sys
-env = {}
-for line in open(sys.argv[1]):
-    if '=' in line and not line.startswith('#'):
-        k, v = line.rstrip('\\n').split('=', 1); env[k] = v
-m = imaplib.IMAP4_SSL(env['SMTP_HOST'], 993)
-m.login(env['SMTP_USER'], env['SMTP_PASSWORD'])
-m.select('INBOX')
-typ, data = m.search(None, 'BODY', '"' + sys.argv[2] + '"')
-ids = data[0].split()
-if sys.argv[3] == 'delete':
-    for i in ids: m.store(i, '+FLAGS', '\\\\Deleted')
-    m.expunge()
-if sys.argv[3] == 'subjects':
-    import email, email.header
-    for i in ids:
-        typ, msg = m.fetch(i, '(BODY.PEEK[HEADER.FIELDS (SUBJECT)])')
-        print(str(email.header.make_header(email.header.decode_header(email.message_from_bytes(msg[0][1])['Subject']))))
-    sys.exit(0)
-print(len(ids))
-m.logout()
-`;
 
 module.exports = async function notify(ctx) {
   const env = readEnv(ctx.root);
@@ -45,19 +20,24 @@ module.exports = async function notify(ctx) {
   const call = (secret, body) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-notify-secret': secret }, body: JSON.stringify(body || {}) });
   /* A run whose emails didn't all send releases them for the next run, so try again as the schedule would */
   let retried = 0;
-  /* Practice alerts go to a made up address carrying this run's code, so its emails can be found in the redirected inbox */
+  /* Practice alerts go to a made up address carrying this run's code, so its emails can be told apart */
   const alertsTo = () => 'qa.alerts.' + stamp + '@example.com';
+  /* Every email the function would have sent, from every run */
+  const would = [];
+  let dry = true;
   const run = async (body) => {
     for (let attempt = 0; ; attempt += 1) {
       const res = await call(env.STAGING_NOTIFY_SECRET, Object.assign({ alertsTo: alertsTo() }, body));
       const json = await res.json().catch(() => ({}));
+      if (res.status === 200) {
+        if (Array.isArray(json.would)) would.push(...json.would);
+        else dry = false;
+      }
       if (res.status !== 502 || attempt === 3) return { status: res.status, body: json };
       retried += 1;
       await new Promise((resolve) => setTimeout(resolve, 2000));
     }
   };
-  const inbox = (marker, action) => Number(execFileSync('python3', ['-c', INBOX, ctx.root + '/.env', marker, action]).toString().trim());
-  const subjects = (marker) => execFileSync('python3', ['-c', INBOX, ctx.root + '/.env', marker, 'subjects']).toString().trim().split('\n').join('; ');
   const stamp = Date.now().toString(36);
   const marker = 'QA Alert ' + stamp;
   const password = 'Test' + Math.random().toString(36).slice(2) + 'Aa9!';
@@ -104,6 +84,7 @@ module.exports = async function notify(ctx) {
     const everything = { only: ['signups', 'checks', 'monitor', 'privacy'] };
     const first = await run(everything);
     ok(first.status === 200 && first.body.ok, 'The alerts function failed: ' + first.status + ' ' + JSON.stringify(first.body));
+    if (!dry) throw new Error('the test project would send real emails, as NOTIFY_DRY is not set to yes there');
     const { data: recorded } = await service.from('notifications').select('key').in('key', keys);
     ok(recorded && recorded.length === 4, 'Not every alert that was due was recorded: ' + (recorded || []).length + ' of 4');
     const { data: far } = await service.from('notifications').select('key').like('key', 'check:' + id('cpr') + ':%');
@@ -133,14 +114,19 @@ module.exports = async function notify(ctx) {
     const { data: upRow } = await service.from('monitor_checks').select('ok, alerted').eq('name', 'website').single();
     ok(upRow && upRow.ok && !upRow.alerted, 'A service that recovered was not marked as working');
 
-    /* Every alert mentions the run's code: the waiting person's details, the redirected address or the staff name */
-    let emails = 0;
-    for (let i = 0; i < 8 && emails < 7; i += 1) {
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-      emails = inbox(stamp, 'count');
-    }
-    /* Approval alert, the staff member's reminder, the administrators' list, the privacy request reminder, the weekly summary, not working, working again */
-    ok(emails === 7, 'Expected 7 alert emails, found ' + emails + ': ' + subjects(stamp));
+    /* This run's emails go to its own addresses: the staff member's reminder to them, everything else to the practice */
+    const mine = would.filter((m) => m.to.some((to) => to.includes(stamp)));
+    const list = mine.map((m) => m.subject + ' to ' + m.to.join(', ')).sort();
+    const expected = [
+      'A new account is waiting for approval to ' + alertsTo(),
+      'Some of your checks need renewing to ' + staff.email,
+      'Staff checks needing renewal to ' + alertsTo(),
+      'A privacy request is due soon to ' + alertsTo(),
+      'Your weekly dashboard summary to ' + alertsTo(),
+      'The website isn\'t working to ' + alertsTo(),
+      'The website is working again to ' + alertsTo()
+    ].sort();
+    ok(JSON.stringify(list) === JSON.stringify(expected), 'Expected these 7 alert emails: ' + expected.join('; ') + '. Found: ' + (list.join('; ') || 'none'));
   } catch (error) {
     failures.push('The check stopped: ' + error.message);
   } finally {
@@ -148,11 +134,6 @@ module.exports = async function notify(ctx) {
     for (const userId of made) await service.from('privacy_requests').delete().eq('created_by', userId);
     if (keys.length) await service.from('notifications').delete().in('key', keys);
     for (const userId of made.slice().reverse()) await service.auth.admin.deleteUser(userId);
-    try {
-      inbox(stamp, 'delete');
-    } catch (error) {
-      failures.push('Could not tidy the test emails from noreply@');
-    }
   }
   return failures;
 };
