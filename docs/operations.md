@@ -13,22 +13,11 @@ How the live site, the database and the supporting services fit together, and ho
 
 The test database only ever holds fictional records and throwaway test accounts. Real staff and practice information goes only into production.
 
-## Under construction
+## Launch
 
-Since 22 October 2026 the public website is under construction at the practice's request. The home page and any address that isn't found show `construction.html` instead, and the staff dashboard at `/admin/` works as normal.
+The website went live on 28 October 2026, at the practice's request, after being under construction from 22 October. The construction page and the files that published it were removed, and the real home page, not found page and sitemap are published again.
 
-How it works: GitHub Pages builds the site with Jekyll. `soon.html` publishes `construction.html` as the home page, and `missing.html` publishes it as the not found page, so mistyped addresses land on it too. `_config.yml` leaves the real home page, the real not found page and the sitemap out under `exclude`. The real pages are untouched in the repository, so they can still be worked on and the automated checks still test them.
-
-Since 25 October 2026 the other real pages are published again, at the practice's request, so they can look through the website on their own devices before it launches. Clicking the logo on the construction page opens `home.html`, which publishes the real home page at `/home.html`. The real pages' Home links lead back to the construction page, so `js/site/construction.js` remembers the click for the rest of that visit in that tab and sends people straight on to `/home.html`. A new tab shows the construction page again. The logo isn't a link, so search engines don't follow it, but anyone with an old page address from 19 to 22 October now sees that real page, and the contact and referral forms send real enquiries to hello@.
-
-To go live again:
-
-* In `_config.yml`, delete the under construction group under `exclude`. Keep the last group, which keeps notes, database changes and tests off the website.
-* Delete `soon.html`, `missing.html` and `home.html`.
-* Delete `construction.html`, `css/construction.css` and `js/site/construction.js`. The construction page would otherwise stay published at `/construction.html`, and its logo would open `/home.html`, which no longer exists.
-* In `tests/`, run `npm run build` and then `npm test`, so the search index, sitemap and structured data match the pages.
-* Push to `main`, then check https://alliedwithyou.com.au shows the real home page within a few minutes.
-* Then, once only: add the site to Google Search Console and Bing Webmaster Tools, verified through the domain's records in cPanel, and submit https://alliedwithyou.com.au/sitemap.xml to each.
+Still to do once: add the site to Google Search Console and Bing Webmaster Tools, verified through the domain's records in cPanel, and submit https://alliedwithyou.com.au/sitemap.xml to each.
 
 ## Domain records
 
