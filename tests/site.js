@@ -35,10 +35,10 @@ module.exports = async function site(ctx) {
   await p.click('form[data-enquiry] [type="submit"]');
   ok(await p.waitForSelector('text=has been sent', { timeout: 5000 }).then(() => true, () => false), 'A completed contact form did not confirm it was sent');
   ok(sent && sent.kind === 'contact' && sent.about === 'For myself' && sent.state === 'Western Australia' && sent.preferredContact === 'Email' && sent.website === '', 'The contact form did not send readable details: ' + JSON.stringify(sent));
-  ok(await p.isVisible('text=Taking you back to the home page'), 'A sent contact form did not count down to the home page');
-  await p.click('[data-stay]');
+  /* Safety first: the danger line, what happens next and free support lines that can be tapped to call, kept on screen to read */
+  ok(await p.isVisible('.done-alert >> text=call 000 now') && (await p.$$('.done-lines a[href^="tel:"]')).length === 6 && await p.isVisible('.done-steps >> text=reads your message'), 'A sent contact form did not show the safety information and next steps');
   await p.waitForTimeout(1500);
-  ok(/contact\.html/.test(p.url()) && (await p.isVisible('text=stay on this page as long as you like')), 'Choosing to stay did not stop the countdown');
+  ok(/contact\.html/.test(p.url()), 'A sent contact form left the page before it could be read');
 
   /* Referral form */
   const fillReferral = async () => {
@@ -86,7 +86,7 @@ module.exports = async function site(ctx) {
   answer = { status: 200, body: { ok: true } };
   await p.click('form[data-enquiry] [type="submit"]');
   ok(await p.waitForSelector('text=has been sent', { timeout: 5000 }).then(() => true, () => false), 'A referral did not confirm it was sent');
-  ok(await p.waitForURL(/index\.html$/, { timeout: 15000 }).then(() => true, () => false), 'A sent referral did not return to the home page after the countdown');
+  ok(await p.isVisible('.done-steps >> text=reviews the referral') && await p.isVisible('.form-done a[href$="referrers.html"]'), 'A sent referral did not show what happens next for referrers');
 
   p.problems.filter((x) => !/ERR_FAILED|Failed to load resource|429 for|502 for/.test(x)).forEach((x) => failures.push(x));
   await p.close();
