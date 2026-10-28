@@ -73,8 +73,13 @@ module.exports = async function site(ctx) {
   await p.route('https://alliedwithyou.splose.com/**', (route) => route.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><title>Referral form</title><p>Splose referral form</p>' }));
   await p.goto(ctx.base + 'referrals.html', { waitUntil: 'networkidle' });
   ok(!(await p.$('form[data-enquiry]')), 'The old referral form is still on the referral page');
-  const embed = await p.$('.embed-form iframe[src="https://alliedwithyou.splose.com/public-form/befe841e-6a11-48b4-8288-2177e6c4a4f1"]');
+  const embed = await p.$('.embed-full iframe[src="https://alliedwithyou.splose.com/public-form/befe841e-6a11-48b4-8288-2177e6c4a4f1"]');
   ok(embed && (await embed.getAttribute('title')) === 'Referral form', 'The referral page did not show the Splose referral form');
+  const fills = await p.evaluate(() => {
+    const r = document.querySelector('.embed-full').getBoundingClientRect();
+    return r.width >= window.innerWidth - 64 && r.bottom <= window.innerHeight + 1 && r.height >= window.innerHeight * 0.75;
+  });
+  ok(fills, 'The referral form did not fill the screen below the menu');
   if (embed) {
     await embed.scrollIntoViewIfNeeded();
     const inside = await embed.contentFrame();

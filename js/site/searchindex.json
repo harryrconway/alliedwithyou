@@ -1176,31 +1176,7 @@
      "id": "",
      "title": "Make a referral",
      "kind": "page",
-     "text": "For GPs, support coordinators, allied health professionals and anyone referring on behalf of someone else. Information for referrers, and a practice summary to print Referral information and an online referral form for GPs, support coordinators, allied health professionals and families."
-    },
-    {
-     "id": "happensNext",
-     "title": "What happens next",
-     "kind": "section",
-     "text": "We'll contact the person, or their representative, to talk about their needs, how sessions will be funded and when we can start. We'll let you know once we've made contact. If we can't help, for example because of where they live or how their plan is managed, we'll tell you and suggest other options."
-    },
-    {
-     "id": "include",
-     "title": "What to include",
-     "kind": "section",
-     "text": "Only what we need to get in touch and understand the request: contact details, a sentence or two about why you're referring, and how therapy will be funded."
-    },
-    {
-     "id": "beforeRefer",
-     "title": "Before you refer",
-     "kind": "section",
-     "text": "Please make sure the person knows about the referral and is happy for us to contact them. For NDIS participants, let us know how their plan is managed."
-    },
-    {
-     "id": "referralForm",
-     "title": "Referral form",
-     "kind": "section",
-     "text": "This form goes straight to our practice system. You can also email referrals to hello@alliedwithyou.com.au ."
+     "text": "Referral information and an online referral form for GPs, support coordinators, allied health professionals and families."
     }
    ]
   },
