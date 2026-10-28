@@ -31,44 +31,75 @@
     summary.querySelector('.notice').focus();
   }
 
-  const HOME_AFTER = 10;
+  /* Free support lines, shown once a form is sent. Every one is national and free to call. */
+  const LINES = [
+    ['13 11 14', '131114', 'Lifeline, crisis support and suicide prevention, any time'],
+    ['1800 022 222', '1800022222', 'healthdirect, talk to a registered nurse, any time'],
+    ['1800 737 732', '1800737732', '1800RESPECT, family, domestic and sexual violence, any time'],
+    ['1300 22 4636', '1300224636', 'Beyond Blue, anxiety and depression, any time'],
+    ['13 92 76', '139276', '13YARN, for Aboriginal and Torres Strait Islander people, any time'],
+    ['1800 353 374', '1800353374', 'Elder abuse helpline, for older people and those who care for them']
+  ];
 
-  /* Confirms the send, then counts down and returns to the home page, unless the visitor chooses to stay */
+  /* What happens after each kind of form */
+  const NEXT = {
+    contact: {
+      title: 'Thanks, your message has been sent',
+      lead: "We'll get back to you soon, by your preferred method.",
+      steps: [
+        ['First', 'Jake or Chelsie reads your message.'],
+        ['Then', 'We get in touch to talk about your goals, fees and funding.'],
+        ['After that', 'We book your first visit, at home, in the community or by telehealth.']
+      ],
+      more: ['firstvisit.html', 'Your first appointment']
+    },
+    referral: {
+      title: 'Thanks, your referral has been sent',
+      lead: "We'll contact the person, or their representative, and let you know once we've been in touch.",
+      steps: [
+        ['First', 'Jake or Chelsie reviews the referral.'],
+        ['Then', 'We call the person to talk about goals, funding and timing.'],
+        ['After that', "We let you know, and send reports when they're ready."]
+      ],
+      more: ['referrers.html', 'Information for referrers']
+    }
+  };
+
+  /* Confirms the send, with what happens next and where to get help now. It stays on screen, so there's time to read it. */
   function done(form, kind) {
     clearDraft(kind);
     const panel = form.closest('.form-panel');
-    const home = (document.body.dataset.root || '') + 'index.html';
+    const root = document.body.dataset.root || '';
+    const next = NEXT[kind === 'referral' ? 'referral' : 'contact'];
     panel.innerHTML = String(html`<div class="form-done" tabindex="-1">
-      ${raw(AWY.icon('checkCircle'))}
-      <div role="status">
-        <h2>Thanks, your ${kind === 'referral' ? 'referral' : 'message'} has been sent</h2>
-        <p>${kind === 'referral'
-          ? "We'll contact the person, or their representative, and let you know once we've been in touch."
-          : "We'll get back to you soon, by your preferred method."}</p>
+      <div class="done-alert">
+        ${raw(AWY.icon('alert'))}
+        <p><strong>If someone is in danger, call <a href="tel:000">000</a> now.</strong> We aren't an emergency service and don't watch messages around the clock.</p>
       </div>
-      <p class="form-countdown" data-countdown>Taking you back to the home page in <strong data-seconds>${HOME_AFTER}</strong> seconds.</p>
+      <div class="done-head">
+        <span class="done-tick" aria-hidden="true">${raw(AWY.icon('check'))}</span>
+        <div role="status">
+          <h2>${next.title}</h2>
+          <p>${next.lead}</p>
+        </div>
+      </div>
+      <ul class="done-steps">
+        ${next.steps.map((st) => html`<li><span>${st[0]}</span>${st[1]}</li>`)}
+      </ul>
+      <section class="done-help" aria-labelledby="doneHelp">
+        <h3 id="doneHelp">Free, confidential support</h3>
+        <ul class="done-lines">
+          ${LINES.map((l) => html`<li><a href="tel:${l[1]}"><strong>${l[0]}</strong><span>${l[2]}</span></a></li>`)}
+        </ul>
+        <p class="done-small">Need an interpreter? Call TIS National on <a href="tel:131450">131 450</a>. Deaf, or find it hard to hear or speak? Use the <a href="https://www.accesshub.gov.au/about-the-nrs" rel="noopener">National Relay Service</a>.</p>
+      </section>
       <div class="btn-row">
-        <a class="btn" href="${home}">Go to the home page now</a>
-        <button type="button" class="btn btn-secondary" data-stay>Stay on this page</button>
+        <a class="btn" href="${root + next.more[0]}">${next.more[1]}</a>
+        <a class="btn btn-secondary" href="${root}index.html">Back to the home page</a>
       </div>
+      <p class="done-small">Questions? Email ${email}</p>
     </div>`);
-    const box = panel.querySelector('.form-done');
-    box.focus();
-    let left = HOME_AFTER;
-    const timer = setInterval(() => {
-      left -= 1;
-      if (left <= 0) {
-        clearInterval(timer);
-        window.location.href = home;
-        return;
-      }
-      box.querySelector('[data-seconds]').textContent = left;
-    }, 1000);
-    box.querySelector('[data-stay]').addEventListener('click', (event) => {
-      clearInterval(timer);
-      box.querySelector('[data-countdown]').textContent = 'You can stay on this page as long as you like.';
-      event.currentTarget.remove();
-    });
+    panel.querySelector('.form-done').focus();
   }
 
   /*
