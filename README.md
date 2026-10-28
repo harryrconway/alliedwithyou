@@ -7,7 +7,8 @@ The website is live at https://alliedwithyou.com.au. The staff dashboard lives a
 ## How it fits together
 
 * **Website:** plain HTML, CSS and JavaScript on GitHub Pages, published whenever `main` changes. The `CNAME` file sets the domain. Email stays with the existing cPanel host.
-* **Enquiry and referral forms:** sent to a Supabase Edge Function, which emails them to hello@ through the noreply@ mailbox. Nothing from a form is stored.
+* **Contact form:** sent to a Supabase Edge Function, which emails it to hello@ through the noreply@ mailbox. Nothing from it is stored.
+* **Referral form:** the practice's own Splose form, shown in a frame on `referrals.html`. Referrals go straight into Splose.
 * **Staff dashboard:** signs in with Supabase Auth and reads and writes through `js/data/remote.js`. Every table has Row Level Security, so what each person can see or change is decided by the database, not the screens.
 * **Two Supabase projects, both in Sydney:** production for the live site, and a test project for development and the automated checks. `js/config.js` picks one by the address the page is opened from.
 

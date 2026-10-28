@@ -1200,7 +1200,7 @@
      "id": "referralForm",
      "title": "Referral form",
      "kind": "section",
-     "text": "Fields marked optional can be left blank. You can also email referrals to hello@alliedwithyou.com.au ."
+     "text": "This form goes straight to our practice system. You can also email referrals to hello@alliedwithyou.com.au ."
     }
    ]
   },
@@ -1274,7 +1274,7 @@
      "id": "thisWebsite",
      "title": "This website",
      "kind": "section",
-     "text": "This website doesn't use analytics or tracking cookies. When you contact us through the website, your message is sent to our practice email and isn't stored on the website. If you start filling in a form, what you type is kept in that browser tab until you send it or close the tab, so it isn't lost if the page reloads. It stays on your device and isn't sent anywhere until you choose to send it. If you change the text size or contrast, that choice is remembered in your browser for next time."
+     "text": "This website doesn't use analytics or tracking cookies. When you contact us through the website, your message is sent to our practice email and isn't stored on the website. The referral form is provided by Splose, the system we use to manage client records, so a referral made through it goes straight into Splose and is stored there securely. If you start filling in a form, what you type is kept in that browser tab until you send it or close the tab, so it isn't lost if the page reloads. It stays on your device and isn't sent anywhere until you choose to send it. If you change the text size or contrast, that choice is remembered in your browser for next time."
     },
     {
      "id": "questionsComplaints",

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://trqnpgawtuglrujifvcz.supabase.co https://nndtedqltzavzxfegdka.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-src https://alliedwithyou.splose.com; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>Make a referral | Allied With You</title>
   <meta name="description" content="Referral information and an online referral form for GPs, support coordinators, allied health professionals and families.">
   <link rel="canonical" href="https://alliedwithyou.com.au/referrals.html">
@@ -33,7 +33,6 @@
   <script src="js/core/ui.js" defer></script>
   <script src="js/data/business.js" defer></script>
   <script src="js/site/layout.js" defer></script>
-  <script src="js/site/forms.js" defer></script>
 </head>
 <body data-page="referrals">
   <a class="skip" href="#main">Skip to main content</a>
@@ -69,145 +68,10 @@
 
         <div class="form-panel">
           <h2 id="referralForm">Referral form</h2>
-          <p>Fields marked optional can be left blank. You can also email referrals to <a href="mailto:hello@alliedwithyou.com.au?subject=Referral">hello@alliedwithyou.com.au</a>.</p>
-          <form class="form" data-enquiry="referral" novalidate>
-            <div class="form-summary"></div>
-            <p class="form-draft" data-draft-note></p>
-            <div class="trap" aria-hidden="true">
-              <label for="rWebsite">Leave this empty</label>
-              <input id="rWebsite" name="website" type="text" tabindex="-1" autocomplete="off">
-            </div>
-            <fieldset>
-              <legend>Type of referral</legend>
-              <div class="form-grid">
-                <div class="field span-all">
-                  <label for="referralType">Is this an NDIS, My Aged Care or private referral?</label>
-                  <select class="select" id="referralType" name="referralType" required>
-                    <option value="">Choose one</option>
-                    <option value="ndis">NDIS</option>
-                    <option value="myagedcare">My Aged Care</option>
-                    <option value="private">Privately funded</option>
-                  </select>
-                </div>
-              </div>
-            </fieldset>
-
-            <fieldset>
-              <legend>About you</legend>
-              <div class="form-grid">
-                <div class="field"><label for="referrerName">Your name</label><input class="input" id="referrerName" name="referrerName" autocomplete="name" maxlength="120" required></div>
-                <div class="field">
-                  <label for="referrerRole">You are a</label>
-                  <select class="select" id="referrerRole" name="referrerRole" required>
-                    <option value="">Choose one</option>
-                    <option value="gp">GP</option>
-                    <option value="coordinator">Support coordinator</option>
-                    <option value="planmanager">Plan manager</option>
-                    <option value="alliedhealth">Allied health professional</option>
-                    <option value="hospital">Hospital or health service</option>
-                    <option value="family">Family member or carer</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                <div class="field span-all"><label for="referrerOrg">Organisation <span class="optional">(optional)</span></label><input class="input" id="referrerOrg" name="referrerOrg" autocomplete="organization" maxlength="120"></div>
-                <div class="field"><label for="referrerPhone">Your phone</label><input class="input" id="referrerPhone" name="referrerPhone" type="tel" autocomplete="tel" data-rule="phone" required></div>
-                <div class="field"><label for="referrerEmail">Your email</label><input class="input" id="referrerEmail" name="referrerEmail" type="email" autocomplete="email" maxlength="160" required></div>
-              </div>
-            </fieldset>
-
-            <fieldset>
-              <legend>About the person you're referring</legend>
-              <div class="form-grid">
-                <div class="field"><label for="firstName">First name</label><input class="input" id="firstName" name="firstName" maxlength="80" required></div>
-                <div class="field"><label for="lastName">Last name</label><input class="input" id="lastName" name="lastName" maxlength="80" required></div>
-                <div class="field">
-                  <label for="phone">Best phone number to reach them</label>
-                  <input class="input" id="phone" name="phone" type="tel" data-rule="phone" required aria-describedby="phoneHint">
-                  <p class="hint" id="phoneHint">Their own number, or a family member's if that's better.</p>
-                </div>
-                <div class="field"><label for="suburb">Suburb or town</label><input class="input" id="suburb" name="suburb" maxlength="80" required></div>
-                <div class="field">
-                  <label for="state">State or territory</label>
-                  <select class="select" id="state" name="state" required aria-describedby="stateHint">
-                    <option value="">Choose one</option>
-                    <option value="NSW">New South Wales</option>
-                    <option value="VIC">Victoria</option>
-                    <option value="QLD">Queensland</option>
-                    <option value="SA">South Australia</option>
-                    <option value="WA">Western Australia</option>
-                    <option value="TAS">Tasmania</option>
-                    <option value="NT">Northern Territory</option>
-                    <option value="ACT">Australian Capital Territory</option>
-                  </select>
-                  <p class="hint" id="stateHint">Outside the Northern Rivers and Gold Coast, we see people by telehealth.</p>
-                </div>
-                <div class="field">
-                  <label for="fundingType">How will therapy be funded?</label>
-                  <select class="select" id="fundingType" name="fundingType" required>
-                    <option value="">Choose one</option>
-                    <option value="private" data-for="private">Paying privately</option>
-                    <option value="healthfund" data-for="private">Private health insurance</option>
-                    <option value="medicare" data-for="private">Medicare GP plan</option>
-                    <option value="sah" data-for="myagedcare">Support at Home</option>
-                    <option value="ndis_self" data-for="ndis">NDIS self managed</option>
-                    <option value="ndis_plan" data-for="ndis">NDIS plan managed</option>
-                    <option value="unsure">Not sure</option>
-                  </select>
-                </div>
-                <div class="field" data-show-for-ndis hidden>
-                  <label for="ndisNumber">NDIS number <span class="optional">(optional)</span></label>
-                  <input class="input" id="ndisNumber" name="ndisNumber" inputmode="numeric" data-rule="ndis">
-                </div>
-                <div class="field span-all">
-                  <label for="service">Service needed</label>
-                  <select class="select" id="service" name="service" required>
-                    <option value="">Choose one</option>
-                    <option value="assessments">Functional capacity assessment</option>
-                    <option value="independence">Daily living and independence</option>
-                    <option value="home">Home safety and access</option>
-                    <option value="technology">Assistive technology and equipment</option>
-                    <option value="therapy">Goal focused therapy</option>
-                    <option value="reports">Report or recommendations</option>
-                    <option value="unsure">Not sure yet</option>
-                  </select>
-                </div>
-                <div class="field span-all">
-                  <label for="reason">Reason for referral</label>
-                  <textarea class="textarea" id="reason" name="reason" maxlength="600" required aria-describedby="reasonHint"></textarea>
-                  <p class="hint" id="reasonHint">A sentence or two is enough. Please leave out detailed medical history.</p>
-                </div>
-                <div class="field">
-                  <label for="rTherapist">Preferred therapist <span class="optional">(optional)</span></label>
-                  <select class="select" id="rTherapist" name="therapist">
-                    <option value="">No preference</option>
-                    <option value="jake">Jake</option>
-                    <option value="chelsie">Chelsie</option>
-                  </select>
-                </div>
-                <div class="field">
-                  <label for="rHeard">How did you hear about us? <span class="optional">(optional)</span></label>
-                  <select class="select" id="rHeard" name="heardFrom">
-                    <option value="">Choose one</option>
-                    <option value="search">Google or another search</option>
-                    <option value="health">A GP or health professional</option>
-                    <option value="coordinator">A support coordinator or plan manager</option>
-                    <option value="agedcare">My Aged Care or an aged care provider</option>
-                    <option value="friend">A friend or family member</option>
-                    <option value="social">Social media</option>
-                    <option value="other">Something else</option>
-                  </select>
-                </div>
-              </div>
-            </fieldset>
-
-            <div class="field">
-              <label class="choice"><input type="checkbox" name="consent" value="yes" required data-error="Please confirm the person knows about this referral"> The person knows about this referral and is happy for Allied With You to contact them.</label>
-            </div>
-
-            <div class="btn-row">
-              <button class="btn" type="submit">Send referral</button>
-            </div>
-          </form>
+          <p>This form goes straight to our practice system. You can also email referrals to <a href="mailto:hello@alliedwithyou.com.au?subject=Referral">hello@alliedwithyou.com.au</a>.</p>
+          <div class="embed-form">
+            <iframe id="splose-form-befe841e-6a11-48b4-8288-2177e6c4a4f1" src="https://alliedwithyou.splose.com/public-form/befe841e-6a11-48b4-8288-2177e6c4a4f1" name="embeddableForm" title="Referral form" loading="lazy"></iframe>
+          </div>
         </div>
       </div>
     </section>
