@@ -114,7 +114,6 @@
             <li><a href="${root}ndis.html">NDIS participants</a></li>
             <li><a href="${root}myagedcare.html">My Aged Care</a></li>
             <li><a href="${root}process.html">How it works</a></li>
-            <li><a href="${root}fees.html">Fees and cancellations</a></li>
             <li><a href="${root}faq.html">Questions people ask</a></li>
             <li><a href="${root}funding.html">Which funding fits me?</a></li>
             <li><a href="${root}firstvisit.html">Your first appointment</a></li>
