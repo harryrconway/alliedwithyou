@@ -36,7 +36,6 @@
     { key: 'ndis', href: 'ndis.html', label: 'NDIS', icon: 'target' },
     { key: 'myagedcare', href: 'myagedcare.html', label: 'My Aged Care', icon: 'heart' },
     { key: 'process', href: 'process.html', label: 'How it works', icon: 'chart' },
-    { key: 'fees', href: 'fees.html', label: 'Fees', icon: 'wallet' },
     { key: 'faq', href: 'faq.html', label: 'FAQs', icon: 'message' },
     { key: 'contact', href: 'contact.html', label: 'Contact', icon: 'mail' }
   ];
