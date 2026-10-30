@@ -28,6 +28,9 @@ function timingSafeEqual(a: string, b: string): boolean {
 const DASHBOARD = Deno.env.get('DASHBOARD_URL') ?? 'https://alliedwithyou.com.au/admin/';
 // On the test project every email goes to this address instead, so nobody real is emailed
 const REDIRECT = Deno.env.get('NOTIFY_REDIRECT') ?? '';
+// On the test project nothing is sent at all: the mail server sign in is checked, and the reply lists
+// what would have gone, as noreply@ mail is now handled by Microsoft 365 where nobody reads it
+const DRY = Deno.env.get('NOTIFY_DRY') === 'yes';
 // The practice's shared inbox for alerts
 const ALERTS_TO = Deno.env.get('ALERTS_TO') ?? 'hello@alliedwithyou.com.au';
 const ZONE = 'Australia/Brisbane';
@@ -425,8 +428,19 @@ Deno.serve(async (req) => {
   let sent = 0;
   const failed: string[] = [];
   const unsent: Mail[] = [];
+  const would: { subject: string; to: string[] }[] = [];
   const stopAt = started + 100000;
-  for (const m of sending) {
+  if (DRY && sending.length) {
+    try {
+      await transport.verify();
+      for (const m of sending) would.push({ subject: m.subject, to: m.to });
+      sent = sending.length;
+    } catch (error) {
+      console.error('Mail server check failed:', (error as Error).name, (error as { code?: string }).code ?? '');
+      unsent.push(...sending);
+    }
+  }
+  for (const m of DRY ? [] : sending) {
     if (Date.now() > stopAt) {
       unsent.push(m);
       continue;
@@ -459,5 +473,6 @@ Deno.serve(async (req) => {
     weekly: sending.some((m) => m.keys.includes(weekKey)),
     monitor: results,
     emails: sent,
+    ...(DRY ? { would } : {}),
   });
 });
