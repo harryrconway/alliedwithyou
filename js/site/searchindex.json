@@ -1062,6 +1062,20 @@
      "under": "Occupational therapy"
     },
     {
+     "id": "faqHappensFromGettingTouch",
+     "title": "What happens, from getting in touch to finishing up?",
+     "kind": "question",
+     "text": "Everyone's path looks a little different. Some people need a single home visit. Others work with us for months. Most people go through these steps. Getting in touch. You can contact us yourself, or a family member, GP, support coordinator or other professional can refer you. Email us or get in touch through the website, whatever's easiest. A conversation first. We'll get in touch to talk about what's happening, what you'd like help with and how sessions will be funded. If we're not the right fit, we'll say so and suggest other options. Paperwork, kept simple. Before the first appointment we send a short service agreement and consent form. They explain what we'll do, what it costs and how your information is handled. See your first appointment for what to have ready. Assessment. At the first appointment we get to know you and how things are going day to day. We look at what's working, what isn't, and what you'd like to be different. Setting goals. Together we agree on goals, written in your words, and a plan for working towards them. Therapy and recommendations. Depending on your goals, this might be regular sessions, equipment trials, changes around the home, or advice for the people who support you. Reports, when they're needed. If a funding body, doctor or other professional needs information from us, we write it up clearly and check it with you before it's sent. Reviewing and finishing up. We check progress regularly. When you've reached your goals, we plan to finish together and leave you with what you need to keep going. You're welcome back any time.",
+     "under": "How it works"
+    },
+    {
+     "id": "faqWaitStart",
+     "title": "Is there a wait to start?",
+     "kind": "question",
+     "text": "If there's a wait to start, we'll tell you when you first get in touch. We'd rather be honest about timing than book you in and push appointments back. If your situation is urgent, let us know and we'll do our best to help or point you to someone who can.",
+     "under": "How it works"
+    },
+    {
      "id": "faqWhereAppointmentsHappen",
      "title": "Where do appointments happen?",
      "kind": "question",
