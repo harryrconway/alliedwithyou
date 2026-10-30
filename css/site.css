@@ -2788,8 +2788,8 @@ main .is-found {
 
 .members {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
   gap: var(--space-6);
+  max-width: 60rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -2804,11 +2804,12 @@ main .is-found {
   background: var(--color-white);
 }
 
+/* Portrait headshots: on top on a phone, beside the bio on wider screens */
 .member-photo {
   position: relative;
   display: grid;
   place-items: center;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 4 / 5;
   overflow: hidden;
   background: linear-gradient(160deg, #13707c, var(--color-deep) 70%);
   isolation: isolate;
@@ -2844,6 +2845,19 @@ main .is-found {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: 50% 20%;
+}
+
+@media (min-width: 42rem) {
+  .member {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .member-photo {
+    flex: 0 0 clamp(14rem, 32%, 18rem);
+    aspect-ratio: 3 / 4;
+  }
 }
 
 .member-body {
@@ -2880,10 +2894,18 @@ main .is-found {
   overflow-wrap: anywhere;
 }
 
-.member-body > p:not(.member-title):not(.member-owner):not(.member-email) {
+.member-bio {
   margin: var(--space-4) 0 var(--space-6);
   padding-top: var(--space-4);
   border-top: var(--border);
+}
+
+.member-bio p {
+  margin: 0;
+}
+
+.member-bio p + p {
+  margin-top: var(--space-3);
 }
 
 /* Buttons line up along the bottom, however long each bio is */

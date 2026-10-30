@@ -34,7 +34,6 @@
     { key: 'team', href: 'team.html', label: 'Our team', icon: 'users' },
     { key: 'services', href: 'services.html', label: 'Services', icon: 'clipboard' },
     { key: 'ndis', href: 'ndis.html', label: 'NDIS', icon: 'target' },
-    { key: 'myagedcare', href: 'myagedcare.html', label: 'My Aged Care', icon: 'heart' },
     { key: 'faq', href: 'faq.html', label: 'FAQs', icon: 'message' },
     { key: 'contact', href: 'contact.html', label: 'Contact', icon: 'mail' }
   ];
