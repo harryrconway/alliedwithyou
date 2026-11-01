@@ -21,6 +21,13 @@
   transition: background-color var(--speed) var(--ease), border-color var(--speed) var(--ease), color var(--speed) var(--ease), box-shadow var(--speed) var(--ease);
 }
 
+/* A bigger call to action, for the one thing a page asks people to do */
+.btn-lg {
+  min-height: 3.5rem;
+  padding: 0.9rem 2rem;
+  font-size: var(--text-lg);
+}
+
 .btn:hover {
   background: var(--color-blue-dark);
   color: var(--color-white);

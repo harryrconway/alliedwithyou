@@ -107,7 +107,7 @@
      "id": "",
      "title": "Our team",
      "kind": "page",
-     "text": "Allied With You is owned and run by Jake and Chelsie, its two occupational therapists. When you work with us, you work with one of them. Meet Jake and Chelsie, the occupational therapists who own and run Allied With You, and choose who you would like to see."
+     "text": "Allied With You is owned and run by Jake and Chelsie, its two occupational therapists. When you work with us, you work with one of them. Meet Jake and Chelsie, the occupational therapists who own and run Allied With You."
     },
     {
      "id": "jake",
@@ -122,10 +122,10 @@
      "text": "Occupational Therapist Co-Director, Allied With You chelsie@alliedwithyou.com.au Chelsie is an Occupational Therapist with experience across both private practice and public health, helping people regain independence at home and in their daily lives. She began her career in the NDIS and has built a strong rehabilitation background, including inpatient rehab, extensive hand therapy experience and in-home rehabilitation with the transition aged care team. Calm and understanding, Chelsie takes the time to learn what matters to each client. She builds therapy around their goals, routines and environment, and her thoughtful, hands-on approach helps people feel supported at every step. Occupational therapists in Australia are registered with the Occupational Therapy Board of Australia through Ahpra. You can check any practitioner on the public register of practitioners ."
     },
     {
-     "id": "chooseTitle",
-     "title": "Choosing who you see",
+     "id": "getStarted",
+     "title": "Ready to get started?",
      "kind": "section",
-     "text": "If you'd like to see Jake or Chelsie in particular, say so when you get in touch and we'll do our best to arrange it. Sometimes it depends on where you live, the kind of help you need and when you're free, so we'll tell you if the other is a better fit or could see you sooner. Not sure? That's fine. Tell us a little about what's going on, and we'll suggest who would suit you best. Make an enquiry"
+     "text": "Send us a referral and we'll get in touch to talk about what's going on, what you'd like help with and the next steps. Make a referral"
     }
    ]
   },
@@ -138,13 +138,13 @@
      "id": "",
      "title": "Occupational therapy services",
      "kind": "page",
-     "text": "Practical help with the things you need and want to do each day. Most people use more than one of these over time, and we'll talk through what makes sense for you. Occupational therapy services including functional capacity assessments, home safety, assistive technology, daily living skills, goal focused therapy and reports."
+     "text": "Practical help with the everyday things that matter to you. Occupational therapy services including functional capacity assessments, home safety, assistive technology, daily living skills, goal focused therapy and reports."
     },
     {
      "id": "notSureWhereStart",
      "title": "Not sure where to start?",
      "kind": "section",
-     "text": "You don't need to know which service you need before you get in touch. Tell us a little about what's happening and what you'd like to be different. We'll suggest a sensible first step, explain the cost and let you know if someone else would be a better fit."
+     "text": "You don't need to know which service you need before you get in touch. Tell us what's happening and we'll suggest a sensible first step."
     }
    ]
   },
