@@ -15,10 +15,10 @@
 
   /* Pages to offer straight away, and the everyday words people use for them */
   const PLACES = [
-    { url: 'fees.html', label: 'Fees and cancellations', icon: 'wallet', words: 'fees cost costs price prices pricing charge charges rates pay paying payment invoice invoices medicare gp plan health fund insurance cancel cancellation cancellations' },
+    { url: 'fees.html', label: 'Fees and cancellations', icon: 'wallet', words: 'fees cost costs price prices pricing charge charges rates pay paying payment invoice invoices cancel cancellation cancellations' },
     { url: 'ndis.html', label: 'NDIS participants', icon: 'target', words: 'ndis plan participant participants support coordinator coordinators capacity building plan managed self managed' },
     { url: 'myagedcare.html', label: 'My Aged Care', icon: 'heart', words: 'my aged care support at home home care package older elderly seniors' },
-    { url: 'referrals.html', label: 'Make a referral', icon: 'send', words: 'referral referrals refer referring referrer gp doctor coordinator professional' },
+    { url: 'referrals.html', label: 'Make a referral', icon: 'send', words: 'referral referrals refer referring referrer coordinator professional' },
     { url: 'contact.html', label: 'Contact us', icon: 'mail', words: 'contact email enquiry enquire message get in touch talk' },
     { url: 'services.html', label: 'Services', icon: 'clipboard', words: 'services help what we do occupational therapy ot' },
     { url: 'process.html', label: 'How it works', icon: 'chart', words: 'how it works process steps what to expect first appointment waiting wait times' },
@@ -30,9 +30,9 @@
     { url: 'accessibility.html', label: 'Accessibility', icon: 'eye', words: 'accessibility accessible interpreter interpreters auslan large print' },
     { url: 'northernrivers.html', label: 'Northern Rivers', icon: 'pin', words: 'northern rivers nsw new south wales lismore ballina byron bay tweed heads casino kyogle murwillumbah evans head near me local area areas' },
     { url: 'goldcoast.html', label: 'Gold Coast', icon: 'pin', words: 'gold coast qld queensland southport robina coolangatta burleigh nerang coomera near me local area areas' },
-    { url: 'funding.html', label: 'Which funding fits me?', icon: 'wallet', words: 'funding which fits how pay paying payment ndis medicare health fund insurance support at home help choose options' },
+    { url: 'funding.html', label: 'Which funding fits me?', icon: 'wallet', words: 'funding which fits how pay paying payment ndis support at home help choose options' },
     { url: 'firstvisit.html', label: 'Your first appointment', icon: 'calendar', words: 'first appointment visit prepare preparing checklist bring expect what happens initial assessment' },
-    { url: 'referrers.html', label: 'Information for referrers', icon: 'send', words: 'referrer referrers gp doctor coordinator plan manager provider hospital practice summary refer' },
+    { url: 'referrers.html', label: 'Information for referrers', icon: 'send', words: 'referrer referrers coordinator plan manager provider hospital practice summary refer' },
     { url: 'easyread.html', label: 'Easy Read', icon: 'eye', words: 'easy read simple plain english' },
     { url: 'glossary.html', label: 'Words we use', icon: 'note', words: 'glossary words terms meaning mean jargon explain explained definition' },
     { url: 'index.html', label: 'Home', icon: 'home', words: 'home start' }
@@ -62,7 +62,7 @@
     price: ['fee', 'cost'], pricing: ['fee', 'cost'], charge: ['fee', 'cost'], rate: ['fee'], expensive: ['fee', 'cost'], afford: ['fee', 'cost'], much: ['fee', 'cost'],
     money: ['pay', 'fee'], payment: ['pay', 'invoice'], paying: ['pay'], bill: ['invoice', 'pay'], receipt: ['invoice'],
     elderly: ['older', 'aged'], senior: ['older', 'aged'], pensioner: ['older', 'aged'], old: ['older', 'aged'],
-    doctor: ['gp'], physio: ['physiotherap'],
+    physio: ['physiotherap'],
     mum: ['family', 'carer'], dad: ['family', 'carer'], parent: ['family', 'carer'], relative: ['family', 'carer'], son: ['family'], daughter: ['family'],
     online: ['telehealth', 'video'], zoom: ['telehealth', 'video'], virtual: ['telehealth', 'video'], remote: ['telehealth', 'video'],
     house: ['home'], unit: ['home'],
