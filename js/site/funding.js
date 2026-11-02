@@ -15,7 +15,7 @@
     agency: { icon: 'target', title: 'Your plan is managed by the NDIA', text: "We work with NDIS plans that are self managed or plan managed. Talk to your support coordinator or the NDIA about your options, or you're welcome to see us privately.", href: 'ndis.html', link: 'More about the NDIS and us' },
     approved: { icon: 'heart', title: 'Support at Home', text: "Occupational therapy is a clinical support, so you don't pay a contribution towards it. We invoice your provider at the rate agreed with them. Let your provider know you'd like to see us.", href: 'myagedcare.html#alreadyHaveSupportAt', link: 'Using Support at Home with us' },
     waiting: { icon: 'heart', title: 'While you wait for Support at Home', text: "Waiting for funding to start can take time. If you'd rather not wait, you're welcome to see us privately in the meantime.", href: 'myagedcare.html#seeingUsWhileWait', link: 'Seeing us while you wait' },
-    private: { icon: 'wallet', title: 'Paying privately', text: "Anyone can see us privately, and you don't need a referral. We'll always confirm costs with you before we start.", href: 'fees.html#privateFees', link: 'Our fees' }
+    private: { icon: 'wallet', title: 'Paying privately', text: "Anyone can see us privately, and you don't need a referral. We'll always confirm costs with you before we start.", href: 'contact.html', link: 'Ask us about costs' }
   };
 
   function picks(a) {

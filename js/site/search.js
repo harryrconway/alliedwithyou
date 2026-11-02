@@ -15,7 +15,7 @@
 
   /* Pages to offer straight away, and the everyday words people use for them */
   const PLACES = [
-    { url: 'fees.html', label: 'Fees and cancellations', icon: 'wallet', words: 'fees cost costs price prices pricing charge charges rates pay paying payment invoice invoices cancel cancellation cancellations' },
+    { url: 'fees.html', label: 'Cancellations', icon: 'calendar', words: 'cancel cancels cancelling cancellation cancellations reschedule missed appointment' },
     { url: 'ndis.html', label: 'NDIS participants', icon: 'target', words: 'ndis plan participant participants support coordinator coordinators capacity building plan managed self managed' },
     { url: 'myagedcare.html', label: 'My Aged Care', icon: 'heart', words: 'my aged care support at home home care package older elderly seniors' },
     { url: 'referrals.html', label: 'Make a referral', icon: 'send', words: 'referral referrals refer referring referrer coordinator professional' },
@@ -37,7 +37,7 @@
     { url: 'glossary.html', label: 'Words we use', icon: 'note', words: 'glossary words terms meaning mean jargon explain explained definition' },
     { url: 'index.html', label: 'Home', icon: 'home', words: 'home start' }
   ];
-  const POPULAR = ['fees.html', 'ndis.html', 'myagedcare.html', 'referrals.html', 'contact.html'];
+  const POPULAR = ['faq.html', 'ndis.html', 'myagedcare.html', 'referrals.html', 'contact.html'];
   const PAGE_ICON = {};
   PLACES.forEach((p) => { PAGE_ICON[p.url] = p.icon; });
 

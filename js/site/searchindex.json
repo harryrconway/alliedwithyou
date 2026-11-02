@@ -82,7 +82,7 @@
      "id": "whoWork",
      "title": "Who we work with",
      "kind": "section",
-     "text": "We see people paying privately, people using a Support at Home package, and NDIS participants. Family members, carers and support coordinators are welcome to get in touch on someone's behalf. Make a referral . Paying privately Our fees, and what's included Support at Home Through My Aged Care NDIS participants Self managed and plan managed"
+     "text": "We see people paying privately, people using a Support at Home package, and NDIS participants. Family members, carers and support coordinators are welcome to get in touch on someone's behalf. Make a referral . Paying privately Ask us about costs Support at Home Through My Aged Care NDIS participants Self managed and plan managed"
     },
     {
      "id": "approachTitle",
@@ -181,7 +181,7 @@
      "id": "payingAssessment",
      "title": "Paying for an assessment",
      "kind": "section",
-     "text": "Assessments can be paid privately or funded through the NDIS for self managed and plan managed participants. Some aged care providers also fund them. Our fees page explains how assessment and report writing time is charged."
+     "text": "Assessments can be paid privately or funded through the NDIS for self managed and plan managed participants. Some aged care providers also fund them."
     },
     {
      "id": "asideTitle",
@@ -230,7 +230,7 @@
      "id": "payingDailyLivingSupport",
      "title": "Paying for daily living support",
      "kind": "section",
-     "text": "Sessions can be paid privately, through a Support at Home package, or through the NDIS for self managed and plan managed participants. See fees and cancellations ."
+     "text": "Sessions can be paid privately, through a Support at Home package, or through the NDIS for self managed and plan managed participants."
     },
     {
      "id": "asideTitle",
@@ -279,7 +279,7 @@
      "id": "payingHomeVisit",
      "title": "Paying for a home visit",
      "kind": "section",
-     "text": "Home visits can be paid privately, through a Support at Home package or through the NDIS for self managed and plan managed participants. Travel may be charged depending on where you live. See fees and cancellations ."
+     "text": "Home visits can be paid privately, through a Support at Home package or through the NDIS for self managed and plan managed participants. Travel may be charged depending on where you live."
     },
     {
      "id": "asideTitle",
@@ -328,7 +328,7 @@
      "id": "payingEquipmentAdvice",
      "title": "Paying for equipment advice",
      "kind": "section",
-     "text": "Our time is charged as an assessment or therapy session. The equipment itself is usually paid for separately, through your own funds, the NDIS, a Support at Home package or another funding body. See fees and cancellations ."
+     "text": "Our time is charged as an assessment or therapy session. The equipment itself is usually paid for separately, through your own funds, the NDIS, a Support at Home package or another funding body."
     },
     {
      "id": "asideTitle",
@@ -377,7 +377,7 @@
      "id": "payingTherapy",
      "title": "Paying for therapy",
      "kind": "section",
-     "text": "Sessions can be paid privately, through a Support at Home package, or through the NDIS for self managed and plan managed participants. See fees and cancellations ."
+     "text": "Sessions can be paid privately, through a Support at Home package, or through the NDIS for self managed and plan managed participants."
     },
     {
      "id": "asideTitle",
@@ -426,7 +426,7 @@
      "id": "payingReports",
      "title": "Paying for reports",
      "kind": "section",
-     "text": "Report writing time is charged at the same hourly rate as therapy. We'll give you an estimate before we begin. See fees and cancellations ."
+     "text": "Report writing time is charged at the same hourly rate as therapy. We'll give you an estimate before we begin."
     },
     {
      "id": "asideTitle",
@@ -475,7 +475,7 @@
      "id": "charge",
      "title": "What we charge",
      "kind": "section",
-     "text": "We charge in line with the NDIS Pricing Arrangements and Price Limits for therapy supports, including travel and report writing where they apply. The exact rates are listed in your service agreement, and we'll always explain them before we begin. See fees and cancellations for more."
+     "text": "We charge in line with the NDIS Pricing Arrangements and Price Limits for therapy supports, including travel and report writing where they apply. The exact rates are listed in your service agreement, and we'll always explain them before we begin."
     },
     {
      "id": "invoices",
@@ -554,7 +554,7 @@
      "id": "seeingUsWhileWait",
      "title": "Seeing us while you wait",
      "kind": "section",
-     "text": "Waiting for an assessment or for funding to be allocated can take time. If you'd rather not wait, you're welcome to see us privately in the meantime. See fees and cancellations for our rates."
+     "text": "Waiting for an assessment or for funding to be allocated can take time. If you'd rather not wait, you're welcome to see us privately in the meantime."
     },
     {
      "id": "familiesCarers",
@@ -706,7 +706,7 @@
      "id": "paying",
      "title": "Paying for therapy",
      "kind": "section",
-     "text": "We see people in the Northern Rivers who pay privately, people with a Support at Home package through My Aged Care, and NDIS participants. Read more on fees and cancellations , the NDIS and My Aged Care ."
+     "text": "We see people in the Northern Rivers who pay privately, people with a Support at Home package through My Aged Care, and NDIS participants. Read more on the NDIS and My Aged Care ."
     },
     {
      "id": "travel",
@@ -755,7 +755,7 @@
      "id": "paying",
      "title": "Paying for therapy",
      "kind": "section",
-     "text": "We see people on the Gold Coast who pay privately, people with a Support at Home package through My Aged Care, and NDIS participants. Read more on fees and cancellations , the NDIS and My Aged Care ."
+     "text": "We see people on the Gold Coast who pay privately, people with a Support at Home package through My Aged Care, and NDIS participants. Read more on the NDIS and My Aged Care ."
     },
     {
      "id": "travel",
@@ -779,38 +779,14 @@
   },
   {
    "url": "fees.html",
-   "title": "Fees and cancellations",
-   "heading": "Fees and cancellations",
+   "title": "Cancellations",
+   "heading": "Cancellations",
    "sections": [
     {
      "id": "",
-     "title": "Fees and cancellations",
+     "title": "Cancellations",
      "kind": "page",
-     "text": "What our services cost, how billing works and what happens if you need to cancel. We'll always confirm costs with you before we start. Not sure how you'd pay? Which funding fits me Fees, billing arrangements and cancellation terms for Allied With You occupational therapy services."
-    },
-    {
-     "id": "privateFees",
-     "title": "Private fees",
-     "kind": "section",
-     "text": "These apply when you pay yourself. Service Fee Initial assessment Up to two hours, including a short summary of recommendations $380.00 Therapy session Around 60 minutes at home, in the community or by telehealth $190.00 Short review Around 30 minutes, often by telehealth $100.00 Report writing Charged per hour, with an estimate given first $190.00 Travel Per hour of travel beyond the first 20 minutes each way $95.00 Occupational therapy services are generally GST free."
-    },
-    {
-     "id": "ndisParticipants",
-     "title": "NDIS participants",
-     "kind": "section",
-     "text": "For NDIS participants, we charge in line with the current NDIS Pricing Arrangements and Price Limits, including travel and report writing where they apply. Your service agreement lists the exact rates. Read more on our NDIS page ."
-    },
-    {
-     "id": "supportAtHome",
-     "title": "Support at Home",
-     "kind": "section",
-     "text": "Services are invoiced to your Support at Home provider at the rate agreed with them. We will confirm this with you and your provider before we start."
-    },
-    {
-     "id": "payingYourInvoice",
-     "title": "Paying your invoice",
-     "kind": "section",
-     "text": "We send an invoice after each appointment, or monthly for regular sessions. Payment is due within 14 days."
+     "text": "What happens if you or we need to cancel or move an appointment. Cancellation terms for Allied With You occupational therapy services."
     },
     {
      "id": "cancellationsMissedAppointments",
@@ -819,10 +795,10 @@
      "text": "Life happens, and we understand that plans change. Please let us know as early as you can if you need to cancel or move an appointment, so we can offer the time to someone else. Private clients: cancellations with less than 24 hours notice may be charged a cancellation fee NDIS participants: short notice cancellations are charged in line with the NDIS Pricing Arrangements and Price Limits, as set out in your service agreement If we need to cancel, there is never a charge to you, and we'll find another time as soon as we can If something serious has come up, talk to us. We use common sense."
     },
     {
-     "id": "feesAside",
-     "title": "Questions about fees?",
+     "id": "cancelAside",
+     "title": "Need to cancel?",
      "kind": "section",
-     "text": "If you're unsure how your sessions will be funded, get in touch and we'll talk it through before anything is booked."
+     "text": "Get in touch as soon as you can and we'll find another time that suits."
     }
    ]
   },
@@ -847,7 +823,7 @@
      "id": "allWays",
      "title": "All the ways to pay",
      "kind": "section",
-     "text": "Not sure where you fit? Get in touch and we'll talk it through before anything is booked. NDIS participants Self managed and plan managed plans Support at Home Through My Aged Care Paying privately Our fees, and what's included"
+     "text": "Not sure where you fit? Get in touch and we'll talk it through before anything is booked. NDIS participants Self managed and plan managed plans Support at Home Through My Aged Care Paying privately Ask us about costs"
     }
    ]
   },
@@ -890,7 +866,7 @@
      "id": "ifYouNeedToCancel",
      "title": "If you need to cancel",
      "kind": "section",
-     "text": "Please let us know as early as you can, so we can offer the time to someone else. For private clients, cancellations with less than 24 hours notice may be charged. For NDIS participants, short notice cancellations are charged as set out in your service agreement. See fees and cancellations ."
+     "text": "Please let us know as early as you can, so we can offer the time to someone else. For private clients, cancellations with less than 24 hours notice may be charged. For NDIS participants, short notice cancellations are charged as set out in your service agreement. See cancellations ."
     },
     {
      "id": "checklistTitle",
@@ -1026,7 +1002,7 @@
      "id": "",
      "title": "Questions people ask",
      "kind": "page",
-     "text": "Straightforward answers to the things people most often want to know before getting started. Can't find what you're looking for? Send us a question and we'll get back to you. Answers to common questions about occupational therapy, referrals, appointments, NDIS, fees and cancellations."
+     "text": "Straightforward answers to the things people most often want to know before getting started. Can't find what you're looking for? Send us a question and we'll get back to you. Answers to common questions about occupational therapy, referrals, appointments, NDIS and cancellations."
     },
     {
      "id": "faqDoesOccupationalTherapist",
@@ -1040,13 +1016,6 @@
      "title": "Do I need a referral?",
      "kind": "question",
      "text": "No. You can contact us directly if you're paying privately or using NDIS or Support at Home funding.",
-     "under": "Occupational therapy"
-    },
-    {
-     "id": "faqOccupationalTherapyDifferentFrom",
-     "title": "How is occupational therapy different from physiotherapy?",
-     "kind": "question",
-     "text": "There is some overlap. Broadly, physiotherapists focus on movement, strength and physical function, while occupational therapists focus on the tasks and activities of daily life and how to make them possible. Many people see both.",
      "under": "Occupational therapy"
     },
     {
@@ -1120,24 +1089,10 @@
      "under": "NDIS"
     },
     {
-     "id": "faqMuchDoesCost",
-     "title": "How much does it cost?",
-     "kind": "question",
-     "text": "Fees depend on the service and how it is funded. Our fees page lists current rates, and we always confirm costs before we start.",
-     "under": "Fees and funding"
-    },
-    {
-     "id": "faqUseSupportAtHome",
-     "title": "Can I use my Support at Home package?",
-     "kind": "question",
-     "text": "Yes. We work with your package provider, who arranges payment for the services you have agreed to.",
-     "under": "Fees and funding"
-    },
-    {
      "id": "faqNeedCancel",
      "title": "What if I need to cancel?",
      "kind": "question",
-     "text": "Please let us know as soon as you can so we can offer the time to someone else. Late cancellations may be charged. See fees and cancellations for the details.",
+     "text": "Please let us know as soon as you can so we can offer the time to someone else. Late cancellations may be charged. See cancellations for the details.",
      "under": "Cancellations"
     },
     {
