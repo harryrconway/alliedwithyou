@@ -1228,6 +1228,10 @@ html.is-held .site-header {
   transition: transform 400ms var(--ease);
 }
 
+.service-row-photo.is-low {
+  object-position: center 75%;
+}
+
 /* A cream wash keeps the text easy to read while the photo shows through */
 .service-rows a::before {
   content: "";
