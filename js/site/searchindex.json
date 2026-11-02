@@ -1012,13 +1012,6 @@
      "under": "Occupational therapy"
     },
     {
-     "id": "faqNeedReferral",
-     "title": "Do I need a referral?",
-     "kind": "question",
-     "text": "No. You can contact us directly if you're paying privately or using NDIS or Support at Home funding.",
-     "under": "Occupational therapy"
-    },
-    {
      "id": "faqHappensFromGettingTouch",
      "title": "What happens, from getting in touch to finishing up?",
      "kind": "question",
